@@ -16,7 +16,7 @@ export const DEFAULT_LOCAL_HA_URL = 'http://192.168.x.x:8123';
 // ============================================
 
 export const GOOGLE_CALENDAR_API_KEY = 'YOUR_GOOGLE_API_KEY';
-export const GOOGLE_CALENDAR_ID = 'familyfamilynames@gmail.com';
+export const GOOGLE_CALENDAR_ID = 'your-calendar@gmail.com';
 export const CALENDAR_TIMEZONE = 'Africa/Johannesburg';
 
 // ============================================

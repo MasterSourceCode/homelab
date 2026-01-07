@@ -9,7 +9,7 @@ from playwright.async_api import async_playwright
 HA_URL = "http://192.168.x.x:8123"
 HA_USER = "Person1"
 HA_PASSWORD = "YOUR_HA_PASSWORD"
-TUYA_EMAIL = "person1@igovernance.co.za"
+TUYA_EMAIL = "your-email@example.com"
 TUYA_PASSWORD = "wTNkWGZNd-_37Ua"
 
 async def reauth_tuya():
