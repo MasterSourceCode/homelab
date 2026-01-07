@@ -1,0 +1,31 @@
+<!-- Room Detail Modal Template -->
+<div id="roomModal" class="fixed inset-0 z-50 hidden">
+    <div id="modalBgImage" class="absolute inset-0 bg-cover bg-center transition-all duration-500"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/80 to-dark-900/40"></div>
+    <div class="absolute inset-0 pointer-events-none opacity-[0.03]" style="background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px);"></div>
+
+    <!-- Clickable backdrop - closes modal when clicking outside controls -->
+    <div class="absolute inset-0 z-5 cursor-pointer" data-action="closeRoomModal"></div>
+
+    <button data-action="closeRoomModal" class="absolute top-6 right-6 z-20 w-12 h-12 rounded-full glass flex items-center justify-center hover:bg-white/10 transition">
+        <svg class="w-6 h-6 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+    </button>
+
+    <div class="relative z-10 h-full flex flex-col justify-end p-6 pb-8 cursor-pointer" data-action="closeRoomModal">
+        <div class="mb-8">
+            <div class="flex items-center gap-4 mb-2">
+                <div id="modalRoomIcon" class="room-icon bg-blue-500 w-16 h-16">
+                    <svg class="w-8 h-8 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+                </div>
+                <div>
+                    <h2 id="modalRoomName" class="text-3xl font-bold drop-shadow-lg">Room Name</h2>
+                    <p id="modalRoomStatus" class="text-white/60 text-lg">0 lights on</p>
+                </div>
+            </div>
+            <div id="modalMasterToggle" class="mt-4 flex gap-3" onclick="event.stopPropagation()"></div>
+        </div>
+        <div id="modalControls" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto no-scrollbar" onclick="event.stopPropagation()"></div>
+    </div>
+</div>

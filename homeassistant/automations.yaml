@@ -1,0 +1,4290 @@
+# ============================================
+# CRITICAL SECURITY ALERTS - Armed Away Mode
+# Now uses AI analysis to determine if critical alert is needed
+# ============================================
+
+# NOTE: Garden/Backyard direct alert DISABLED - replaced by ai_analyze_backyard_person
+# which uses AI to determine THREAT/SAFE before sending critical alerts
+# - id: critical_intruder_alert_garden (DISABLED - see ai_analyze_backyard_person)
+
+# Intruder Alert - Ezviz Indoor Camera (AI Threat Gated)
+- id: critical_intruder_alert_ezviz
+  alias: "CRITICAL: Intruder Alert - Ezviz Indoor"
+  description: "AI-gated critical alert when person detected inside while armed away"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.ezviz_indoor_person_occupancy
+      to: "on"
+  condition:
+    # Skip if Dog Mode is active (dog mode has its own alerts)
+    - condition: state
+      entity_id: input_boolean.dog_mode
+      state: "off"
+    - condition: state
+      entity_id: alarm_control_panel.alarm_partition_1
+      state: "armed_away"
+    # Throttle: max once per 60 seconds
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 60 }}
+  action:
+    - service: camera.snapshot
+      target:
+        entity_id: camera.ezviz_indoor
+      data:
+        filename: /config/www/snapshots/intruder_ezviz.jpg
+    - delay:
+        seconds: 2
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Indoor Intruder Analysis"
+        instructions: >
+          SECURITY ANALYSIS: Person detected INSIDE the house while alarm is armed away.
+
+          You MUST start your response with exactly one of these two words:
+          - "THREAT:" if you see a person, intruder, or any human activity inside
+          - "SAFE:" if no person is visible, it's a pet, shadow, or false detection
+
+          After the verdict, provide a brief explanation (1-2 sentences) describing:
+          - What you see (person, pet, shadow, nothing)
+          - Location and behavior if applicable
+          - Why it is or isn't an intruder
+
+          Examples:
+          "THREAT: Person visible inside living room. Unknown individual not recognized as resident."
+          "SAFE: Motion appears to be the family cat. No human visible."
+          "THREAT: Figure moving through hallway, appears to be searching the room."
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: media-source://media_source/local/snapshots/intruder_ezviz.jpg
+      response_variable: ai_analysis
+    - choose:
+        # If AI says THREAT, send critical alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('THREAT') }}
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "🚨 THREAT: Intruder Inside"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Person detected inside - analysis unavailable' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: /local/snapshots/intruder_ezviz.jpg
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+      # If SAFE or unclear, do nothing (no notification)
+
+# NOTE: Front Door camera disabled for critical alerts - picks up neighbors in complex
+# TODO: Set up a focused zone for front door before enabling
+# - id: critical_intruder_alert_front (DISABLED)
+
+# Intruder Alert - Garage (AI Threat Gated, when armed away)
+- id: critical_intruder_alert_garage
+  alias: "CRITICAL: Intruder Alert - Garage"
+  description: "AI-gated critical alert when person detected in garage while armed away"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.wyze_garage_person_occupancy
+      to: "on"
+  condition:
+    # Skip if Dog Mode is active (dog mode has its own alerts)
+    - condition: state
+      entity_id: input_boolean.dog_mode
+      state: "off"
+    - condition: state
+      entity_id: alarm_control_panel.alarm_partition_1
+      state: "armed_away"
+    # Throttle: max once per 60 seconds
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 60 }}
+  action:
+    - service: camera.snapshot
+      target:
+        entity_id: camera.wyze_garage
+      data:
+        filename: /config/www/snapshots/intruder_garage.jpg
+    - delay:
+        seconds: 2
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Garage Intruder Analysis"
+        instructions: >
+          SECURITY ANALYSIS: Person detected in GARAGE while alarm is armed away.
+
+          You MUST start your response with exactly one of these two words:
+          - "THREAT:" if you see a person or intruder in the garage area
+          - "SAFE:" if no person is visible, or it's clearly a false detection
+
+          After the verdict, provide a brief explanation (1-2 sentences) describing:
+          - What you see (person, shadow, nothing)
+          - Their location and behavior
+          - Why it is or isn't a security concern
+
+          Examples:
+          "THREAT: Person visible inside garage near the door. Unknown individual."
+          "SAFE: No person visible. Detection may have been triggered by shadow or movement outside."
+          "THREAT: Figure entering garage through side door."
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: media-source://media_source/local/snapshots/intruder_garage.jpg
+      response_variable: ai_analysis
+    - choose:
+        # If AI says THREAT, send critical alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('THREAT') }}
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "🚨 THREAT: Garage Intruder"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Person detected in garage - analysis unavailable' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: /local/snapshots/intruder_garage.jpg
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+      # If SAFE or unclear, do nothing (no notification)
+
+# ============================================
+# AI-Powered Camera Analysis Automations
+# Uses Google Generative AI to analyze Frigate camera snapshots
+#
+# LOGIC:
+# - Garage camera: AI runs 24/7 (deliveries, visitors, auto-close checks)
+# - Other cameras: AI only when alarm armed (stay/away) OR cameras_armed is ON
+# - All alerts sent to User's phone with snapshot image
+# ============================================
+
+# ----------------------------------------------
+# GARAGE CAMERA - ARMED MODE AI MONITORING
+# ----------------------------------------------
+
+# Garage Person Detection (Armed Mode Only)
+# INTELLIGENT TRIGGER: Uses MQTT events instead of occupancy sensor
+# Only fires on NEW events (not re-detections from stream reconnects)
+- id: ai_analyze_garage_person
+  alias: "AI Analyze Garage Person"
+  description: "Armed mode - When a new person event starts at garage, analyze with AI"
+  mode: single
+  trigger:
+    - platform: mqtt
+      topic: frigate/events
+      value_template: >
+        {{ value_json.type == 'new' and
+           value_json.after.camera == 'wyze_garage' and
+           value_json.after.label == 'person' }}
+  condition:
+    # Skip if Dog Mode is active (dog mode has its own alerts)
+    - condition: state
+      entity_id: input_boolean.dog_mode
+      state: "off"
+    # Only run when alarm is armed OR cameras manually armed
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_away"
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_home"
+        - condition: state
+          entity_id: input_boolean.cameras_armed
+          state: "on"
+    # Throttle: max once per 60 seconds
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 60 }}
+  action:
+    - service: camera.snapshot
+      target:
+        entity_id: camera.wyze_garage
+      data:
+        filename: /config/www/snapshots/garage_person.jpg
+    - delay:
+        seconds: 2
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Garage Visitor Analysis"
+        instructions: >
+          Analyze this garage camera image. Describe:
+          1. Number of people visible
+          2. What they appear to be doing (delivery, visitor, resident, worker)
+          3. Any packages or items they're carrying
+          4. Their appearance (clothing, uniform, distinguishing features)
+          5. Any vehicles visible
+          Be concise. Focus on security-relevant details.
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: media-source://media_source/local/snapshots/garage_person.jpg
+      response_variable: ai_analysis
+    - service: notify.mobile_app_person1
+      data:
+        title: "👤 Garage Activity"
+        message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Person detected - analysis unavailable' }}"
+        data:
+          push:
+            interruption-level: time-sensitive
+          image: /local/snapshots/garage_person.jpg
+          tag: "garage-person-alert"
+          actions:
+            - action: "VIEW_CAMERAS"
+              title: "View Cameras"
+
+# Garage Vehicle Detection - DISABLED
+# Reason: Cars detected too frequently (parked car re-detected as events),
+# causing excessive AI API calls. Person detection is sufficient for security.
+# - id: ai_analyze_garage_car (DISABLED)
+
+# ----------------------------------------------
+# OTHER CAMERAS - ARMED MODE ONLY
+# Only run when: alarm is armed (stay/away) OR cameras_armed is ON
+# ----------------------------------------------
+
+# Front Door Person Detection (Armed Only) - DISABLED
+# NOTE: Front camera disabled - overlooks common complex gate causing constant false alerts
+# - id: ai_analyze_front_door_person (DISABLED)
+
+# Backyard Person Detection (Armed Only) - AI Threat Gated
+- id: ai_analyze_backyard_person
+  alias: "AI Analyze Backyard Person"
+  description: "Armed mode - Analyze person in backyard with AI, critical alert only if threat"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.backyard_person_occupancy
+      to: "on"
+  condition:
+    # Skip if Dog Mode is active (dog mode has its own alerts)
+    - condition: state
+      entity_id: input_boolean.dog_mode
+      state: "off"
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_away"
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_home"
+        - condition: state
+          entity_id: input_boolean.cameras_armed
+          state: "on"
+    - condition: template
+      # Throttle: max once per 60 seconds
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 60 }}
+  action:
+    - service: camera.snapshot
+      target:
+        entity_id: camera.backyard
+      data:
+        filename: /config/www/snapshots/backyard_person.jpg
+    - delay:
+        seconds: 2
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Backyard Intruder Analysis"
+        instructions: >
+          SECURITY ANALYSIS: Analyze this backyard camera image. The alarm is armed.
+
+          You MUST start your response with exactly one of these two words:
+          - "THREAT:" if you see a person, intruder, or suspicious activity
+          - "SAFE:" if no person is visible, or it's clearly an animal/shadow/false detection
+
+          After the verdict, provide a brief explanation (1-2 sentences) describing:
+          - What you see (person, animal, shadow, nothing)
+          - Location and behavior if applicable
+          - Why it is or isn't a security concern
+
+          Examples:
+          "THREAT: Person visible near fence, appears to be looking over into the yard. Suspicious behavior."
+          "SAFE: No person visible. Motion appears to be a cat near the pool."
+          "THREAT: Unknown individual in garden area, not a recognized resident."
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: media-source://media_source/local/snapshots/backyard_person.jpg
+      response_variable: ai_analysis
+    # Check AI response and alert accordingly
+    - choose:
+        # If AI says THREAT, send critical alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('THREAT') }}
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "🚨 THREAT: Backyard Intruder"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Person detected - analysis unavailable' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: /local/snapshots/backyard_person.jpg
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+      # If SAFE or unclear, do nothing (no notification)
+
+# Driveway Vehicle Detection (Armed Only) - DISABLED
+# NOTE: front_door camera excluded from armed alerts - points to common estate areas
+# - id: ai_analyze_driveway_car (DISABLED)
+
+# Late Night Motion (Armed Only) - AI Threat Gated
+# NOTE: Front door motion excluded - overlooks common complex gate
+- id: ai_unusual_activity_alert
+  alias: "AI Late Night Activity Alert"
+  description: "Armed mode - Late night motion with AI threat detection"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.backyard_motion
+        - binary_sensor.garden_motion
+      to: "on"
+  condition:
+    - condition: time
+      after: "00:00:00"
+      before: "05:00:00"
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_away"
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_home"
+        - condition: state
+          entity_id: input_boolean.cameras_armed
+          state: "on"
+    - condition: template
+      # Throttle: max once per 120 seconds
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 120 }}
+  action:
+    # Take snapshot from backyard camera
+    - service: camera.snapshot
+      target:
+        entity_id: camera.backyard
+      data:
+        filename: /config/www/snapshots/night_backyard.jpg
+    - delay:
+        seconds: 2
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Late Night Security Alert"
+        instructions: >
+          SECURITY ANALYSIS: Motion detected between midnight and 5am while alarm is armed.
+
+          You MUST start your response with exactly one of these two words:
+          - "THREAT:" if you see a person, intruder, or any human activity
+          - "SAFE:" if the motion appears to be an animal, wind/debris, shadows, or nothing visible
+
+          After the verdict, provide a brief explanation (1-2 sentences) describing:
+          - What caused the motion (person, animal, wind, nothing visible)
+          - Location of activity if visible
+          - Why it is or isn't a security concern
+
+          Examples:
+          "THREAT: Person visible near fence at 2am. Appears to be looking into property."
+          "SAFE: Motion appears to be a cat or small animal moving through garden. No human activity."
+          "SAFE: No visible movement. Likely triggered by wind moving plants."
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: media-source://media_source/local/snapshots/night_backyard.jpg
+      response_variable: ai_analysis
+    # Check AI response and alert accordingly
+    - choose:
+        # If AI says THREAT, send critical alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('THREAT') }}
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "🚨 THREAT: Late Night Activity"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Motion detected - analysis unavailable' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: /local/snapshots/night_backyard.jpg
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+                    - action: "DISARM_ALARM"
+                      title: "False Alarm"
+      # If SAFE or unclear, do nothing (no notification)
+
+# ============================================
+# SOLAR INVERTER MONITORING
+# ============================================
+
+# Alert when inverter WiFi connection drops
+- id: inverter_offline_alert
+  alias: "Inverter WiFi Offline Alert"
+  description: "Alert when the Deye inverter loses WiFi connection for more than 5 minutes"
+  trigger:
+    - platform: state
+      entity_id: sensor.inverter_device_state
+      to: "unavailable"
+      for:
+        minutes: 5
+  condition: []
+  action:
+    - service: persistent_notification.create
+      data:
+        title: "⚠️ Solar Inverter Offline"
+        message: >
+          The Deye inverter has been unreachable for 5+ minutes.
+          This is likely due to weak WiFi signal in the garage.
+          Last seen: {{ states.sensor.inverter_device_state.last_changed | as_timestamp | timestamp_custom('%H:%M:%S') }}
+        notification_id: inverter_offline
+    - service: logbook.log
+      data:
+        name: "Inverter"
+        message: "WiFi connection lost - inverter unavailable"
+
+# Clear offline notification when inverter comes back online
+- id: inverter_online_notification
+  alias: "Inverter WiFi Online Notification"
+  description: "Clear alert when inverter reconnects"
+  trigger:
+    - platform: state
+      entity_id: sensor.inverter_device_state
+      from: "unavailable"
+  condition: []
+  action:
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: inverter_offline
+    - service: logbook.log
+      data:
+        name: "Inverter"
+        message: "WiFi connection restored"
+
+# Daily inverter connectivity report
+- id: inverter_daily_connectivity_report
+  alias: "Inverter Daily Connectivity Report"
+  description: "Log daily inverter uptime at midnight"
+  trigger:
+    - platform: time
+      at: "00:00:00"
+  condition: []
+  action:
+    - service: logbook.log
+      data:
+        name: "Inverter Daily Report"
+        message: >
+          Solar production today: {{ states('sensor.inverter_today_production') }} kWh,
+          Grid import: {{ states('sensor.inverter_today_energy_import') }} kWh,
+          Grid export: {{ states('sensor.inverter_today_energy_export') }} kWh,
+          Battery state: {{ states('sensor.inverter_battery') }}%
+
+# ============================================
+# GARAGE DOOR AUTO-MANAGEMENT
+# AI-powered safety checks before auto-closing
+# ============================================
+
+# Auto-close garage door after 7 minutes with AI safety check
+- id: garage_auto_close_with_ai_check
+  alias: "Garage Auto-Close with AI Safety Check"
+  description: "Auto-close garage after 7 mins, checking for obstructions via AI first"
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+      to: "open"
+      for:
+        minutes: 7
+  condition:
+    # Only auto-close if manual override is NOT active
+    - condition: state
+      entity_id: input_boolean.garage_manual_override
+      state: "off"
+  action:
+    # Take a snapshot of the garage camera
+    - service: camera.snapshot
+      target:
+        entity_id: camera.wyze_garage
+      data:
+        filename: /config/www/snapshots/garage_autoclose_check.jpg
+    - delay:
+        seconds: 2
+    # Send to AI for obstruction analysis (continue on error to handle quota/API failures)
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Garage Door Safety Check"
+        instructions: >
+          CRITICAL SAFETY CHECK: Analyze this garage camera image to determine if it is SAFE to auto-close the garage door.
+
+          IMPORTANT - DOOR LOCATION:
+          The garage door closes exactly on the border between TILES (inside the garage) and BRICKS (outside/driveway).
+          - TILES = inside the garage (safe zone)
+          - BRICKS = outside the garage (safe zone)
+          - The DOOR LINE is where tiles meet bricks
+
+          OBSTRUCTION CHECK:
+          An object is BLOCKING if ANY part of it crosses the tile/brick border line. Look for:
+          1. Is there a CAR straddling the tile/brick border? (partially in, partially out)
+          2. Is there a PERSON standing on or crossing the tile/brick border?
+          3. Are there any objects (bins, tools, boxes) sitting on the border between tiles and bricks?
+
+          Objects fully on tiles (inside) = SAFE
+          Objects fully on bricks (outside) = SAFE
+          Objects crossing the tile/brick border = BLOCKED
+
+          Respond with EXACTLY one of these formats:
+          - "SAFE: [brief reason - e.g. 'doorway clear, no objects on tile/brick border']"
+          - "BLOCKED: [what is crossing the border - car/person/object]"
+
+          Be conservative - if you cannot clearly see the tile/brick border or are unsure, say BLOCKED.
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: media-source://media_source/local/snapshots/garage_autoclose_check.jpg
+      response_variable: ai_safety_check
+    # Check AI response and act accordingly
+    - choose:
+        # If AI says SAFE, close the door
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_safety_check.data is defined and
+                   'SAFE' in (ai_safety_check.data | upper) }}
+          sequence:
+            # Close the garage door
+            - service: cover.close_cover
+              target:
+                entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+            # Record the auto-close time
+            - service: input_datetime.set_datetime
+              target:
+                entity_id: input_datetime.garage_last_auto_close
+              data:
+                datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+            # Notify success
+            - service: notify.mobile_app_person1
+              data:
+                title: "🚗 Garage Auto-Closed"
+                message: >
+                  Garage was open for 7 mins and has been automatically closed.
+                  AI check: {{ ai_safety_check.data }}
+                data:
+                  image: /local/snapshots/garage_autoclose_check.jpg
+      # If AI says BLOCKED, fails, or any issue - alert instead of closing
+      default:
+        - service: notify.mobile_app_person1
+          data:
+            title: "⚠️ Garage Cannot Auto-Close"
+            message: >
+              Garage has been open for 7 mins.
+              {% if ai_safety_check.data is defined and ai_safety_check.data %}
+              AI detected an obstruction: {{ ai_safety_check.data }}
+              {% else %}
+              AI unavailable (quota exceeded or error). Check camera and close manually if safe.
+              {% endif %}
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 0.8
+                interruption-level: critical
+              image: /local/snapshots/garage_autoclose_check.jpg
+              actions:
+                - action: "CLOSE_GARAGE"
+                  title: "Close Anyway"
+                - action: "IGNORE_GARAGE"
+                  title: "Leave Open"
+        # Set manual override since we couldn't close
+        - service: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.garage_manual_override
+
+# Detect manual override - garage reopened within 2 mins of auto-close
+- id: garage_detect_manual_override
+  alias: "Garage Detect Manual Override"
+  description: "If garage is reopened within 2 mins of auto-close, assume intentional"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+      to: "open"
+  condition:
+    # Check if we auto-closed in the last 2 minutes
+    - condition: template
+      value_template: >
+        {% set last_close = states('input_datetime.garage_last_auto_close') %}
+        {% if last_close not in ['unknown', 'unavailable', 'None', ''] %}
+          {% set last_close_dt = strptime(last_close, '%Y-%m-%d %H:%M:%S') | as_local %}
+          {% set time_since = (now() - last_close_dt).total_seconds() %}
+          {{ time_since < 120 }}
+        {% else %}
+          false
+        {% endif %}
+  action:
+    # Set manual override flag
+    - service: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.garage_manual_override
+    # Notify that override is active
+    - service: notify.mobile_app_person1
+      data:
+        title: "🔓 Garage Manual Override Active"
+        message: >
+          Garage reopened within 2 mins of auto-close. Auto-close disabled.
+          You'll receive alerts every 10 mins while it remains open.
+        data:
+          actions:
+            - action: "CANCEL_OVERRIDE"
+              title: "Resume Auto-Close"
+
+# Critical alerts every 10 mins while garage is open with manual override
+- id: garage_critical_alert_open
+  alias: "CRITICAL: Garage Open Alert"
+  description: "Send critical alerts every 10 mins while garage is open with override"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+      to: "open"
+      for:
+        minutes: 10
+    - platform: time_pattern
+      minutes: "/10"
+  condition:
+    # Garage must be open
+    - condition: state
+      entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+      state: "open"
+    # Manual override must be active
+    - condition: state
+      entity_id: input_boolean.garage_manual_override
+      state: "on"
+    # Throttle: max once per 9 minutes (540 seconds)
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 540 }}
+  action:
+    # Take fresh snapshot
+    - service: camera.snapshot
+      target:
+        entity_id: camera.wyze_garage
+      data:
+        filename: /config/www/snapshots/garage_open_alert.jpg
+    - delay:
+        seconds: 1
+    # Calculate how long garage has been open
+    - variables:
+        open_duration: >
+          {% set last_opened = states.cover.smart_garage_door_2311083729366461070548e1e9e12926_garage.last_changed %}
+          {% set mins = ((now() - last_opened).total_seconds() / 60) | round(0) %}
+          {{ mins }}
+    # Send critical alert
+    - service: notify.mobile_app_person1
+      data:
+        title: "🚨 GARAGE STILL OPEN"
+        message: >
+          Garage has been open for {{ open_duration }} minutes!
+          Check the snapshot - close manually if needed.
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+            interruption-level: critical
+          image: /local/snapshots/garage_open_alert.jpg
+          actions:
+            - action: "CLOSE_GARAGE"
+              title: "Close Now"
+            - action: "CANCEL_OVERRIDE"
+              title: "Resume Auto-Close"
+
+# Reset manual override when garage closes normally
+- id: garage_reset_override_on_close
+  alias: "Garage Reset Override on Close"
+  description: "Clear manual override flag when garage is closed"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+      to: "closed"
+  action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.garage_manual_override
+
+# Handle notification action - Close Garage
+- id: garage_handle_close_action
+  alias: "Garage Handle Close Action"
+  description: "Handle CLOSE_GARAGE action from notification"
+  mode: single
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: "CLOSE_GARAGE"
+  action:
+    - service: cover.close_cover
+      target:
+        entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+    - service: notify.mobile_app_person1
+      data:
+        title: "✅ Garage Closing"
+        message: "Close command sent to garage door"
+
+# Handle notification action - Cancel Override
+- id: garage_handle_cancel_override_action
+  alias: "Garage Handle Cancel Override Action"
+  description: "Handle CANCEL_OVERRIDE action from notification"
+  mode: single
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: "CANCEL_OVERRIDE"
+  action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.garage_manual_override
+    - service: notify.mobile_app_person1
+      data:
+        title: "✅ Auto-Close Resumed"
+        message: "Garage will auto-close after 7 mins if left open"
+
+# ============================================
+# GUEST ACCESS PASS SYSTEM
+# ============================================
+
+# Webhook to execute guest pass gate/garage actions
+# Token validation (expiry, signature) is done client-side
+- id: guest_pass_webhook_validate
+  alias: "Guest Pass: Validate and Execute"
+  description: "Webhook to execute gate/garage actions from guest pass"
+  mode: queued
+  max: 5
+  trigger:
+    - platform: webhook
+      webhook_id: guest_pass_validate
+      local_only: false
+  action:
+    - variables:
+        action: "{{ trigger.json.action | default('') }}"
+        pass_id: "{{ trigger.json.passId | default('unknown') }}"
+        guest_name: "{{ trigger.json.guestName | default('Guest') }}"
+    - choose:
+        # Gate action
+        - conditions:
+            - condition: template
+              value_template: "{{ action == 'gate' }}"
+          sequence:
+            - service: cover.toggle
+              target:
+                entity_id: cover.gate_switch_door_1
+            - service: notify.mobile_app_person1
+              data:
+                title: "🎫 Guest Access Used"
+                message: "{{ guest_name }} opened the GATE at {{ now().strftime('%H:%M') }}"
+                data:
+                  tag: guest_access_{{ pass_id }}
+        # Garage action
+        - conditions:
+            - condition: template
+              value_template: "{{ action == 'garage' }}"
+          sequence:
+            - service: cover.toggle
+              target:
+                entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+            - service: notify.mobile_app_person1
+              data:
+                title: "🎫 Guest Access Used"
+                message: "{{ guest_name }} opened the GARAGE at {{ now().strftime('%H:%M') }}"
+                data:
+                  tag: guest_access_{{ pass_id }}
+
+# ============================================
+# DOG MODE - PERSON ONLY DETECTION
+# ============================================
+# When dogs are home, monitors for PEOPLE only (not animals)
+# AI VERIFICATION FIRST to prevent false alerts from dogs being misclassified
+# Requires higher confidence (75%) for indoor camera where dogs are
+# Uses Frigate event snapshots (with detection box) for all cameras
+
+- id: dog_mode_person_detected
+  alias: "Dog Mode: CRITICAL Person Detection"
+  description: "AI-verified critical alert when person detected while dogs are home"
+  mode: parallel
+  max: 5
+  trigger:
+    # Front door camera - ONLY trigger if person is IN the External_Front_Corridor zone
+    # This filters out people in the common estate area (street)
+    - platform: mqtt
+      topic: frigate/events
+      value_template: >
+        {{ value_json.type == 'new' and
+           value_json.after.camera == 'front_door' and
+           value_json.after.label == 'person' and
+           value_json.after.score >= 0.65 and
+           'External_Front_Corridor' in (value_json.after.current_zones | default([])) }}
+      id: front_door
+    # Backyard camera - ONLY trigger if person is IN the Back_Yard zone
+    - platform: mqtt
+      topic: frigate/events
+      value_template: >
+        {{ value_json.type == 'new' and
+           value_json.after.camera == 'backyard' and
+           value_json.after.label == 'person' and
+           value_json.after.score >= 0.65 and
+           'Back_Yard' in (value_json.after.current_zones | default([])) }}
+      id: backyard
+    # Garage camera - trigger if person is in Garage_Entrance OR Garage zone
+    - platform: mqtt
+      topic: frigate/events
+      value_template: >
+        {{ value_json.type == 'new' and
+           value_json.after.camera == 'wyze_garage' and
+           value_json.after.label == 'person' and
+           value_json.after.score >= 0.65 and
+           (value_json.after.current_zones | default([])) | select('in', ['Garage_Entrance', 'Garage']) | list | length > 0 }}
+      id: garage
+    # Indoor (Ezviz) camera - HIGHER threshold (75%) because dogs cause false positives
+    # Trigger if person in any indoor zone
+    - platform: mqtt
+      topic: frigate/events
+      value_template: >
+        {{ value_json.type == 'new' and
+           value_json.after.camera == 'ezviz_indoor' and
+           value_json.after.label == 'person' and
+           value_json.after.score >= 0.75 and
+           (value_json.after.current_zones | default([])) | select('in', ['Front_Door_and_Stairs', 'Kitchen', 'Ground_Passage', 'TV_Room']) | list | length > 0 }}
+      id: indoor
+  condition:
+    # Dog mode must be ON
+    - condition: state
+      entity_id: input_boolean.dog_mode
+      state: "on"
+    # Throttle: max once per 60 seconds per camera
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 60 }}
+  action:
+    # Extract event data from Frigate MQTT payload
+    - variables:
+        event_id: "{{ trigger.payload_json.after.id }}"
+        frigate_camera: "{{ trigger.payload_json.after.camera }}"
+        detection_score: "{{ trigger.payload_json.after.score }}"
+        camera_name: >
+          {% if frigate_camera == 'front_door' %}Front Door
+          {% elif frigate_camera == 'backyard' %}Backyard
+          {% elif frigate_camera == 'wyze_garage' %}Garage
+          {% elif frigate_camera == 'ezviz_indoor' %}Indoor
+          {% else %}{{ frigate_camera }}{% endif %}
+        camera_entity: >
+          {% if frigate_camera == 'front_door' %}camera.front_door
+          {% elif frigate_camera == 'backyard' %}camera.backyard
+          {% elif frigate_camera == 'wyze_garage' %}camera.wyze_garage
+          {% elif frigate_camera == 'ezviz_indoor' %}camera.ezviz_indoor
+          {% else %}camera.{{ frigate_camera }}{% endif %}
+        snapshot_path: "/config/www/snapshots/dog_mode_{{ frigate_camera }}.jpg"
+        snapshot_url: "/local/snapshots/dog_mode_{{ frigate_camera }}.jpg"
+
+    # FIRST: Take snapshot and save to file
+    - service: camera.snapshot
+      target:
+        entity_id: "{{ camera_entity }}"
+      data:
+        filename: "{{ snapshot_path }}"
+
+    # Wait for Frigate face recognition to process (faster than Double Take)
+    - delay:
+        seconds: 5
+
+    # FACE RECOGNITION CHECK - Using Frigate native (sub_label contains recognized face)
+    - variables:
+        family_members: ['person1', 'person2', 'person3', 'person4']
+        # Check if sub_label from MQTT event matches a family member
+        sub_label: "{{ trigger.payload_json.after.sub_label | default('') | lower }}"
+        is_family_member: "{{ sub_label in family_members }}"
+        recognized_name: "{{ sub_label if is_family_member else '' }}"
+
+    # If family member recognized, log and exit (no alert needed)
+    - if:
+        - condition: template
+          value_template: "{{ is_family_member }}"
+      then:
+        - service: logbook.log
+          data:
+            name: "Dog Mode - Family Recognized"
+            message: "{{ recognized_name }} recognized on {{ camera_name }} camera via Frigate face recognition. No alert needed."
+        - stop: "Family member recognized via Frigate face recognition"
+
+    # AI VERIFICATION - Check if it's actually a person before alerting
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Dog Mode Person Verification"
+        instructions: >
+          CRITICAL: Dogs are home alone. Frigate detected "person" - VERIFY if this is correct.
+
+          You MUST start your response with exactly one of:
+          - "PERSON:" if you see an ACTUAL human being (intruder, visitor, delivery person)
+          - "DOG:" if what was detected is actually a dog (huskies standing upright often trigger false person detection)
+          - "SAFE:" if no person visible (pet, shadow, empty room, false detection)
+
+          This is the {{ camera_name }} camera. The house has dogs (including a husky) that sometimes
+          get misclassified as people when standing upright.
+
+          After the verdict, briefly describe what you see and the threat level.
+
+          Examples:
+          "PERSON: Unknown individual visible near the front door. Appears to be looking around."
+          "DOG: This is a husky standing on hind legs, NOT a person. False detection."
+          "SAFE: Only dogs visible in the room. No human present."
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: "media-source://media_source/local/snapshots/dog_mode_{{ frigate_camera }}.jpg"
+      response_variable: ai_verification
+
+    # ONLY send critical alert if AI confirms it's a PERSON
+    - choose:
+        # AI confirms PERSON - Send critical alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_verification.data is defined and
+                   (ai_verification.data | upper).startswith('PERSON') }}
+          sequence:
+            # CRITICAL ALERT with saved snapshot - BOTH PHONES
+            - service: notify.mobile_app_person1
+              data:
+                title: "🐕 DOG MODE: Person Verified!"
+                message: "{{ ai_verification.data if ai_verification.data is defined else camera_name ~ ' camera - Person confirmed!' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: "{{ snapshot_url }}"
+                  tag: dog_mode_alert_{{ frigate_camera }}
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+                    - action: "DISABLE_DOG_MODE"
+                      title: "Disable Dog Mode"
+            - service: notify.mobile_app_person2
+              data:
+                title: "🐕 DOG MODE: Person Verified!"
+                message: "{{ ai_verification.data if ai_verification.data is defined else camera_name ~ ' camera - Person confirmed!' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: "{{ snapshot_url }}"
+                  tag: dog_mode_alert_{{ frigate_camera }}
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+                    - action: "DISABLE_DOG_MODE"
+                      title: "Disable Dog Mode"
+
+            # AUTO-ARM AWAY if neither Person1 nor Person2 is on WiFi
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{ states('sensor.person1_ssid') in ['Not Connected', 'unavailable', 'unknown'] and
+                           states('sensor.person2_ssid') in ['Not Connected', 'unavailable', 'unknown'] }}
+                    # Only arm if not already armed
+                    - condition: not
+                      conditions:
+                        - condition: state
+                          entity_id: alarm_control_panel.alarm_partition_1
+                          state: "armed_away"
+                  sequence:
+                    - service: alarm_control_panel.alarm_arm_away
+                      target:
+                        entity_id: alarm_control_panel.alarm_partition_1
+                      data:
+                        code: !secret dsc_master_code
+                    - service: notify.mobile_app_person1
+                      data:
+                        title: "🚨 AUTO-ARMED: Nobody Home!"
+                        message: "Person verified while dogs alone & no one on WiFi. House armed AWAY."
+                        data:
+                          push:
+                            sound:
+                              name: default
+                              critical: 1
+                              volume: 1.0
+                            interruption-level: critical
+                          tag: dog_mode_auto_arm
+                    - service: notify.mobile_app_person2
+                      data:
+                        title: "🚨 AUTO-ARMED: Nobody Home!"
+                        message: "Person verified while dogs alone & no one on WiFi. House armed AWAY."
+                        data:
+                          push:
+                            sound:
+                              name: default
+                              critical: 1
+                              volume: 1.0
+                            interruption-level: critical
+                          tag: dog_mode_auto_arm
+
+        # AI says DOG or SAFE - Log false positive, no alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_verification.data is defined and
+                   ((ai_verification.data | upper).startswith('DOG') or
+                    (ai_verification.data | upper).startswith('SAFE')) }}
+          sequence:
+            - service: logbook.log
+              data:
+                name: "Dog Mode"
+                message: "False positive filtered: {{ ai_verification.data }}"
+                entity_id: "{{ camera_entity }}"
+
+      # AI failed or unclear - Send warning (not critical) to be safe
+      default:
+        - service: notify.mobile_app_person1
+          data:
+            title: "⚠️ Dog Mode: Unverified Detection"
+            message: "{{ camera_name }} - Frigate detected person ({{ (detection_score * 100) | round }}%) but AI verification failed. Check cameras."
+            data:
+              push:
+                interruption-level: time-sensitive
+              image: "{{ snapshot_url }}"
+              tag: dog_mode_unverified_{{ frigate_camera }}
+              actions:
+                - action: "VIEW_CAMERAS"
+                  title: "View Cameras"
+                - action: "DISABLE_DOG_MODE"
+                  title: "Disable Dog Mode"
+
+# Handle notification action - Disable Dog Mode
+- id: dog_mode_handle_disable_action
+  alias: "Dog Mode: Handle Disable Action"
+  description: "Handle DISABLE_DOG_MODE action from notification"
+  mode: single
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: "DISABLE_DOG_MODE"
+  action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.dog_mode
+    - service: notify.mobile_app_person1
+      data:
+        title: "✅ Dog Mode Disabled"
+        message: "Person detection alerts turned off"
+
+# ----------------------------------------------
+# DOG MODE: BLINK CAMERA INTEGRATION
+# Extends dog mode to Blink cameras for full coverage
+# Uses same AI verification pattern as Frigate cameras
+# ----------------------------------------------
+
+- id: dog_mode_blink_motion
+  alias: "Dog Mode: Blink Camera Motion"
+  description: "AI-verified person detection from Blink cameras when dogs home alone"
+  mode: parallel
+  max: 6
+  trigger:
+    # Interior cameras
+    - platform: state
+      entity_id: binary_sensor.tvcam_motion
+      to: "on"
+      id: tvcam
+    - platform: state
+      entity_id: binary_sensor.kitchencam_motion
+      to: "on"
+      id: kitchencam
+    - platform: state
+      entity_id: binary_sensor.scullery_motion
+      to: "on"
+      id: scullery
+    - platform: state
+      entity_id: binary_sensor.upstairscam_motion
+      to: "on"
+      id: upstairscam
+    # Perimeter cameras
+    - platform: state
+      entity_id: binary_sensor.poolcam_motion
+      to: "on"
+      id: poolcam
+    - platform: state
+      entity_id: binary_sensor.garagecam_motion
+      to: "on"
+      id: garagecam
+  condition:
+    # Dog mode must be ON
+    - condition: state
+      entity_id: input_boolean.dog_mode
+      state: "on"
+    # Throttle: max once per 90 seconds (battery conscious)
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 90 }}
+  variables:
+    camera_map:
+      tvcam: { camera: "camera.tvcam", name: "TV Room (Blink)", file: "blink_dog_tvcam.jpg" }
+      kitchencam: { camera: "camera.kitchencam", name: "Kitchen (Blink)", file: "blink_dog_kitchencam.jpg" }
+      scullery: { camera: "camera.scullery", name: "Scullery (Blink)", file: "blink_dog_scullery.jpg" }
+      upstairscam: { camera: "camera.upstairscam", name: "Upstairs (Blink)", file: "blink_dog_upstairscam.jpg" }
+      poolcam: { camera: "camera.poolcam", name: "Pool (Blink)", file: "blink_dog_poolcam.jpg" }
+      garagecam: { camera: "camera.garagecam", name: "Garage (Blink)", file: "blink_dog_garagecam.jpg" }
+    camera_entity: "{{ camera_map[trigger.id].camera }}"
+    camera_name: "{{ camera_map[trigger.id].name }}"
+    snapshot_file: "{{ camera_map[trigger.id].file }}"
+    snapshot_path: "/config/www/snapshots/{{ snapshot_file }}"
+    snapshot_url: "/local/snapshots/{{ snapshot_file }}"
+  action:
+    # Capture snapshot from Blink camera
+    - service: camera.snapshot
+      target:
+        entity_id: "{{ camera_entity }}"
+      data:
+        filename: "{{ snapshot_path }}"
+
+    # Wait for snapshot to save
+    - delay:
+        seconds: 3
+
+    # AI VERIFICATION - Same pattern as Frigate dog mode
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Dog Mode Blink Person Verification"
+        instructions: >
+          CRITICAL: Dogs are home alone. Blink camera detected motion - VERIFY if a person is present.
+
+          You MUST start your response with exactly one of:
+          - "PERSON:" if you see an ACTUAL human being (intruder, visitor, delivery person)
+          - "DOG:" if what you see is actually a dog (no person visible)
+          - "SAFE:" if no person visible (pet, shadow, empty room, false detection)
+
+          This is the {{ camera_name }} camera. The house has dogs that may trigger motion.
+
+          After the verdict, briefly describe what you see and the threat level.
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: "media-source://media_source/local/snapshots/{{ snapshot_file }}"
+      response_variable: ai_verification
+
+    # Route based on AI verdict
+    - choose:
+        # AI confirms PERSON - Critical alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_verification.data is defined and
+                   (ai_verification.data | upper).startswith('PERSON') }}
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "🐕 DOG MODE: Person at {{ camera_name }}!"
+                message: "{{ ai_verification.data if ai_verification.data is defined else 'Person confirmed!' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: "{{ snapshot_url }}"
+                  tag: "dog_mode_blink_{{ trigger.id }}"
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+                    - action: "DISABLE_DOG_MODE"
+                      title: "Disable Dog Mode"
+            - service: notify.mobile_app_person2
+              data:
+                title: "🐕 DOG MODE: Person at {{ camera_name }}!"
+                message: "{{ ai_verification.data if ai_verification.data is defined else 'Person confirmed!' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: "{{ snapshot_url }}"
+                  tag: "dog_mode_blink_{{ trigger.id }}"
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+                    - action: "DISABLE_DOG_MODE"
+                      title: "Disable Dog Mode"
+
+            # Auto-arm if neither person on WiFi
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{ states('sensor.person1_ssid') in ['Not Connected', 'unavailable', 'unknown'] and
+                           states('sensor.person2_ssid') in ['Not Connected', 'unavailable', 'unknown'] }}
+                    - condition: not
+                      conditions:
+                        - condition: state
+                          entity_id: alarm_control_panel.alarm_partition_1
+                          state: "armed_away"
+                  sequence:
+                    - service: alarm_control_panel.alarm_arm_away
+                      target:
+                        entity_id: alarm_control_panel.alarm_partition_1
+                      data:
+                        code: !secret dsc_master_code
+                    - service: notify.mobile_app_person1
+                      data:
+                        title: "🚨 AUTO-ARMED: Blink Person Detected!"
+                        message: "Person verified at {{ camera_name }} while dogs alone. House armed AWAY."
+                        data:
+                          push:
+                            sound:
+                              name: default
+                              critical: 1
+                              volume: 1.0
+                            interruption-level: critical
+
+        # DOG or SAFE - Log only, no alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_verification.data is defined and
+                   ((ai_verification.data | upper).startswith('DOG') or
+                    (ai_verification.data | upper).startswith('SAFE')) }}
+          sequence:
+            - service: logbook.log
+              data:
+                name: "Dog Mode (Blink)"
+                message: "{{ camera_name }}: {{ ai_verification.data }}"
+                entity_id: "{{ camera_entity }}"
+
+      # AI failed - Send warning
+      default:
+        - service: notify.mobile_app_person1
+          data:
+            title: "⚠️ Dog Mode: Blink Motion"
+            message: "{{ camera_name }} - Motion detected but AI verification failed. Check cameras."
+            data:
+              push:
+                interruption-level: time-sensitive
+              image: "{{ snapshot_url }}"
+              tag: "dog_mode_blink_unverified_{{ trigger.id }}"
+              actions:
+                - action: "VIEW_CAMERAS"
+                  title: "View Cameras"
+
+# ============================================
+# BLINK CAMERA SECURITY INTEGRATION
+# Battery-conscious design - only active when armed
+# ============================================
+
+# ----------------------------------------------
+# BLINK ARM/DISARM SYNC WITH HOME ALARM
+# Saves battery by only arming when needed
+# ----------------------------------------------
+
+- id: blink_sync_arm_with_alarm
+  alias: "Blink: Sync Arm State with Home Alarm"
+  description: "Arm Blink cameras when alarm armed, disarm when alarm disarmed"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarm_partition_1
+      to: "armed_away"
+      id: arm_away
+    - platform: state
+      entity_id: alarm_control_panel.alarm_partition_1
+      to: "armed_home"
+      id: arm_stay
+    - platform: state
+      entity_id: alarm_control_panel.alarm_partition_1
+      to: "disarmed"
+      id: disarm
+  action:
+    - choose:
+        # ARMED AWAY - Arm all Blink cameras
+        - conditions:
+            - condition: trigger
+              id: arm_away
+          sequence:
+            - service: alarm_control_panel.alarm_arm_away
+              target:
+                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+            - service: logbook.log
+              data:
+                name: "Blink Security"
+                message: "All Blink cameras armed (away mode)"
+                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+
+        # ARMED STAY - Arm all Blink cameras (same as away)
+        # Full security coverage when armed_home
+        - conditions:
+            - condition: trigger
+              id: arm_stay
+          sequence:
+            - service: alarm_control_panel.alarm_arm_away
+              target:
+                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+            - service: logbook.log
+              data:
+                name: "Blink Security"
+                message: "All Blink cameras armed (stay mode)"
+                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+
+        # DISARMED - Disarm all Blink cameras (save battery)
+        - conditions:
+            - condition: trigger
+              id: disarm
+          sequence:
+            - service: alarm_control_panel.alarm_disarm
+              target:
+                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+            - service: logbook.log
+              data:
+                name: "Blink Security"
+                message: "All Blink cameras disarmed (saving battery)"
+                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+
+# ----------------------------------------------
+# BLINK PERIMETER MOTION - POOL CAMERA
+# Outdoor camera, motion-triggered AI analysis
+# ----------------------------------------------
+
+- id: blink_motion_poolcam
+  alias: "Blink: Pool Camera Motion Detection"
+  description: "AI-analyze pool camera motion when armed"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.poolcam_motion
+      to: "on"
+  condition:
+    # Only when armed OR cameras manually armed
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_away"
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_home"
+        - condition: state
+          entity_id: input_boolean.cameras_armed
+          state: "on"
+    # Throttle: max once per 2 minutes (battery saving)
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 120 }}
+  action:
+    - service: camera.snapshot
+      target:
+        entity_id: camera.poolcam
+      data:
+        filename: /config/www/snapshots/blink_poolcam.jpg
+    - delay:
+        seconds: 2
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Pool Area Security Analysis"
+        instructions: >
+          SECURITY ANALYSIS: Motion detected at pool/backyard area.
+
+          Respond with one of:
+          - "THREAT:" if you see an unknown person, intruder, or suspicious activity
+          - "ACTIVITY:" if you see normal activity (kids playing, family, gardener)
+          - "SAFE:" if nothing concerning (animal, shadow, wind movement)
+
+          After the verdict, briefly describe what you see (1-2 sentences).
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: media-source://media_source/local/snapshots/blink_poolcam.jpg
+      response_variable: ai_analysis
+
+    - choose:
+        # THREAT - Critical alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('THREAT') }}
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "🚨 THREAT: Pool Area"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Motion detected at pool' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: /local/snapshots/blink_poolcam.jpg
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+            - service: notify.mobile_app_person2
+              data:
+                title: "🚨 THREAT: Pool Area"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Motion detected at pool' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: /local/snapshots/blink_poolcam.jpg
+
+        # ACTIVITY - Warning alert (only in armed_away)
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('ACTIVITY') }}
+            - condition: state
+              entity_id: alarm_control_panel.alarm_partition_1
+              state: "armed_away"
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "⚠️ Activity: Pool Area"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Activity detected at pool' }}"
+                data:
+                  image: /local/snapshots/blink_poolcam.jpg
+                  tag: blink_pool_activity
+
+# ----------------------------------------------
+# BLINK INTERIOR MOTION - ARMED AWAY ONLY
+# Battery-conscious: only triggers in armed_away mode
+# Covers: tvcam, kitchencam, scullery, upstairscam
+# ----------------------------------------------
+
+- id: blink_motion_interior
+  alias: "Blink: Interior Camera Motion (Armed Away)"
+  description: "Critical alert for interior motion when armed away"
+  mode: parallel
+  max: 4
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.tvcam_motion
+      to: "on"
+      id: tvcam
+    - platform: state
+      entity_id: binary_sensor.kitchencam_motion
+      to: "on"
+      id: kitchencam
+    - platform: state
+      entity_id: binary_sensor.scullery_motion
+      to: "on"
+      id: scullery
+    - platform: state
+      entity_id: binary_sensor.upstairscam_motion
+      to: "on"
+      id: upstairscam
+  condition:
+    # ONLY when armed away (interior should be empty)
+    - condition: state
+      entity_id: alarm_control_panel.alarm_partition_1
+      state: "armed_away"
+    # Skip if dog mode (handled separately)
+    - condition: state
+      entity_id: input_boolean.dog_mode
+      state: "off"
+    # Skip if guest mode (expected activity)
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: "off"
+  variables:
+    camera_map:
+      tvcam: { camera: "camera.tvcam", name: "TV Room", file: "blink_tvcam.jpg" }
+      kitchencam: { camera: "camera.kitchencam", name: "Kitchen", file: "blink_kitchencam.jpg" }
+      scullery: { camera: "camera.scullery", name: "Scullery", file: "blink_scullery.jpg" }
+      upstairscam: { camera: "camera.upstairscam", name: "Upstairs", file: "blink_upstairscam.jpg" }
+    camera_entity: "{{ camera_map[trigger.id].camera }}"
+    camera_name: "{{ camera_map[trigger.id].name }}"
+    snapshot_file: "{{ camera_map[trigger.id].file }}"
+  action:
+    - service: camera.snapshot
+      target:
+        entity_id: "{{ camera_entity }}"
+      data:
+        filename: "/config/www/snapshots/{{ snapshot_file }}"
+    - delay:
+        seconds: 2
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Interior Intruder Analysis"
+        instructions: >
+          CRITICAL SECURITY: Motion detected INSIDE house while armed away.
+          Location: {{ camera_name }}
+
+          You MUST start with:
+          - "THREAT:" if you see ANY person or human activity
+          - "SAFE:" if no person visible (pet, shadow, false detection)
+
+          Brief explanation after verdict.
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: "media-source://media_source/local/snapshots/{{ snapshot_file }}"
+      response_variable: ai_analysis
+
+    - choose:
+        # THREAT detected - Critical alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('THREAT') }}
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "🚨 INTRUDER: {{ camera_name }}"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Person detected inside!' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: "/local/snapshots/{{ snapshot_file }}"
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+            - service: notify.mobile_app_person2
+              data:
+                title: "🚨 INTRUDER: {{ camera_name }}"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Person detected inside!' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: "/local/snapshots/{{ snapshot_file }}"
+
+        # SAFE - Log only, no notification
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('SAFE') }}
+          sequence:
+            - service: logbook.log
+              data:
+                name: "Blink Security"
+                message: "{{ camera_name }}: {{ ai_analysis.data }}"
+                entity_id: "{{ camera_entity }}"
+
+# ----------------------------------------------
+# BLINK GARAGE CAMERA - ENTRY POINT MONITORING
+# Supplements Wyze garage camera in Frigate
+# ----------------------------------------------
+
+- id: blink_motion_garagecam
+  alias: "Blink: Garage Camera Motion"
+  description: "Garage entry point monitoring when armed"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.garagecam_motion
+      to: "on"
+  condition:
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_away"
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_home"
+        - condition: state
+          entity_id: input_boolean.cameras_armed
+          state: "on"
+    # Throttle: 90 seconds
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 90 }}
+  action:
+    - service: camera.snapshot
+      target:
+        entity_id: camera.garagecam
+      data:
+        filename: /config/www/snapshots/blink_garagecam.jpg
+    - delay:
+        seconds: 2
+    - service: ai_task.generate_data
+      continue_on_error: true
+      data:
+        task_name: "Garage Security Analysis"
+        instructions: >
+          SECURITY ANALYSIS: Motion in garage area.
+
+          Respond with:
+          - "THREAT:" if unknown person or suspicious activity
+          - "ACTIVITY:" if normal activity (car, family member)
+          - "SAFE:" if nothing concerning
+
+          Brief description after verdict.
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: media-source://media_source/local/snapshots/blink_garagecam.jpg
+      response_variable: ai_analysis
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('THREAT') }}
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "🚨 THREAT: Garage"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Motion in garage' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: /local/snapshots/blink_garagecam.jpg
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+            - service: notify.mobile_app_person2
+              data:
+                title: "🚨 THREAT: Garage"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Motion in garage' }}"
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: /local/snapshots/blink_garagecam.jpg
+
+# ============================================
+# AUTO-ARM/DISARM SYSTEM
+# ============================================
+
+# NOTE: Old "security_auto_arm_nobody_home" removed - was using unreliable device_tracker
+# Replaced by "auto_arm_downstairs_inactivity" at end of file which uses:
+# - 65 min inactivity check (zones, camera, lights)
+# - Before 20:00: requires both person.nico and person.tatiana away
+# - After 20:00: ignores away check (could be in bed)
+
+# Auto-disarm when family arrives (also disables dog mode)
+- id: security_auto_disarm_arrival
+  alias: "Security: Auto-Disarm on Arrival"
+  description: "Automatically disarm alarm and dog mode when family member arrives"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: device_tracker.nico
+      to: "home"
+      id: nico
+    - platform: state
+      entity_id: device_tracker.tatiana_iphone
+      to: "home"
+      id: tatiana
+  condition:
+    # Must be armed OR dog mode active
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_away"
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_home"
+        - condition: state
+          entity_id: input_boolean.dog_mode
+          state: "on"
+  variables:
+    person_name: "{{ 'Nico' if trigger.id == 'person1' else 'Tatiana' }}"
+    was_armed: "{{ states('alarm_control_panel.alarm_partition_1') in ['armed_away', 'armed_home'] }}"
+    was_dog_mode: "{{ is_state('input_boolean.dog_mode', 'on') }}"
+  action:
+    # Disarm alarm if armed
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ was_armed }}"
+          sequence:
+            - service: alarm_control_panel.alarm_disarm
+              target:
+                entity_id: alarm_control_panel.alarm_partition_1
+              data:
+                code: !secret dsc_master_code
+
+    # Disable dog mode if active
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ was_dog_mode }}"
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.dog_mode
+
+    # Build notification message
+    - variables:
+        status_msg: >
+          {% set msgs = [] %}
+          {% if was_armed %}{% set msgs = msgs + ['Alarm disarmed'] %}{% endif %}
+          {% if was_dog_mode %}{% set msgs = msgs + ['Dog mode disabled'] %}{% endif %}
+          {{ msgs | join(', ') }}
+
+    # Notify both phones
+    - service: notify.mobile_app_person1
+      data:
+        title: "🏠 Welcome Home, {{ person_name }}!"
+        message: "{{ status_msg }}"
+        data:
+          tag: auto_disarm
+          push:
+            sound: default
+    - service: notify.mobile_app_person2
+      data:
+        title: "🏠 Welcome Home, {{ person_name }}!"
+        message: "{{ status_msg }}"
+        data:
+          tag: auto_disarm
+          push:
+            sound: default
+
+# ============================================
+# NIGHT MODE AUTOMATION
+# Elevated security 22:00 - 06:00
+# ============================================
+
+- id: security_night_mode_on
+  alias: "Security: Enable Night Mode"
+  description: "Activate night mode at 22:00"
+  trigger:
+    - platform: time
+      at: "22:00:00"
+  action:
+    - service: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.security_night_mode
+    - service: logbook.log
+      data:
+        name: "Security"
+        message: "Night mode activated - elevated security"
+
+- id: security_night_mode_off
+  alias: "Security: Disable Night Mode"
+  description: "Deactivate night mode at 06:00"
+  trigger:
+    - platform: time
+      at: "06:00:00"
+  action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.security_night_mode
+    - service: logbook.log
+      data:
+        name: "Security"
+        message: "Night mode deactivated - normal security"
+
+# Night mode perimeter check
+- id: security_night_perimeter_alert
+  alias: "Security: Night Perimeter Motion"
+  description: "Alert on any perimeter motion during night (22:00-06:00)"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.poolcam_motion
+      to: "on"
+      id: pool
+  condition:
+    - condition: state
+      entity_id: input_boolean.security_night_mode
+      state: "on"
+    # Throttle
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 300 }}
+  action:
+    - service: camera.snapshot
+      target:
+        entity_id: camera.poolcam
+      data:
+        filename: /config/www/snapshots/night_perimeter.jpg
+    - delay:
+        seconds: 2
+    - service: notify.mobile_app_person1
+      data:
+        title: "🌙 Night Activity: Perimeter"
+        message: "Motion detected during night hours"
+        data:
+          image: /local/snapshots/night_perimeter.jpg
+          tag: night_perimeter
+
+# ============================================
+# BLINK CLIP DOWNLOAD & AI VIDEO ANALYSIS
+# Non-battery cameras: full video analysis
+# ============================================
+
+# Download and analyze Blink motion clips (powered cameras only)
+- id: blink_download_motion_clip
+  alias: "Blink: Download Motion Clip for AI Analysis"
+  description: "Download motion clips from non-battery Blink cameras for video AI analysis"
+  mode: parallel
+  max: 3
+  trigger:
+    # Front door Blink camera (powered)
+    - platform: state
+      entity_id: binary_sensor.front_door_2_motion
+      to: "on"
+      id: front_door_2
+    # Garage Blink camera (powered)
+    - platform: state
+      entity_id: binary_sensor.garagecam_motion
+      to: "on"
+      id: garagecam
+  condition:
+    # Only when armed OR cameras manually armed
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_away"
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_home"
+        - condition: state
+          entity_id: input_boolean.cameras_armed
+          state: "on"
+    # Throttle: max once per 3 minutes per camera
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 180 }}
+  variables:
+    camera_map:
+      front_door_2: { camera: "camera.front_door_2", name: "Front Door", file_prefix: "front_door" }
+      garagecam: { camera: "camera.garagecam", name: "Garage", file_prefix: "garage" }
+    camera_entity: "{{ camera_map[trigger.id].camera }}"
+    camera_name: "{{ camera_map[trigger.id].name }}"
+    file_prefix: "{{ camera_map[trigger.id].file_prefix }}"
+    timestamp: "{{ now().strftime('%Y%m%d_%H%M%S') }}"
+    clip_filename: "/config/www/blink_clips/{{ file_prefix }}_{{ timestamp }}.mp4"
+  action:
+    # Wait for Blink to finish uploading clip to cloud (15 seconds typical)
+    - delay:
+        seconds: 20
+
+    # Download the last motion video clip
+    - service: blink.save_video
+      target:
+        entity_id: "{{ camera_entity }}"
+      data:
+        filename: "{{ clip_filename }}"
+
+    # Wait for download to complete
+    - delay:
+        seconds: 5
+
+    # Also take a current snapshot for immediate preview
+    - service: camera.snapshot
+      target:
+        entity_id: "{{ camera_entity }}"
+      data:
+        filename: "/config/www/snapshots/blink_{{ file_prefix }}_latest.jpg"
+
+    - delay:
+        seconds: 1
+
+    # AI analysis with video context
+    - service: ai_task.generate_data
+      data:
+        task_name: "Blink Video Analysis - {{ camera_name }}"
+        instructions: >
+          SECURITY VIDEO ANALYSIS: Motion clip from {{ camera_name }} camera.
+          This is a Blink motion-triggered recording.
+
+          You MUST start with one of:
+          - "THREAT:" if you see an unknown person, intruder, or suspicious activity
+          - "DELIVERY:" if you see a delivery person (uniform, package, expected behavior)
+          - "VISITOR:" if you see someone who appears to be a legitimate visitor
+          - "ACTIVITY:" if you see family members or expected activity
+          - "SAFE:" if nothing concerning (animal, shadow, wind, empty frame)
+
+          After the verdict, describe:
+          1. What/who is visible
+          2. Their behavior and movement
+          3. Any identifying features (clothing, vehicle, packages)
+          4. Time visible in frame
+
+          Be concise but thorough - this is for security monitoring.
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: "media-source://media_source/local/snapshots/blink_{{ file_prefix }}_latest.jpg"
+      response_variable: ai_analysis
+      continue_on_error: true
+
+    - choose:
+        # THREAT - Critical alert with video link
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('THREAT') }}
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "🚨 THREAT: {{ camera_name }}"
+                message: >
+                  {{ ai_analysis.data if ai_analysis.data is defined else 'Suspicious activity detected' }}
+                  Video saved: {{ file_prefix }}_{{ timestamp }}.mp4
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: "/local/snapshots/blink_{{ file_prefix }}_latest.jpg"
+                  actions:
+                    - action: "VIEW_CAMERAS"
+                      title: "View Cameras"
+                    - action: "CALL_SECURITY"
+                      title: "Call Security"
+                      uri: "tel:10111"
+            - service: notify.mobile_app_person2
+              data:
+                title: "🚨 THREAT: {{ camera_name }}"
+                message: >
+                  {{ ai_analysis.data if ai_analysis.data is defined else 'Suspicious activity detected' }}
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  image: "/local/snapshots/blink_{{ file_prefix }}_latest.jpg"
+
+        # DELIVERY - Info alert
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('DELIVERY') }}
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "📦 Delivery: {{ camera_name }}"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Delivery person detected' }}"
+                data:
+                  image: "/local/snapshots/blink_{{ file_prefix }}_latest.jpg"
+                  tag: "blink_delivery_{{ file_prefix }}"
+
+        # VISITOR - Warning alert if armed away
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('VISITOR') }}
+            - condition: state
+              entity_id: alarm_control_panel.alarm_partition_1
+              state: "armed_away"
+          sequence:
+            - service: notify.mobile_app_person1
+              data:
+                title: "🚪 Visitor: {{ camera_name }}"
+                message: "{{ ai_analysis.data if ai_analysis.data is defined else 'Visitor at door' }}"
+                data:
+                  push:
+                    interruption-level: time-sensitive
+                  image: "/local/snapshots/blink_{{ file_prefix }}_latest.jpg"
+                  tag: "blink_visitor_{{ file_prefix }}"
+
+        # ACTIVITY - Log only (family/expected)
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ai_analysis.data is defined and
+                   (ai_analysis.data | upper).startswith('ACTIVITY') }}
+          sequence:
+            - service: logbook.log
+              data:
+                name: "Blink {{ camera_name }}"
+                message: "{{ ai_analysis.data }}"
+                entity_id: "{{ camera_entity }}"
+
+        # SAFE or unknown - Log only
+      default:
+        - service: logbook.log
+          data:
+            name: "Blink {{ camera_name }}"
+            message: "Motion clip saved: {{ file_prefix }}_{{ timestamp }}.mp4 - {{ ai_analysis.data if ai_analysis.data is defined else 'No AI analysis' }}"
+            entity_id: "{{ camera_entity }}"
+
+# Cleanup old Blink clips (keep last 7 days)
+- id: blink_cleanup_old_clips
+  alias: "Blink: Cleanup Old Motion Clips"
+  description: "Remove Blink clips older than 7 days to save disk space"
+  trigger:
+    - platform: time
+      at: "03:00:00"
+  action:
+    - service: shell_command.cleanup_blink_clips
+      data: {}
+
+# ============================================
+# TELEGRAM FAMILY GROUP NOTIFICATIONS
+# ============================================
+# Sends critical security alerts to family Telegram group
+# Triggers when: cameras_armed OR dog_mode is active
+# Also sends during armed_away mode
+
+# ============================================
+# TELEGRAM AUTOMATIONS - DISABLED (on hold)
+# ============================================
+# Uncomment when ready to enable Telegram notifications
+# Requires: telegram_family_chat_id in secrets.yaml
+
+# # Forward all THREAT alerts to Telegram Family Group
+# - id: telegram_threat_alert
+#   alias: "Telegram: Forward THREAT Alerts"
+#   description: "Send all critical THREAT alerts to family Telegram group"
+#   mode: parallel
+#   max: 10
+#   trigger:
+#     # Frigate cameras
+#     - platform: mqtt
+#       topic: frigate/events
+#       value_template: >
+#         {{ value_json.type == 'new' and
+#            value_json.after.label == 'person' and
+#            value_json.after.score >= 0.65 }}
+#       id: frigate_person
+#     # Blink cameras
+#     - platform: state
+#       entity_id:
+#         - binary_sensor.front_door_2_motion
+#         - binary_sensor.garagecam_motion
+#         - binary_sensor.poolcam_motion
+#         - binary_sensor.tvcam_motion
+#         - binary_sensor.kitchencam_motion
+#         - binary_sensor.scullery_motion
+#         - binary_sensor.upstairscam_motion
+#       to: "on"
+#       id: blink_motion
+#   condition:
+#     - condition: or
+#       conditions:
+#         # Dog mode - always alert
+#         - condition: state
+#           entity_id: input_boolean.dog_mode
+#           state: "on"
+#         # Cameras armed
+#         - condition: state
+#           entity_id: input_boolean.cameras_armed
+#           state: "on"
+#         # Alarm armed away
+#         - condition: state
+#           entity_id: alarm_control_panel.alarm_partition_1
+#           state: "armed_away"
+#         # Alarm armed home (stay)
+#         - condition: state
+#           entity_id: alarm_control_panel.alarm_partition_1
+#           state: "armed_home"
+#     # Throttle: max once per 60 seconds
+#     - condition: template
+#       value_template: >
+#         {{ state_attr(this.entity_id, 'last_triggered') is none or
+#            (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 60 }}
+#   action:
+#     - variables:
+#         camera_name: >
+#           {% if trigger.id == 'frigate_person' %}
+#             {{ trigger.payload_json.after.camera | replace('_', ' ') | title }}
+#           {% else %}
+#             {{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id) }}
+#           {% endif %}
+#         mode_active: >
+#           {% if is_state('input_boolean.dog_mode', 'on') %}DOG MODE
+#           {% elif is_state('input_boolean.cameras_armed', 'on') %}ARMED
+#           {% else %}{{ states('alarm_control_panel.alarm_partition_1') | upper }}{% endif %}
+#     - service: notify.telegram_family
+#       data:
+#         title: "🚨 MOTION ALERT"
+#         message: |
+#           *{{ mode_active }}*: Motion detected!
+#           📍 Camera: {{ camera_name }}
+#           🕐 Time: {{ now().strftime('%H:%M:%S') }}
+#
+#           Check cameras immediately.
+
+# # Dog Mode specific Telegram alert (person verified by AI)
+# - id: telegram_dog_mode_person_alert
+#   alias: "Telegram: Dog Mode Person Alert"
+#   description: "Send critical alert to Telegram when person detected in dog mode"
+#   mode: single
+#   trigger:
+#     - platform: event
+#       event_type: call_service
+#       event_data:
+#         domain: notify
+#         service: mobile_app_person1
+#   condition:
+#     - condition: state
+#       entity_id: input_boolean.dog_mode
+#       state: "on"
+#     - condition: template
+#       value_template: >
+#         {{ 'THREAT' in (trigger.event.data.service_data.title | default('')) or
+#            'PERSON' in (trigger.event.data.service_data.title | default('') | upper) }}
+#   action:
+#     - service: notify.telegram_family
+#       data:
+#         title: "🚨 DOG MODE ALERT"
+#         message: |
+#           {{ trigger.event.data.service_data.title }}
+#
+#           {{ trigger.event.data.service_data.message }}
+#
+#           ⚠️ *Dogs are home alone - possible intruder!*
+
+# # Gate/Garage opened notification
+# - id: telegram_access_notification
+#   alias: "Telegram: Gate/Garage Access Alert"
+#   description: "Notify family group when gate or garage is opened while armed"
+#   mode: queued
+#   trigger:
+#     - platform: state
+#       entity_id: cover.gate_switch_door_1
+#       to: "open"
+#       id: gate
+#     - platform: state
+#       entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+#       to: "open"
+#       id: garage
+#   condition:
+#     - condition: or
+#       conditions:
+#         - condition: state
+#           entity_id: input_boolean.cameras_armed
+#           state: "on"
+#         - condition: state
+#           entity_id: input_boolean.dog_mode
+#           state: "on"
+#         - condition: state
+#           entity_id: alarm_control_panel.alarm_partition_1
+#           state: "armed_away"
+#   action:
+#     - service: notify.telegram_family
+#       data:
+#         title: "🚪 ACCESS ALERT"
+#         message: |
+#           {% if trigger.id == 'gate' %}🚗 *GATE* opened{% else %}🏠 *GARAGE* opened{% endif %}
+#           🕐 Time: {{ now().strftime('%H:%M:%S') }}
+#
+#           {% if is_state('input_boolean.dog_mode', 'on') %}⚠️ DOG MODE ACTIVE{% endif %}
+
+
+# ============================================
+# AUTO-RECOVERY: Gate Switch Power Cycle (Bulletproof)
+# ============================================
+# Multi-attempt recovery with escalating delays and critical phone alerts
+# Monitors: cover.gate_switch_door_1 (Tuya gate control)
+# Power cycles: switch.sonoff_100258f6fb_1 (GateRemotePower outlet)
+
+- id: gate_switch_auto_recovery
+  alias: "Auto-Recovery: Gate Switch Power Cycle"
+  description: "Multi-attempt power cycle with escalating delays and phone alerts"
+  mode: single
+  trigger:
+    # Trigger on state change to unavailable
+    - platform: state
+      entity_id: cover.gate_switch_door_1
+      to: "unavailable"
+      for:
+        seconds: 10
+    # Also check on HA startup in case gate was already unavailable
+    - platform: homeassistant
+      event: start
+    # Periodic check every 5 minutes for stuck unavailable state
+    - platform: time_pattern
+      minutes: "/5"
+  condition:
+    # Only proceed if gate is actually unavailable
+    - condition: state
+      entity_id: cover.gate_switch_door_1
+      state: "unavailable"
+    # Rate limit - max once per 3 minutes
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 180 }}
+  action:
+    # === ATTEMPT 1 ===
+    - service: logbook.log
+      data:
+        name: "Gate Recovery"
+        message: "Attempt 1/3 - Power cycling gate remote"
+    - service: persistent_notification.create
+      data:
+        title: "Gate Switch Recovery"
+        message: "Gate switch unavailable. Starting recovery (attempt 1/3)..."
+        notification_id: gate_switch_recovery
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.sonoff_100258f6fb_1
+          - switch.sonoff_100258f6fb_2
+          - switch.sonoff_100258f6fb_3
+          - switch.sonoff_100258f6fb_4
+    - delay:
+        seconds: 15
+    - service: switch.turn_on
+      target:
+        entity_id:
+          - switch.sonoff_100258f6fb_1
+          - switch.sonoff_100258f6fb_2
+          - switch.sonoff_100258f6fb_3
+          - switch.sonoff_100258f6fb_4
+    - delay:
+        seconds: 75
+
+    # Check if recovered after attempt 1
+    - if:
+        - condition: not
+          conditions:
+            - condition: state
+              entity_id: cover.gate_switch_door_1
+              state: "unavailable"
+      then:
+        - service: persistent_notification.create
+          data:
+            title: "✓ Gate Switch Recovered"
+            message: "Gate switch is back online (recovered on attempt 1)."
+            notification_id: gate_switch_recovery
+        - service: logbook.log
+          data:
+            name: "Gate Recovery"
+            message: "SUCCESS on attempt 1"
+        - stop: "Recovered on first attempt"
+
+    # === ATTEMPT 2 ===
+    - service: logbook.log
+      data:
+        name: "Gate Recovery"
+        message: "Attempt 2/3 - First cycle failed, retrying with longer delay"
+    - service: persistent_notification.create
+      data:
+        title: "Gate Switch Recovery"
+        message: "First attempt failed. Retrying (attempt 2/3)..."
+        notification_id: gate_switch_recovery
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.sonoff_100258f6fb_1
+          - switch.sonoff_100258f6fb_2
+          - switch.sonoff_100258f6fb_3
+          - switch.sonoff_100258f6fb_4
+    - delay:
+        seconds: 20
+    - service: switch.turn_on
+      target:
+        entity_id:
+          - switch.sonoff_100258f6fb_1
+          - switch.sonoff_100258f6fb_2
+          - switch.sonoff_100258f6fb_3
+          - switch.sonoff_100258f6fb_4
+    - delay:
+        seconds: 90
+
+    # Check if recovered after attempt 2
+    - if:
+        - condition: not
+          conditions:
+            - condition: state
+              entity_id: cover.gate_switch_door_1
+              state: "unavailable"
+      then:
+        - service: persistent_notification.create
+          data:
+            title: "✓ Gate Switch Recovered"
+            message: "Gate switch is back online (recovered on attempt 2)."
+            notification_id: gate_switch_recovery
+        - service: logbook.log
+          data:
+            name: "Gate Recovery"
+            message: "SUCCESS on attempt 2"
+        - stop: "Recovered on second attempt"
+
+    # === ATTEMPT 3 (Final) ===
+    - service: logbook.log
+      data:
+        name: "Gate Recovery"
+        message: "Attempt 3/3 - FINAL attempt with extended delay"
+    - service: persistent_notification.create
+      data:
+        title: "⚠️ Gate Switch Recovery"
+        message: "Final recovery attempt (3/3)..."
+        notification_id: gate_switch_recovery
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.sonoff_100258f6fb_1
+          - switch.sonoff_100258f6fb_2
+          - switch.sonoff_100258f6fb_3
+          - switch.sonoff_100258f6fb_4
+    - delay:
+        seconds: 30
+    - service: switch.turn_on
+      target:
+        entity_id:
+          - switch.sonoff_100258f6fb_1
+          - switch.sonoff_100258f6fb_2
+          - switch.sonoff_100258f6fb_3
+          - switch.sonoff_100258f6fb_4
+    - delay:
+        seconds: 120
+
+    # === FINAL CHECK ===
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: cover.gate_switch_door_1
+              state: "unavailable"
+          sequence:
+            # CRITICAL ALERT - all attempts failed
+            - service: notify.mobile_app_person1
+              data:
+                title: "GATE OFFLINE"
+                message: "Gate switch failed to recover after 3 power cycles. Manual intervention required."
+                data:
+                  push:
+                    sound:
+                      name: default
+                      critical: 1
+                      volume: 1.0
+                    interruption-level: critical
+                  actions:
+                    - action: "MANUAL_GATE_POWER_CYCLE"
+                      title: "Retry Power Cycle"
+            - service: persistent_notification.create
+              data:
+                title: "GATE SWITCH RECOVERY FAILED"
+                message: "3 power cycles attempted. Device still unavailable. Check: Tuya cloud, WiFi, or physical device."
+                notification_id: gate_switch_recovery_critical
+            - service: logbook.log
+              data:
+                name: "Gate Recovery"
+                message: "FAILED - All 3 attempts exhausted, sent critical alert"
+      default:
+        - service: persistent_notification.create
+          data:
+            title: "✓ Gate Switch Recovered"
+            message: "Gate switch is back online (recovered on attempt 3)."
+            notification_id: gate_switch_recovery
+        - service: logbook.log
+          data:
+            name: "Gate Recovery"
+            message: "SUCCESS on attempt 3"
+
+# ============================================
+# AUTO-RECOVERY: Gate Camera (Amcrest) Monitoring
+# ============================================
+# Monitors Frigate camera fps for front_door and alerts if camera offline
+# Camera: Amcrest @ 192.168.68.201
+
+- id: gate_camera_monitor
+  alias: "Auto-Recovery: Gate Camera Monitor"
+  description: "Monitor front_door camera and alert if offline"
+  mode: single
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.front_door_camera_fps
+      below: 0.5
+      for:
+        minutes: 2
+    - platform: state
+      entity_id: sensor.front_door_camera_fps
+      to: "unavailable"
+      for:
+        minutes: 1
+  condition:
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 300 }}
+  action:
+    - service: logbook.log
+      data:
+        name: "Gate Camera"
+        message: "Front door camera appears offline (fps: {{ states('sensor.front_door_camera_fps') }})"
+    - service: persistent_notification.create
+      data:
+        title: "⚠️ Gate Camera Issue"
+        message: >
+          Front door camera (Amcrest @ 192.168.68.201) may be offline.
+          Current FPS: {{ states('sensor.front_door_camera_fps') }}
+          Last detection: {{ states('sensor.front_door_detection_fps') }}
+        notification_id: gate_camera_issue
+    # Wait and check if it recovers on its own
+    - delay:
+        minutes: 5
+    - if:
+        - condition: or
+          conditions:
+            - condition: numeric_state
+              entity_id: sensor.front_door_camera_fps
+              below: 0.5
+            - condition: state
+              entity_id: sensor.front_door_camera_fps
+              state: "unavailable"
+      then:
+        - service: notify.mobile_app_person1
+          data:
+            title: "GATE CAMERA OFFLINE"
+            message: "Front door camera has been offline for 5+ minutes. Check Amcrest @ 192.168.68.201"
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 0.8
+                interruption-level: time-sensitive
+
+# ============================================
+# ACTION HANDLER: Manual Gate Power Cycle from Phone
+# ============================================
+- id: gate_manual_power_cycle_action
+  alias: "Action: Manual Gate Power Cycle"
+  description: "Handle iOS action button to manually retry gate power cycle"
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: "MANUAL_GATE_POWER_CYCLE"
+  action:
+    - service: logbook.log
+      data:
+        name: "Gate Recovery"
+        message: "Manual power cycle triggered from phone"
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.sonoff_100258f6fb_1
+          - switch.sonoff_100258f6fb_2
+          - switch.sonoff_100258f6fb_3
+          - switch.sonoff_100258f6fb_4
+    - delay:
+        seconds: 30
+    - service: switch.turn_on
+      target:
+        entity_id:
+          - switch.sonoff_100258f6fb_1
+          - switch.sonoff_100258f6fb_2
+          - switch.sonoff_100258f6fb_3
+          - switch.sonoff_100258f6fb_4
+    - delay:
+        seconds: 90
+    - service: notify.mobile_app_person1
+      data:
+        title: "Gate Power Cycle Complete"
+        message: >
+          Manual power cycle finished.
+          Gate status: {{ states('cover.gate_switch_door_1') }}
+
+# ============================================
+# ENERGY ALERTS - Battery & Grid Monitoring
+# ============================================
+
+# Critical Alert: Battery Low (Below 30%)
+- id: energy_battery_low_critical
+  alias: "CRITICAL: Battery Level Low"
+  description: "Alert when battery drops below 30% - critical power situation"
+  mode: single
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.inverter_battery
+      below: 30
+      for:
+        minutes: 2
+  condition:
+    # Throttle: max once per 30 minutes
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 1800 }}
+  action:
+    - parallel:
+        - service: notify.mobile_app_person1
+          data:
+            title: "BATTERY LOW: {{ states('sensor.inverter_battery') }}%"
+            message: >
+              Battery is critically low.
+              Solar: {{ states('sensor.inverter_pv_power') }}W |
+              Grid: {{ states('sensor.inverter_grid_power') }}W |
+              Load: {{ states('sensor.inverter_load_power') }}W
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              actions:
+                - action: "VIEW_ENERGY"
+                  title: "View Power"
+        - service: notify.mobile_app_person2
+          data:
+            title: "BATTERY LOW: {{ states('sensor.inverter_battery') }}%"
+            message: >
+              Battery is critically low.
+              Solar: {{ states('sensor.inverter_pv_power') }}W |
+              Grid: {{ states('sensor.inverter_grid_power') }}W |
+              Load: {{ states('sensor.inverter_load_power') }}W
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+    - service: logbook.log
+      data:
+        name: "Energy Alert"
+        message: "Battery low alert triggered at {{ states('sensor.inverter_battery') }}%"
+
+# Critical Alert: Grid Power Disconnected
+- id: energy_grid_disconnected
+  alias: "CRITICAL: Grid Power Disconnected"
+  description: "Alert when grid power is disconnected (voltage drops or frequency is 0)"
+  mode: single
+  trigger:
+    # Trigger when grid voltage drops below 100V (normally ~230V)
+    - platform: numeric_state
+      entity_id: sensor.inverter_grid_l1_voltage
+      below: 100
+      for:
+        seconds: 30
+    # Trigger when grid frequency drops to 0 (no grid)
+    - platform: numeric_state
+      entity_id: sensor.inverter_grid_frequency
+      below: 45
+      for:
+        seconds: 30
+  condition:
+    # Throttle: max once per 10 minutes
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 600 }}
+  action:
+    - parallel:
+        - service: notify.mobile_app_person1
+          data:
+            title: "GRID POWER DISCONNECTED"
+            message: >
+              Grid power has been lost. Running on solar/battery.
+              Battery: {{ states('sensor.inverter_battery') }}% |
+              Solar: {{ states('sensor.inverter_pv_power') }}W |
+              Load: {{ states('sensor.inverter_load_power') }}W
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              actions:
+                - action: "VIEW_ENERGY"
+                  title: "View Power"
+        - service: notify.mobile_app_person2
+          data:
+            title: "GRID POWER DISCONNECTED"
+            message: >
+              Grid power has been lost. Running on solar/battery.
+              Battery: {{ states('sensor.inverter_battery') }}% |
+              Solar: {{ states('sensor.inverter_pv_power') }}W |
+              Load: {{ states('sensor.inverter_load_power') }}W
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+    - service: logbook.log
+      data:
+        name: "Energy Alert"
+        message: "Grid disconnected - Voltage: {{ states('sensor.inverter_grid_l1_voltage') }}V, Freq: {{ states('sensor.inverter_grid_frequency') }}Hz"
+
+# Notification: Grid Power Restored
+- id: energy_grid_restored
+  alias: "INFO: Grid Power Restored"
+  description: "Notify when grid power is restored after an outage"
+  mode: single
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.inverter_grid_l1_voltage
+      above: 200
+      for:
+        seconds: 30
+  condition:
+    # Only trigger if we recently had a grid disconnect alert
+    - condition: template
+      value_template: >
+        {{ state_attr('automation.critical_grid_power_disconnected', 'last_triggered') is not none and
+           (now() - state_attr('automation.critical_grid_power_disconnected', 'last_triggered')).total_seconds() < 3600 }}
+  action:
+    - parallel:
+        - service: notify.mobile_app_person1
+          data:
+            title: "Grid Power Restored"
+            message: >
+              Grid power is back online.
+              Voltage: {{ states('sensor.inverter_grid_l1_voltage') }}V |
+              Battery: {{ states('sensor.inverter_battery') }}%
+        - service: notify.mobile_app_person2
+          data:
+            title: "Grid Power Restored"
+            message: >
+              Grid power is back online.
+              Voltage: {{ states('sensor.inverter_grid_l1_voltage') }}V |
+              Battery: {{ states('sensor.inverter_battery') }}%
+
+# ============================================
+# DELAYED EXIT ARM SYSTEM
+# Server-side timer ensures arming even if mobile app is backgrounded
+# ============================================
+
+- id: exit_delay_timer_finished
+  alias: "SECURITY: Exit Delay Timer Complete - Arm System"
+  description: "Arms the system when exit delay timer finishes"
+  mode: single
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.exit_delay
+  condition:
+    - condition: template
+      value_template: "{{ states('input_select.exit_delay_mode') != 'none' }}"
+  action:
+    - choose:
+        # Arm Away
+        - conditions:
+            - condition: state
+              entity_id: input_select.exit_delay_mode
+              state: "arm_away"
+          sequence:
+            - service: alarm_control_panel.alarm_arm_away
+              target:
+                entity_id: alarm_control_panel.alarm_partition_1
+              data:
+                code: !secret dsc_alarm_code
+            - service: notify.mobile_app_person1
+              data:
+                title: "System Armed Away"
+                message: "Exit delay complete. Home is now armed in Away mode."
+        # Arm Home/Stay
+        - conditions:
+            - condition: state
+              entity_id: input_select.exit_delay_mode
+              state: "arm_home"
+          sequence:
+            - service: alarm_control_panel.alarm_arm_home
+              target:
+                entity_id: alarm_control_panel.alarm_partition_1
+              data:
+                code: !secret dsc_alarm_code
+            - service: notify.mobile_app_person1
+              data:
+                title: "System Armed Stay"
+                message: "Exit delay complete. Perimeter is now armed."
+        # Dog Mode
+        - conditions:
+            - condition: state
+              entity_id: input_select.exit_delay_mode
+              state: "dog_mode"
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.dog_mode
+            - service: notify.mobile_app_person1
+              data:
+                title: "Dog Mode Activated"
+                message: "Exit delay complete. AI person detection is now active."
+    # Reset the mode selector
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.exit_delay_mode
+      data:
+        option: "none"
+
+- id: exit_delay_timer_cancelled
+  alias: "SECURITY: Exit Delay Cancelled"
+  description: "Resets mode selector when exit delay is cancelled"
+  mode: single
+  trigger:
+    - platform: event
+      event_type: timer.cancelled
+      event_data:
+        entity_id: timer.exit_delay
+  action:
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.exit_delay_mode
+      data:
+        option: "none"
+
+# ============================================
+# TUYA AUTO-RELOAD ON STARTUP
+# Fixes token expiry issues after HA restart
+# ============================================
+- id: tuya_auto_reload_on_startup
+  alias: "SYSTEM: Tuya Auto-Reload on Startup"
+  description: "Reloads Tuya integration 90s after HA starts to refresh expired tokens"
+  mode: single
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+    # Wait for internet connectivity
+    - delay:
+        seconds: 90
+    # Reload the Tuya integration
+    - service: homeassistant.reload_config_entry
+      data:
+        entry_id: "01JTRTH40N3R9W9VVVG7847Z38"
+    - service: persistent_notification.create
+      data:
+        title: "Tuya Reloaded"
+        message: "Tuya integration was automatically reloaded after startup"
+        notification_id: tuya_reload
+
+- id: tuya_auto_reload_on_failure
+  alias: "SYSTEM: Tuya Auto-Reload on Failure"
+  description: "Reloads Tuya if it fails to set up"
+  mode: single
+  trigger:
+    - platform: event
+      event_type: component_loaded
+      event_data:
+        component: tuya
+  condition:
+    # Only trigger if there's an issue (check entity unavailable)
+    - condition: template
+      value_template: >
+        {{ states('cover.gate_switch_door_1') in ['unavailable', 'unknown'] }}
+  action:
+    - delay:
+        seconds: 30
+    - service: homeassistant.reload_config_entry
+      data:
+        entry_id: "01JTRTH40N3R9W9VVVG7847Z38"
+
+# ============================================
+# DSC ZONE FAULT MONITORING
+# Alert on sensor faults (wiring issues, low battery, tamper)
+# ============================================
+
+- id: dsc_zone_fault_alert
+  alias: "DSC: Zone Fault Detected - Alert"
+  description: "Send notification when any DSC zone reports a fault condition"
+  mode: queued
+  max: 5
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.alarm_zone_7_fault
+        - binary_sensor.alarm_zone_10_fault
+        - binary_sensor.alarm_zone_11_fault
+        - binary_sensor.alarm_zone_12_fault
+        - binary_sensor.alarm_zone_14_fault
+        - binary_sensor.alarm_zone_15_fault
+        - binary_sensor.alarm_zone_16_fault
+        - binary_sensor.alarm_zone_17_fault
+        - binary_sensor.alarm_zone_18_fault
+        - binary_sensor.alarm_zone_19_fault
+        - binary_sensor.alarm_zone_21_fault
+        - binary_sensor.alarm_zone_22_fault
+        - binary_sensor.alarm_zone_23_fault
+        - binary_sensor.alarm_zone_24_fault
+        - binary_sensor.alarm_zone_26_fault
+        - binary_sensor.alarm_zone_27_fault
+      to: "on"
+  action:
+    - service: notify.mobile_app_person1
+      data:
+        title: "DSC Zone Fault"
+        message: >
+          {{ trigger.to_state.name | replace('_fault', '') | replace('_', ' ') | title }}
+          - Check sensor wiring or battery
+        data:
+          push:
+            sound:
+              name: default
+            interruption-level: time-sensitive
+          tag: "zone-fault-{{ trigger.entity_id }}"
+    - service: persistent_notification.create
+      data:
+        title: "DSC Zone Fault Detected"
+        message: >
+          Zone {{ trigger.to_state.name }} has reported a fault condition.
+
+          This may indicate:
+          - Sensor wiring issue
+          - Low battery (wireless sensors)
+          - Tamper condition
+          - Sensor malfunction
+
+          Check the sensor and wiring at your earliest convenience.
+        notification_id: "zone_fault_{{ trigger.entity_id | replace('.', '_') }}"
+
+- id: dsc_zone_fault_cleared
+  alias: "DSC: Zone Fault Cleared"
+  description: "Dismiss notification when zone fault is cleared"
+  mode: queued
+  max: 5
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.alarm_zone_7_fault
+        - binary_sensor.alarm_zone_10_fault
+        - binary_sensor.alarm_zone_11_fault
+        - binary_sensor.alarm_zone_12_fault
+        - binary_sensor.alarm_zone_14_fault
+        - binary_sensor.alarm_zone_15_fault
+        - binary_sensor.alarm_zone_16_fault
+        - binary_sensor.alarm_zone_17_fault
+        - binary_sensor.alarm_zone_18_fault
+        - binary_sensor.alarm_zone_19_fault
+        - binary_sensor.alarm_zone_21_fault
+        - binary_sensor.alarm_zone_22_fault
+        - binary_sensor.alarm_zone_23_fault
+        - binary_sensor.alarm_zone_24_fault
+        - binary_sensor.alarm_zone_26_fault
+        - binary_sensor.alarm_zone_27_fault
+      to: "off"
+  action:
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: "zone_fault_{{ trigger.entity_id | replace('.', '_') }}"
+
+# ============================================
+# DSC ZONE-BASED SMART LIGHTING
+# Motion-activated lights with timer extension
+# ============================================
+
+# Main Bedroom Motion → Upstairs Hall Light (bathroom proxy) for 10 mins
+- id: dsc_main_bedroom_motion_light
+  alias: "DSC: Main Bedroom Motion - Hall Light"
+  description: "Turn on upstairs hall light on main bedroom motion, 10 min timer with extension"
+  mode: restart  # Restart on re-trigger to extend timer
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_14  # Main Bedroom
+      to: "on"
+  condition:
+    - condition: sun
+      after: sunset
+      before: sunrise
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.sonoff_1001eb24e5_1
+    - delay:
+        minutes: 10
+    - service: switch.turn_off
+      target:
+        entity_id: switch.sonoff_1001eb24e5_1
+
+# Kitchen Motion → Kitchen Lights (if not already on within 2 mins)
+- id: dsc_kitchen_motion_light
+  alias: "DSC: Kitchen Motion - Auto Light"
+  description: "Turn on kitchen lights on motion if they haven't been manually controlled"
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_10  # Kitchen
+      to: "on"
+  condition:
+    - condition: sun
+      after: sunset
+      before: sunrise
+    # Only trigger if lights are off
+    - condition: state
+      entity_id: switch.sonoff_100176c107_1
+      state: "off"
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id:
+          - switch.sonoff_100176c107_1
+          - switch.sonoff_100176c107_2
+    - delay:
+        minutes: 5
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.sonoff_100176c107_1
+          - switch.sonoff_100176c107_2
+
+# Front Door Motion → Entry Lights (if not already on within 5 mins)
+- id: dsc_front_door_motion_light
+  alias: "DSC: Front Door Motion - Entry Light"
+  description: "Turn on entry/hallway lights on front door motion"
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_11  # Front Door
+      to: "on"
+  condition:
+    - condition: sun
+      after: sunset
+      before: sunrise
+    # Only trigger if hallway light is off
+    - condition: state
+      entity_id: switch.sonoff_1001eb21e6_1
+      state: "off"
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id:
+          - switch.sonoff_1001eb21e6_1
+          - switch.sonoff_1001de76ac_2  # Entry downlights
+    - delay:
+        minutes: 5
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.sonoff_1001eb21e6_1
+          - switch.sonoff_1001de76ac_2
+
+# Garage Motion → Garage Light
+- id: dsc_garage_motion_light
+  alias: "DSC: Garage Motion - Auto Light"
+  description: "Turn on garage light on motion"
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_12
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: switch.garage_switch
+      state: "off"
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.garage_switch
+    - delay:
+        minutes: 5
+    - service: switch.turn_off
+      target:
+        entity_id: switch.garage_switch
+
+# TV Room Motion → Living Room ambient light
+- id: dsc_tv_room_motion_light
+  alias: "DSC: TV Room Motion - Living Light"
+  description: "Turn on living room light on TV room motion at night"
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_24  # TV Room
+      to: "on"
+  condition:
+    - condition: sun
+      after: sunset
+      before: sunrise
+    - condition: state
+      entity_id: switch.sonoff_1001508021_1
+      state: "off"
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.sonoff_1001508021_1  # Living room lamp
+    - delay:
+        minutes: 10
+    - service: switch.turn_off
+      target:
+        entity_id: switch.sonoff_1001508021_1
+
+# Blink Upstairs Camera Motion → Upstairs Hall Light
+- id: blink_upstairs_motion_hall_light
+  alias: "BLINK: Upstairs Motion - Hall Light"
+  description: "Turn on upstairs hall light when Blink upstairs camera detects motion"
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.upstairscam_motion_detected
+      to: "on"
+  condition:
+    - condition: sun
+      after: sunset
+      before: sunrise
+    - condition: state
+      entity_id: switch.sonoff_1001eb24e5_1
+      state: "off"
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.sonoff_1001eb24e5_1
+    - delay:
+        minutes: 5
+    - service: switch.turn_off
+      target:
+        entity_id: switch.sonoff_1001eb24e5_1
+
+# Mila Room Motion → Mila Bathroom Light
+- id: dsc_mila_room_motion_bathroom
+  alias: "DSC: Mila Room Motion - Bathroom Light"
+  description: "Turn on Mila bathroom light on bedroom motion at night"
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_15  # Mila Room
+      to: "on"
+  condition:
+    - condition: sun
+      after: sunset
+      before: sunrise
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.sonoff_1001eb2228_1
+    - delay:
+        minutes: 10
+    - service: switch.turn_off
+      target:
+        entity_id: switch.sonoff_1001eb2228_1
+
+# Alexandra Room Motion → Alexandra Bathroom Light
+- id: dsc_alexandra_room_motion_bathroom
+  alias: "DSC: Alexandra Room Motion - Bathroom Light"
+  description: "Turn on Alexandra bathroom light on bedroom motion at night"
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_16  # Alexandra
+      to: "on"
+  condition:
+    - condition: sun
+      after: sunset
+      before: sunrise
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.sonoff_1001eb1d06_1
+    - delay:
+        minutes: 10
+    - service: switch.turn_off
+      target:
+        entity_id: switch.sonoff_1001eb1d06_1
+
+# ============================================
+# DOWNSTAIRS INACTIVITY AUTO-ARM
+# Auto-arm Stay mode after 65 minutes of no downstairs activity
+# ============================================
+
+# Initialize downstairs activity timestamp on HA start
+- id: init_downstairs_activity
+  alias: "System: Initialize Downstairs Activity Timestamp"
+  description: "Sets initial timestamp on HA startup to prevent false auto-arm"
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+    - delay:
+        seconds: 30
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.last_downstairs_activity
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+# Track last downstairs activity (ALWAYS - regardless of arm state)
+- id: track_downstairs_activity
+  alias: "System: Track Downstairs Activity"
+  description: "Updates timestamp whenever there's activity downstairs (zones, camera, lights)"
+  mode: restart
+  trigger:
+    # DSC Zone sensors (downstairs only)
+    - platform: state
+      entity_id:
+        - binary_sensor.alarm_zone_10  # Kitchen
+        - binary_sensor.alarm_zone_11  # Front Door
+        - binary_sensor.alarm_zone_12  # Garage
+        - binary_sensor.alarm_zone_24  # TV Room
+    # EZVIZ indoor camera motion
+    - platform: state
+      entity_id: binary_sensor.ezviz_indoor_person_occupancy
+    # Downstairs lights (any state change)
+    - platform: state
+      entity_id:
+        - switch.sonoff_100176c107_1  # Kitchen 1
+        - switch.sonoff_100176c107_2  # Kitchen 2
+        - switch.sonoff_100176c107_3  # Kitchen 3
+        - switch.sonoff_1001508021_1  # Living Room 1
+        - switch.sonoff_1001508021_2  # Living Room 2
+        - switch.garage_switch         # Garage
+  # NO CONDITION - always track activity even when armed
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.last_downstairs_activity
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+# Auto-arm after 65 minutes of inactivity
+- id: auto_arm_downstairs_inactivity
+  alias: "Security: Auto-Arm Stay - Downstairs Inactivity"
+  description: "Turns off downstairs lights and arms Stay mode after 65min of no activity"
+  mode: single
+  trigger:
+    # Check every 5 minutes
+    - platform: time_pattern
+      minutes: "/5"
+  condition:
+    # Must be disarmed
+    - condition: state
+      entity_id: alarm_control_panel.alarm_partition_1
+      state: "disarmed"
+    # Must NOT have dog mode active (dog mode = someone home with dogs)
+    - condition: state
+      entity_id: input_boolean.dog_mode
+      state: "off"
+    # Before 20:00: Both must be away. After 20:00: ignore (could be in bed)
+    - condition: template
+      value_template: >
+        {% set hour = now().hour %}
+        {% if hour >= 20 or hour < 6 %}
+          {# Evening/night: skip away check, they might be in bed #}
+          true
+        {% else %}
+          {# Daytime: both must be away #}
+          {{ states('person.nico') == 'not_home' and
+             states('person.tatiana') == 'not_home' }}
+        {% endif %}
+    # Check if 65 minutes have passed since last activity
+    - condition: template
+      value_template: >
+        {% set last_activity = states('input_datetime.last_downstairs_activity') %}
+        {% if last_activity not in ['unknown', 'unavailable', ''] %}
+          {% set last_time = as_timestamp(last_activity) %}
+          {% set now_time = as_timestamp(now()) %}
+          {{ (now_time - last_time) >= (65 * 60) }}
+        {% else %}
+          false
+        {% endif %}
+    # Throttle: only once per 2 hours
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 7200 }}
+  action:
+    # FIRST: Log all parameters for debugging
+    - variables:
+        last_activity_time: "{{ states('input_datetime.last_downstairs_activity') }}"
+        mins_since_activity: >
+          {% set last = states('input_datetime.last_downstairs_activity') %}
+          {% if last not in ['unknown', 'unavailable', ''] %}
+            {{ ((as_timestamp(now()) - as_timestamp(last)) / 60) | round(1) }}
+          {% else %}
+            unknown
+          {% endif %}
+        nico_state: "{{ states('person.nico') }}"
+        tatiana_state: "{{ states('person.tatiana') }}"
+        current_hour: "{{ now().hour }}"
+        is_bedtime: "{{ now().hour >= 20 or now().hour < 6 }}"
+        kitchen_light1: "{{ states('switch.sonoff_100176c107_1') }}"
+        kitchen_light2: "{{ states('switch.sonoff_100176c107_2') }}"
+        kitchen_light3: "{{ states('switch.sonoff_100176c107_3') }}"
+        living_light1: "{{ states('switch.sonoff_1001508021_1') }}"
+        living_light2: "{{ states('switch.sonoff_1001508021_2') }}"
+        garage_light: "{{ states('switch.garage_switch') }}"
+    - service: logbook.log
+      data:
+        name: "Auto-Arm Triggered"
+        message: >
+          PARAMETERS AT TRIGGER TIME:
+          | Last activity: {{ last_activity_time }}
+          | Mins since activity: {{ mins_since_activity }}
+          | Hour: {{ current_hour }} (bedtime={{ is_bedtime }})
+          | Nico: {{ nico_state }}
+          | Tatiana: {{ tatiana_state }}
+          | Lights - Kitchen: {{ kitchen_light1 }}/{{ kitchen_light2 }}/{{ kitchen_light3 }}
+          | Lights - Living: {{ living_light1 }}/{{ living_light2 }}
+          | Lights - Garage: {{ garage_light }}
+        entity_id: alarm_control_panel.alarm_partition_1
+    - service: persistent_notification.create
+      data:
+        title: "🔍 Auto-Arm Debug Log"
+        message: >
+          **Triggered at {{ now().strftime('%Y-%m-%d %H:%M:%S') }}**
+
+          **Timing:**
+          - Last activity: {{ last_activity_time }}
+          - Minutes since: {{ mins_since_activity }}
+          - Current hour: {{ current_hour }}
+          - Bedtime mode: {{ is_bedtime }}
+
+          **People:**
+          - Nico: {{ nico_state }}
+          - Tatiana: {{ tatiana_state }}
+
+          **Lights state:**
+          - Kitchen: {{ kitchen_light1 }}, {{ kitchen_light2 }}, {{ kitchen_light3 }}
+          - Living: {{ living_light1 }}, {{ living_light2 }}
+          - Garage: {{ garage_light }}
+        notification_id: auto_arm_debug
+    # Turn off all downstairs lights
+    - service: switch.turn_off
+      target:
+        entity_id:
+          - switch.sonoff_100176c107_1
+          - switch.sonoff_100176c107_2
+          - switch.sonoff_100176c107_3
+          - switch.sonoff_1001508021_1
+          - switch.sonoff_1001508021_2
+          - switch.garage_switch
+    # Brief delay before arming
+    - delay:
+        seconds: 3
+    # Arm in Stay mode
+    - service: alarm_control_panel.alarm_arm_home
+      target:
+        entity_id: alarm_control_panel.alarm_partition_1
+      data:
+        code: !secret dsc_alarm_code
+    # Send critical notification with full debug info
+    - service: notify.mobile_app_person1
+      data:
+        title: "🏠 Auto-Armed: No Activity"
+        message: >
+          Last activity: {{ last_activity_time }} ({{ mins_since_activity }} mins ago)
+          {% if is_bedtime %}Bedtime mode ({{ current_hour }}:xx){% else %}Nico: {{ nico_state }}, Tatiana: {{ tatiana_state }}{% endif %}
+          Lights off, alarm armed (Stay).
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 0.8
+            interruption-level: critical
+          actions:
+            - action: "DISARM_ALARM"
+              title: "Disarm"
+            - action: "VIEW_CAMERAS"
+              title: "View Cameras"
+
+# ============================================
+# CRITICAL ALERTS ONLY MODE
+# Sends critical push notifications without arming DSC
+# Modes: outside (perimeter cameras), stay (downstairs), away (all)
+# ============================================
+
+# Camera-triggered critical alerts
+- id: critical_alerts_camera_detection
+  alias: "Critical Alerts: Camera Detection"
+  description: "Send critical notification when camera detects person/motion based on alert mode"
+  mode: parallel
+  max: 10
+  trigger:
+    # Frigate cameras - person detection
+    - platform: mqtt
+      topic: frigate/events
+      id: frigate_event
+  condition:
+    # Must have critical alerts mode enabled (not "off")
+    - condition: template
+      value_template: "{{ states('input_select.critical_alerts_mode') != 'off' }}"
+    # Throttle: max once per 60 seconds per camera
+    - condition: template
+      value_template: >
+        {% set last = state_attr(this.entity_id, 'last_triggered') %}
+        {{ last is none or (now() - last).total_seconds() > 60 }}
+  action:
+    - variables:
+        payload: "{{ trigger.payload_json }}"
+        event_type: "{{ payload.type }}"
+        camera: "{{ payload.after.camera if payload.after is defined else payload.before.camera }}"
+        label: "{{ payload.after.label if payload.after is defined else payload.before.label }}"
+        event_id: "{{ payload.after.id if payload.after is defined else payload.before.id }}"
+        score: "{{ payload.after.top_score if payload.after is defined else payload.before.top_score }}"
+        zones: "{{ payload.after.entered_zones if payload.after is defined else [] }}"
+        alert_mode: "{{ states('input_select.critical_alerts_mode') }}"
+        # Define which cameras are active for each mode
+        outside_cameras: "{{ ['front_door', 'backyard', 'wyze_garage'] }}"
+        stay_cameras: "{{ ['front_door', 'backyard', 'wyze_garage', 'ezviz_indoor'] }}"
+        away_cameras: "{{ ['front_door', 'backyard', 'wyze_garage', 'ezviz_indoor'] }}"
+        # Check if this camera should trigger for current mode
+        camera_active: >
+          {% if alert_mode == 'outside' %}
+            {{ camera in outside_cameras }}
+          {% elif alert_mode == 'stay' %}
+            {{ camera in stay_cameras }}
+          {% elif alert_mode == 'away' %}
+            {{ camera in away_cameras }}
+          {% else %}
+            false
+          {% endif %}
+    # Trigger on new events OR when first entering a zone (to catch already-tracked people)
+    - condition: template
+      value_template: >
+        {% set new_zones = payload.after.current_zones | default([]) %}
+        {% set old_zones = payload.before.current_zones | default([]) %}
+        {% set entered_new_zone = (new_zones | length > 0) and (new_zones | reject('in', old_zones) | list | length > 0) %}
+        {{ label == 'person' and camera_active and (event_type == 'new' or entered_new_zone) }}
+    # Take snapshot
+    - service: camera.snapshot
+      target:
+        entity_id: "camera.{{ camera }}"
+      data:
+        filename: "/config/www/snapshots/critical_alert_{{ camera }}.jpg"
+    - delay:
+        seconds: 2
+    # Send notification to Nico if enabled
+    - if:
+        - condition: state
+          entity_id: input_boolean.critical_alerts_notify_nico
+          state: "on"
+      then:
+        - service: notify.mobile_app_person1
+          data:
+            title: "🚨 {{ camera | replace('_', ' ') | title }}: Person Detected"
+            message: >
+              {{ label | title }} detected ({{ (score | float * 100) | round }}% confidence)
+              {% if zones | length > 0 %}in {{ zones | join(', ') }}{% endif %}
+              Mode: {{ alert_mode | upper }}
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              image: "/local/snapshots/critical_alert_{{ camera }}.jpg"
+              actions:
+                - action: "VIEW_CAMERAS"
+                  title: "View Cameras"
+                - action: "DISABLE_CRITICAL_ALERTS"
+                  title: "Disable Alerts"
+    # Send notification to Tatiana if enabled
+    - if:
+        - condition: state
+          entity_id: input_boolean.critical_alerts_notify_tatiana
+          state: "on"
+      then:
+        - service: notify.mobile_app_person2
+          data:
+            title: "🚨 {{ camera | replace('_', ' ') | title }}: Person Detected"
+            message: >
+              {{ label | title }} detected ({{ (score | float * 100) | round }}% confidence)
+              {% if zones | length > 0 %}in {{ zones | join(', ') }}{% endif %}
+              Mode: {{ alert_mode | upper }}
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              image: "/local/snapshots/critical_alert_{{ camera }}.jpg"
+              actions:
+                - action: "VIEW_CAMERAS"
+                  title: "View Cameras"
+                - action: "DISABLE_CRITICAL_ALERTS"
+                  title: "Disable Alerts"
+
+# Sensor-triggered critical alerts
+- id: critical_alerts_sensor_trigger
+  alias: "Critical Alerts: Sensor Trigger"
+  description: "Send critical notification when DSC sensor triggers based on alert mode"
+  mode: parallel
+  max: 10
+  trigger:
+    # Outside zones
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_7   # Outside Scullery
+      to: "on"
+      id: outside
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_17  # Outside Scullery 2
+      to: "on"
+      id: outside
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_21  # Pool
+      to: "on"
+      id: outside
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_18  # Pool Pump
+      to: "on"
+      id: outside
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_19  # Main Balcony
+      to: "on"
+      id: outside
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_23  # Outside Garage
+      to: "on"
+      id: outside
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_22  # Alexandra Balcony
+      to: "on"
+      id: outside
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_27  # Alexandra Balcony 2
+      to: "on"
+      id: outside
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_26  # Main Entrance Outside
+      to: "on"
+      id: outside
+    # Downstairs zones (for stay mode)
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_10  # Kitchen
+      to: "on"
+      id: downstairs
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_11  # Front Door
+      to: "on"
+      id: downstairs
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_12  # Garage
+      to: "on"
+      id: downstairs
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_24  # TV Room
+      to: "on"
+      id: downstairs
+    # Upstairs zones (for away mode only)
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_14  # Main Bedroom
+      to: "on"
+      id: upstairs
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_15  # Mila Room
+      to: "on"
+      id: upstairs
+    - platform: state
+      entity_id: binary_sensor.alarm_zone_16  # Alexandra
+      to: "on"
+      id: upstairs
+  condition:
+    # Must have critical alerts mode enabled
+    - condition: template
+      value_template: "{{ states('input_select.critical_alerts_mode') != 'off' }}"
+    # Check if this zone type is active for current mode
+    - condition: template
+      value_template: >
+        {% set mode = states('input_select.critical_alerts_mode') %}
+        {% set zone_type = trigger.id %}
+        {% if mode == 'outside' %}
+          {{ zone_type == 'outside' }}
+        {% elif mode == 'stay' %}
+          {{ zone_type in ['outside', 'downstairs'] }}
+        {% elif mode == 'away' %}
+          {{ zone_type in ['outside', 'downstairs', 'upstairs'] }}
+        {% else %}
+          false
+        {% endif %}
+  action:
+    - variables:
+        zone_name: "{{ trigger.to_state.attributes.friendly_name | default(trigger.to_state.name) }}"
+        zone_entity: "{{ trigger.entity_id }}"
+        zone_type: "{{ trigger.id }}"
+        alert_mode: "{{ states('input_select.critical_alerts_mode') }}"
+    # Send notification to Nico if enabled
+    - if:
+        - condition: state
+          entity_id: input_boolean.critical_alerts_notify_nico
+          state: "on"
+      then:
+        - service: notify.mobile_app_person1
+          data:
+            title: "🚨 Sensor: {{ zone_name }}"
+            message: >
+              Motion detected at {{ zone_name }}
+              Zone type: {{ zone_type | title }}
+              Mode: {{ alert_mode | upper }}
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              actions:
+                - action: "VIEW_CAMERAS"
+                  title: "View Cameras"
+                - action: "DISABLE_CRITICAL_ALERTS"
+                  title: "Disable Alerts"
+    # Send notification to Tatiana if enabled
+    - if:
+        - condition: state
+          entity_id: input_boolean.critical_alerts_notify_tatiana
+          state: "on"
+      then:
+        - service: notify.mobile_app_person2
+          data:
+            title: "🚨 Sensor: {{ zone_name }}"
+            message: >
+              Motion detected at {{ zone_name }}
+              Zone type: {{ zone_type | title }}
+              Mode: {{ alert_mode | upper }}
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              actions:
+                - action: "VIEW_CAMERAS"
+                  title: "View Cameras"
+                - action: "DISABLE_CRITICAL_ALERTS"
+                  title: "Disable Alerts"
+
+# Blink camera motion alerts (for away mode)
+- id: critical_alerts_blink_motion
+  alias: "Critical Alerts: Blink Motion"
+  description: "Send critical notification when Blink camera detects motion (away mode only)"
+  mode: parallel
+  max: 10
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.poolcam_motion_detected
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.tvcam_motion_detected
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.kitchencam_motion_detected
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.scullery_motion_detected
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.upstairscam_motion_detected
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.garagecam_motion_detected
+      to: "on"
+    - platform: state
+      entity_id: binary_sensor.front_door_2_motion_detected
+      to: "on"
+  condition:
+    # Only in away mode
+    - condition: state
+      entity_id: input_select.critical_alerts_mode
+      state: "away"
+    # Throttle per camera
+    - condition: template
+      value_template: >
+        {% set last = state_attr(this.entity_id, 'last_triggered') %}
+        {{ last is none or (now() - last).total_seconds() > 60 }}
+  action:
+    - variables:
+        camera_name: "{{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id) | replace('_motion_detected', '') | replace('binary_sensor.', '') | replace('_', ' ') | title }}"
+        camera_entity: "{{ trigger.entity_id | replace('binary_sensor.', 'camera.') | replace('_motion_detected', '') }}"
+    # Try to get a snapshot from the Blink camera
+    - service: camera.snapshot
+      target:
+        entity_id: "{{ camera_entity }}"
+      data:
+        filename: "/config/www/snapshots/critical_alert_blink.jpg"
+      continue_on_error: true
+    - delay:
+        seconds: 1
+    # Send notification to Nico if enabled
+    - if:
+        - condition: state
+          entity_id: input_boolean.critical_alerts_notify_nico
+          state: "on"
+      then:
+        - service: notify.mobile_app_person1
+          data:
+            title: "🚨 Blink: {{ camera_name }}"
+            message: "Motion detected on {{ camera_name }} (Away mode)"
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              image: "/local/snapshots/critical_alert_blink.jpg"
+              actions:
+                - action: "VIEW_CAMERAS"
+                  title: "View Cameras"
+                - action: "DISABLE_CRITICAL_ALERTS"
+                  title: "Disable Alerts"
+    # Send notification to Tatiana if enabled
+    - if:
+        - condition: state
+          entity_id: input_boolean.critical_alerts_notify_tatiana
+          state: "on"
+      then:
+        - service: notify.mobile_app_person2
+          data:
+            title: "🚨 Blink: {{ camera_name }}"
+            message: "Motion detected on {{ camera_name }} (Away mode)"
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              image: "/local/snapshots/critical_alert_blink.jpg"
+              actions:
+                - action: "VIEW_CAMERAS"
+                  title: "View Cameras"
+                - action: "DISABLE_CRITICAL_ALERTS"
+                  title: "Disable Alerts"
+
+# Handle disable alerts action from notification
+- id: critical_alerts_disable_from_notification
+  alias: "Critical Alerts: Disable from Notification"
+  description: "Turn off critical alerts when user taps Disable Alerts"
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: "DISABLE_CRITICAL_ALERTS"
+  action:
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.critical_alerts_mode
+      data:
+        option: "off"
+    - service: notify.mobile_app_person1
+      data:
+        title: "Critical Alerts Disabled"
+        message: "Critical alerts mode has been turned off"
+
+# ============================================
+# FRIGATE DETECTION CONTROL
+# Pause/Resume object detection to reduce CPU load
+# ============================================
+
+# Pause Frigate Detection (reduce CPU)
+- id: frigate_detection_pause_control
+  alias: "Frigate: Pause/Resume Detection"
+  description: "Control Frigate object detection to save CPU when paused. Recording continues, only AI detection stops."
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: input_boolean.frigate_detection_paused
+  action:
+    - variables:
+        is_paused: "{{ states('input_boolean.frigate_detection_paused') == 'on' }}"
+        command: "{{ 'OFF' if is_paused else 'ON' }}"
+        cameras:
+          - front_door
+          - backyard
+          - wyze_garage
+          - ezviz_indoor
+    # Send MQTT command to all cameras
+    - repeat:
+        count: "{{ cameras | length }}"
+        sequence:
+          - service: mqtt.publish
+            data:
+              topic: "frigate/{{ cameras[repeat.index - 1] }}/detect/set"
+              payload: "{{ command }}"
+    # Send notification
+    - service: notify.persistent_notification
+      data:
+        title: "Frigate Detection {{ 'Paused' if is_paused else 'Resumed' }}"
+        message: >
+          Object detection has been {{ 'paused' if is_paused else 'resumed' }} on all cameras.
+          {{ 'CPU load will be reduced. Recording continues.' if is_paused else 'AI detection is now active.' }}
+
+# ============================================
+# ALARM ARMED - AUTOMATIC LOCKDOWN
+# Turn off all lights except main bedroom and appliances
+# ============================================
+
+- id: alarm_armed_lockdown
+  alias: "Security: Alarm Armed Lockdown"
+  description: "Turn off all lights (except main bedroom), geyser, and pool pump when alarm is armed"
+  mode: queued
+  max: 3
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarm_partition_1
+      to: "armed_away"
+    - platform: state
+      entity_id: alarm_control_panel.alarm_partition_1
+      to: "armed_home"
+    - platform: state
+      entity_id: alarm_control_panel.alarm_partition_1
+      to: "armed_night"
+  action:
+    # Turn off all lights EXCEPT main bedroom
+    - service: switch.turn_off
+      target:
+        entity_id:
+          # Ground Floor
+          - switch.sonoff_100176c107_1  # Kitchen 1
+          - switch.sonoff_100176c107_2  # Kitchen 2
+          - switch.sonoff_100176c107_3  # Kitchen 3
+          - switch.sonoff_1001508021_1  # Living 1
+          - switch.sonoff_1001508021_2  # Living 2
+          - switch.sonoff_1001de76ac_1  # Entry Chandelier
+          - switch.sonoff_1001de76ac_2  # Entry Down Lights
+          - switch.sonoff_1001eb21e6_1  # Hallway
+          - switch.garage_switch        # Garage
+          # Upper Floor (excluding main bedroom)
+          - switch.sonoff_1001508fc5_1  # Alexandra Bedroom 1
+          - switch.sonoff_1001508fc5_2  # Alexandra Bedroom 2
+          - switch.sonoff_1001eb1d06_1  # Alexandra Bathroom
+          - switch.mila_bedroom_light   # Mila Bedroom
+          - switch.sonoff_1001eb2228_1  # Mila Bathroom
+          - switch.sonoff_1001eb24e5_1  # Upstairs Hall
+
+    # Turn off geyser
+    - service: switch.turn_off
+      target:
+        entity_id: switch.sonoff_10018908af
+
+    # Turn off pool pump
+    - service: switch.turn_off
+      target:
+        entity_id: switch.sonoff_10017f2d90_1
+
+    # Log the action
+    - service: logbook.log
+      data:
+        name: "Alarm Armed Lockdown"
+        message: "Alarm armed to {{ trigger.to_state.state }}. All lights (except main bedroom), geyser, and pool pump turned off."
+
+# ============================================
+# PERSON DETECTION - CRITICAL ALERTS (ARMED)
+# Enhanced alerts to both Tatiana and Nico with images
+# ============================================
+
+- id: person_detection_armed_critical_dual_notify
+  alias: "CRITICAL: Person Detected While Armed - Dual Notify"
+  description: "Send critical alerts with images to both Tatiana and Nico when person detected while alarm armed (Frigate confidence >60%)"
+  mode: queued
+  max: 5
+  trigger:
+    # Frigate person detections
+    - platform: mqtt
+      topic: frigate/events
+      id: frigate_event
+  variables:
+    event_data: "{{ trigger.payload_json }}"
+    camera: "{{ event_data.after.camera if event_data.after is defined else 'unknown' }}"
+    label: "{{ event_data.after.label if event_data.after is defined else 'unknown' }}"
+    event_type: "{{ event_data.type if event_data is defined else 'unknown' }}"
+    event_id: "{{ event_data.after.id if event_data.after is defined else 'unknown' }}"
+    top_score: "{{ event_data.after.top_score if event_data.after is defined else 0 }}"
+    camera_name: "{{ camera | replace('_', ' ') | title }}"
+    confidence_pct: "{{ (top_score * 100) | round(0) | int }}"
+    entered_zones: "{{ event_data.after.entered_zones if event_data.after.entered_zones is defined else [] }}"
+  condition:
+    # Only trigger on 'new' person events
+    - condition: template
+      value_template: "{{ event_type == 'new' and label == 'person' }}"
+
+    # Frigate confidence must be >60%
+    - condition: template
+      value_template: "{{ top_score > 0.60 }}"
+
+    # ZONE FILTER: Only trigger if person is in the correct zone for the camera
+    - condition: template
+      value_template: >
+        {% if camera == 'front_door' %}
+          {{ 'External_Front_Corridor' in entered_zones }}
+        {% elif camera == 'backyard' %}
+          {{ 'Back_Yard' in entered_zones }}
+        {% elif camera == 'wyze_garage' %}
+          {{ 'Garage_Entrance' in entered_zones or 'Garage' in entered_zones }}
+        {% elif camera == 'ezviz_indoor' %}
+          {{ 'Front_Door_and_Stairs' in entered_zones or 'Kitchen' in entered_zones or 'Ground_Passage' in entered_zones or 'TV_Room' in entered_zones }}
+        {% else %}
+          false
+        {% endif %}
+
+    # Only when alarm is armed (any mode)
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_away"
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_home"
+        - condition: state
+          entity_id: alarm_control_panel.alarm_partition_1
+          state: "armed_night"
+
+    # Skip if dog mode (has separate alerts)
+    - condition: state
+      entity_id: input_boolean.dog_mode
+      state: "off"
+
+    # Throttle per camera: max once per 60 seconds
+    - condition: template
+      value_template: >
+        {% set last_trigger_key = 'last_person_' ~ camera %}
+        {% set last_trigger = state_attr('automation.critical_person_detected_while_armed_dual_notify', last_trigger_key) %}
+        {{ last_trigger is none or (now().timestamp() - last_trigger) > 60 }}
+  action:
+    # Send to BOTH Tatiana and Nico immediately (NO AI ANALYSIS)
+    - service: notify.mobile_app_person2
+      data:
+        title: "🚨 PERSON DETECTED: {{ camera_name }}"
+        message: "Alarm is ARMED. Frigate detected person ({{ confidence_pct }}% confidence). Check cameras immediately!"
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+            interruption-level: critical
+          image: "http://192.168.68.77:5003/api/events/{{ event_id }}/snapshot.jpg"
+          actions:
+            - action: "PANIC_MODE"
+              title: "🚨 PANIC"
+              destructive: true
+            - action: "VIEW_CAMERAS"
+              title: "View Cameras"
+            - action: "CALL_SECURITY"
+              title: "Call Security"
+              uri: "tel:10111"
+
+    - service: notify.mobile_app_person1
+      data:
+        title: "🚨 PERSON DETECTED: {{ camera_name }}"
+        message: "Alarm is ARMED. Frigate detected person ({{ confidence_pct }}% confidence). Check cameras immediately!"
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+            interruption-level: critical
+          image: "http://192.168.68.77:5003/api/events/{{ event_id }}/snapshot.jpg"
+          actions:
+            - action: "PANIC_MODE"
+              title: "🚨 PANIC"
+              destructive: true
+            - action: "VIEW_CAMERAS"
+              title: "View Cameras"
+            - action: "CALL_SECURITY"
+              title: "Call Security"
+              uri: "tel:10111"
+
+# ============================================
+# PANIC MODE - EMERGENCY RESPONSE
+# Triggered when PANIC button pressed from person detection alert
+# ============================================
+
+- id: panic_mode_emergency_response
+  alias: "PANIC: Emergency Response - All Lights + Alarm + WhatsApp Share"
+  description: "Activate alarm panic, turn on ALL lights, and open WhatsApp share when PANIC button pressed"
+  mode: single
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: "PANIC_MODE"
+  variables:
+    snapshot_url: "http://192.168.68.77:5003/api/events/{{ trigger.event.data.event_id | default('latest') }}/snapshot.jpg"
+    emergency_message: "🚨 ACTIVE INTRUDER ALERT!\n\nPlease help - active intruder detected at:\n📍 13 Townsend Road, Townsend Estate Unit 1\n\nPolice: 10111\nSecurity: Armed Response needed NOW"
+    whatsapp_text: "Please help active intruder, 13 Townsend Road, Townsend Estate Unit 1"
+  action:
+    # 1. TRIGGER ALARM PANIC
+    - service: alarm_control_panel.alarm_trigger
+      target:
+        entity_id: alarm_control_panel.alarm_partition_1
+
+    # 2. TURN ON ALL LIGHTS (including main bedroom)
+    - service: switch.turn_on
+      target:
+        entity_id:
+          # Ground Floor
+          - switch.sonoff_100176c107_1  # Kitchen 1
+          - switch.sonoff_100176c107_2  # Kitchen 2
+          - switch.sonoff_100176c107_3  # Kitchen 3
+          - switch.sonoff_1001508021_1  # Living 1
+          - switch.sonoff_1001508021_2  # Living 2
+          - switch.sonoff_1001de76ac_1  # Entry Chandelier
+          - switch.sonoff_1001de76ac_2  # Entry Down Lights
+          - switch.sonoff_1001eb21e6_1  # Hallway
+          - switch.garage_switch        # Garage
+          # Upper Floor
+          - switch.sonoff_1001508fc5_1  # Alexandra Bedroom 1
+          - switch.sonoff_1001508fc5_2  # Alexandra Bedroom 2
+          - switch.sonoff_1001eb1d06_1  # Alexandra Bathroom
+          - switch.mila_bedroom_light   # Mila Bedroom
+          - switch.sonoff_1001eb2228_1  # Mila Bathroom
+          - switch.sonoff_1001eb24e5_1  # Upstairs Hall
+          # Main Bedroom (NOW INCLUDED FOR PANIC)
+          - switch.sonoff_1001e80ff3_1  # Main Bedroom 1
+          - switch.sonoff_1001e80ff3_2  # Main Bedroom 2
+          - switch.sonoff_1001e80ff3_3  # Main Bedroom 3
+
+    # 3. LOG PANIC ACTIVATION
+    - service: logbook.log
+      data:
+        name: "🚨 PANIC MODE ACTIVATED"
+        message: "PANIC button pressed. Alarm triggered, all lights turned on. User: {{ trigger.event.data.device_id | default('Unknown') }}"
+
+    # 4. SEND WHATSAPP SHARE NOTIFICATION
+    - service: notify.mobile_app_{{ trigger.event.data.device_id.split('_')[-1] | default('person1') }}
+      data:
+        title: "🚨 PANIC MODE ACTIVE"
+        message: "{{ emergency_message }}"
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+            interruption-level: critical
+          actions:
+            - action: "URI"
+              title: "Share to WhatsApp"
+              uri: "whatsapp://send?text={{ whatsapp_text | urlencode }}"
+
+    # 5. NOTIFY OTHER PHONE (if Tatiana pressed, notify Nico and vice versa)
+    - service: notify.mobile_app_person2
+      data:
+        title: "🚨 PANIC MODE ACTIVATED"
+        message: "{{ trigger.event.data.device_id | default('Someone') | replace('_', ' ') | title }} activated PANIC MODE!\n\n{{ emergency_message }}"
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+            interruption-level: critical
+
+    - service: notify.mobile_app_person1
+      data:
+        title: "🚨 PANIC MODE ACTIVATED"
+        message: "{{ trigger.event.data.device_id | default('Someone') | replace('_', ' ') | title }} activated PANIC MODE!\n\n{{ emergency_message }}"
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+            interruption-level: critical
+
+# ============================================
+# SYSTEM: DAILY BACKUP AUTOMATION
+# Creates automatic HA backup daily at 3:30 AM
+# ============================================
+
+- id: system_daily_backup
+  alias: "SYSTEM: Daily Config Backup"
+  description: "Create automatic Home Assistant backup daily at 3:30 AM"
+  mode: single
+  trigger:
+    - platform: time
+      at: "03:30:00"
+  action:
+    - service: backup.create
+      data:
+        name: "Auto Backup {{ now().strftime('%Y-%m-%d') }}"
+    - service: logbook.log
+      data:
+        name: "System Backup"
+        message: "Daily automatic backup created at {{ now().strftime('%Y-%m-%d %H:%M') }}"
+
+# ============================================
+# SYSTEM: SERVICE HEALTH MONITORING
+# Monitor critical services and alert on failures
+# ============================================
+
+# Frigate Offline Alert
+- id: system_frigate_offline_alert
+  alias: "SYSTEM: Frigate Offline Alert"
+  description: "Alert when Frigate has been unavailable for 5+ minutes"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.frigate_running
+      to: "off"
+      for:
+        minutes: 5
+    - platform: state
+      entity_id: binary_sensor.frigate_running
+      to: "unavailable"
+      for:
+        minutes: 5
+  condition:
+    # Throttle: max once per hour
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 3600 }}
+  action:
+    - service: notify.mobile_app_person1
+      data:
+        title: "⚠️ Frigate Offline"
+        message: "Frigate NVR has been offline for 5+ minutes. Check server status."
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 0.8
+            interruption-level: time-sensitive
+          actions:
+            - action: "RESTART_FRIGATE"
+              title: "Restart Frigate"
+    - service: persistent_notification.create
+      data:
+        title: "Frigate Service Alert"
+        message: "Frigate NVR has been offline since {{ now().strftime('%H:%M:%S') }}"
+        notification_id: frigate_offline_alert
+
+# Frigate Recovery Notification
+- id: system_frigate_recovered
+  alias: "SYSTEM: Frigate Recovered"
+  description: "Notify when Frigate comes back online after an outage"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.frigate_running
+      to: "on"
+  condition:
+    # Only if we recently had an offline alert
+    - condition: template
+      value_template: >
+        {{ state_attr('automation.system_frigate_offline_alert', 'last_triggered') is not none and
+           (now() - state_attr('automation.system_frigate_offline_alert', 'last_triggered')).total_seconds() < 3600 }}
+  action:
+    - service: notify.mobile_app_person1
+      data:
+        title: "✓ Frigate Back Online"
+        message: "Frigate NVR has recovered and is now running normally."
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: frigate_offline_alert
+
+# MQTT Broker Offline Alert
+- id: system_mqtt_offline_alert
+  alias: "SYSTEM: MQTT Broker Offline Alert"
+  description: "Alert when MQTT broker becomes unavailable"
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.mosquitto_running
+      to: "off"
+      for:
+        minutes: 2
+    - platform: state
+      entity_id: binary_sensor.mosquitto_running
+      to: "unavailable"
+      for:
+        minutes: 2
+  condition:
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 1800 }}
+  action:
+    - service: notify.mobile_app_person1
+      data:
+        title: "⚠️ MQTT Broker Offline"
+        message: "Mosquitto MQTT broker is offline. Frigate events and smart home control may be affected."
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+            interruption-level: critical
+    - service: persistent_notification.create
+      data:
+        title: "MQTT Broker Alert"
+        message: "Mosquitto is offline - check Docker container status"
+        notification_id: mqtt_offline_alert
+
+# Home Assistant High CPU Alert
+- id: system_high_cpu_alert
+  alias: "SYSTEM: High CPU Alert"
+  description: "Alert when system CPU usage exceeds 90% for extended period"
+  mode: single
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.processor_use
+      above: 90
+      for:
+        minutes: 10
+  condition:
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 3600 }}
+  action:
+    - service: notify.mobile_app_person1
+      data:
+        title: "⚠️ High CPU Usage"
+        message: >
+          System CPU at {{ states('sensor.processor_use') }}% for 10+ minutes.
+          Frigate detection may be auto-paused.
+        data:
+          push:
+            interruption-level: time-sensitive
+
+# Home Assistant Low Disk Space Alert
+- id: system_low_disk_alert
+  alias: "SYSTEM: Low Disk Space Alert"
+  description: "Alert when disk usage exceeds 85%"
+  mode: single
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.disk_use_percent
+      above: 85
+  condition:
+    - condition: template
+      value_template: >
+        {{ state_attr(this.entity_id, 'last_triggered') is none or
+           (now() - state_attr(this.entity_id, 'last_triggered')).total_seconds() > 86400 }}
+  action:
+    - service: notify.mobile_app_person1
+      data:
+        title: "⚠️ Low Disk Space"
+        message: >
+          Disk usage at {{ states('sensor.disk_use_percent') }}%.
+          Consider clearing old Frigate recordings or backups.
+        data:
+          push:
+            interruption-level: time-sensitive
+          actions:
+            - action: "VIEW_STORAGE"
+              title: "View Storage"
+
+# Handle Restart Frigate action from notification
+- id: system_restart_frigate_action
+  alias: "SYSTEM: Restart Frigate Action"
+  description: "Handle iOS action to restart Frigate container"
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: "RESTART_FRIGATE"
+  action:
+    - service: shell_command.restart_frigate
+    - service: notify.mobile_app_person1
+      data:
+        title: "Frigate Restarting"
+        message: "Frigate container restart initiated. It should be back online in ~60 seconds."

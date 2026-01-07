@@ -1,0 +1,352 @@
+# Home Automation Stack - Docker Compose
+# Beelink N95 with Intel UHD Graphics + OpenVINO
+#
+# Services:
+#   - Home Assistant (2025.12)
+#   - Frigate NVR (0.16) with OpenVINO
+#   - Mosquitto MQTT Broker
+#   - CompreFace (Face Recognition)
+#   - Double Take (Face Processing)
+#
+# Usage:
+#   docker compose up -d
+#   docker compose logs -f
+
+services:
+  # ===========================================
+  # MQTT Broker - Message Bus for all services
+  # ===========================================
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:ro
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    environment:
+      - TZ=Africa/Johannesburg
+    networks:
+      - homelab
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 -i healthcheck -u ${MQTT_USER} -P ${MQTT_PASS} -W 3"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  # ===========================================
+  # Frigate NVR - AI Object Detection
+  # ===========================================
+  frigate:
+    image: ghcr.io/blakeblackshear/frigate:0.16.3
+    container_name: frigate
+    restart: unless-stopped
+    privileged: true
+    shm_size: "256mb"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8971:8971"   # Web UI
+      - "5002:5000"   # API (mapped to 5002 to avoid wyze-bridge conflict on 5000)
+      - "18554:18554" # RTSP restream (non-default to avoid wyze-bridge conflict)
+      - "8555:8555"   # WebRTC
+    volumes:
+      - ./frigate/config:/config
+      - /mnt/frigate-recordings:/media/frigate
+      - /etc/localtime:/etc/localtime:ro
+    devices:
+      # Intel GPU for OpenVINO hardware acceleration
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    environment:
+      - TZ=Africa/Johannesburg
+      # MQTT credentials
+      - FRIGATE_MQTT_USER=${FRIGATE_MQTT_USER}
+      - FRIGATE_MQTT_PASSWORD=${FRIGATE_MQTT_PASSWORD}
+      # Amcrest camera credentials
+      - FRIGATE_AMCREST_USER=${FRIGATE_AMCREST_USER}
+      - FRIGATE_AMCREST_PASS=${FRIGATE_AMCREST_PASS}
+      - FRIGATE_FRONT_DOOR_IP=${FRIGATE_FRONT_DOOR_IP}
+      - FRIGATE_BACKYARD_IP=${FRIGATE_BACKYARD_IP}
+      # EZVIZ camera credentials
+      - FRIGATE_EZVIZ_USER=${FRIGATE_EZVIZ_USER}
+      - FRIGATE_EZVIZ_PASS=${FRIGATE_EZVIZ_PASS}
+      - FRIGATE_EZVIZ_IP=${FRIGATE_EZVIZ_IP}
+      # Server IP for WebRTC
+      - FRIGATE_SERVER_IP=${FRIGATE_SERVER_IP}
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    networks:
+      - homelab
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ===========================================
+  # Home Assistant - Home Automation Hub
+  # ===========================================
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:2025.12
+    container_name: homeassistant
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./homeassistant:/config
+      - ./homeassistant/www/snapshots:/media/snapshots
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    environment:
+      - TZ=Africa/Johannesburg
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      frigate:
+        condition: service_healthy
+    networks:
+      - homelab
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "-o", "/dev/null", "http://localhost:8123/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # ===========================================
+  # Guest Pass Server - Persistent pass storage
+  # ===========================================
+  guest-pass-server:
+    image: node:20-alpine
+    container_name: guest-pass-server
+    restart: unless-stopped
+    working_dir: /app
+    command: node save-passes-server.js
+    ports:
+      - "8124:8124"
+    volumes:
+      - ./homeassistant/www/dashboard:/app:rw
+    environment:
+      - TZ=Africa/Johannesburg
+    networks:
+      - homelab
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8124/load', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ===========================================
+  # CompreFace - Face Recognition Engine
+  # ===========================================
+  compreface-postgres:
+    image: postgres:16-alpine
+    container_name: compreface-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=compreface
+      - POSTGRES_PASSWORD=${COMPREFACE_DB_PASS}
+      - POSTGRES_DB=compreface
+    volumes:
+      - ./compreface/data/postgres:/var/lib/postgresql/data
+    networks:
+      - homelab
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U compreface"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  compreface-core:
+    image: exadel/compreface-core:latest
+    container_name: compreface-core
+    restart: unless-stopped
+    environment:
+      - ML_PORT=3000
+    networks:
+      - homelab
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  compreface:
+    image: exadel/compreface-api:latest
+    container_name: compreface
+    restart: unless-stopped
+    ports:
+      - "8000:8080"
+    environment:
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres:5432/compreface
+      - POSTGRES_USER=compreface
+      - POSTGRES_PASSWORD=${COMPREFACE_DB_PASS}
+      - SPRING_PROFILES_ACTIVE=dev
+      - API_JAVA_OPTS=-Xmx512m
+      - SAVE_IMAGES_TO_DB=true
+      - CONNECTION_TIMEOUT=10000
+      - READ_TIMEOUT=60000
+    depends_on:
+      compreface-postgres:
+        condition: service_healthy
+      compreface-core:
+        condition: service_healthy
+    networks:
+      - homelab
+  compreface-admin:
+    image: exadel/compreface-admin:latest
+    container_name: compreface-admin
+    restart: unless-stopped
+    ports:
+      - "8001:8080"
+    environment:
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres:5432/compreface
+      - POSTGRES_USER=compreface
+      - POSTGRES_PASSWORD=YOUR_COMPREFACE_DB_PASS
+      - SPRING_PROFILES_ACTIVE=dev
+      - ADMIN_JAVA_OPTS=-Xmx256m
+      - EXTERNAL_API_HOST=http://compreface:8000
+    depends_on:
+      compreface-postgres:
+        condition: service_healthy
+    networks:
+      - homelab
+
+  # ===========================================
+  # Double Take - Face Recognition Processing
+  # ===========================================
+  doubletake:
+    image: jakowenko/double-take:1.13.1
+    container_name: doubletake
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./doubletake:/.storage
+    environment:
+      - TZ=Africa/Johannesburg
+    depends_on:
+      frigate:
+        condition: service_healthy
+      compreface:
+        condition: service_started
+      mosquitto:
+        condition: service_healthy
+    networks:
+      - homelab
+
+  # ===========================================
+  # Scrypted - HomeKit/Camera Bridge
+  # Exposes HomeKit cameras (Aqara G3) as RTSP for Frigate
+  # ===========================================
+  scrypted:
+    image: koush/scrypted:latest
+    container_name: scrypted
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./scrypted:/server/volume
+    environment:
+      - TZ=Africa/Johannesburg
+      - SCRYPTED_INSECURE_PORT=11080
+      - SCRYPTED_SECURE_PORT=10443
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ===========================================
+  # Docker Wyze Bridge - Exposes Wyze cameras as RTSP
+  # Garage camera for gate/garage control dashboard
+  # ===========================================
+  wyze-bridge:
+    image: mrlt8/wyze-bridge:latest
+    container_name: wyze-bridge
+    restart: unless-stopped
+    network_mode: host  # Required for P2P camera connections
+    environment:
+      - TZ=Africa/Johannesburg
+      # Wyze account credentials (from .env)
+      - WYZE_EMAIL=${WYZE_EMAIL}
+      - WYZE_PASSWORD=${WYZE_PASSWORD}
+      # API Key for bypassing 2FA (from .env)
+      - API_ID=${WYZE_API_ID}
+      - API_KEY=${WYZE_API_KEY}
+      # Stream settings
+      - QUALITY=SD60
+      - ENABLE_AUDIO=false
+      - RTSP_FW=true
+      - ON_DEMAND=false
+      - WB_AUTH=false
+      - WB_IP=192.168.68.77
+      # Disable web UI to avoid port 5000 conflict with Frigate API
+      - WEBUI=false
+    volumes:
+      - ./wyze-bridge:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ===========================================
+  # Media Library Fetcher - TMDB Integration
+  # Fetches popular + top-rated content daily
+  # ===========================================
+  media-library:
+    build: ./media-library
+    container_name: media-library
+    restart: unless-stopped
+    environment:
+      - TZ=Africa/Johannesburg
+      - TMDB_API_KEY=${TMDB_API_KEY}
+      - OUTPUT_PATH=/data/watchlist.json
+      - POSTERS_PATH=/data/posters
+      - MONTHS_BACK=2
+      - REGION=ZA
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./homeassistant/www/dashboard/data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ===========================================
+  # Frigate CORS Proxy - For dashboard API access
+  # ===========================================
+  frigate-proxy:
+    image: nginx:alpine
+    container_name: frigate-proxy
+    restart: unless-stopped
+    ports:
+      - "5003:5003"
+    volumes:
+      - ./nginx-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frigate
+    networks:
+      - homelab
+
+# ===========================================
+# Network Configuration
+# ===========================================
+networks:
+  homelab:
+    name: homelab_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

@@ -1,0 +1,201 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "dashboard-config.schema.json",
+    "title": "Dashboard Configuration Schema",
+    "description": "JSON Schema for the Smart Home Dashboard configuration",
+    "type": "object",
+    "required": ["version", "navigation", "views"],
+    "properties": {
+        "version": {
+            "type": "string",
+            "description": "Configuration version",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "name": {
+            "type": "string",
+            "description": "Dashboard name"
+        },
+        "theme": {
+            "type": "object",
+            "properties": {
+                "name": { "type": "string" },
+                "colors": {
+                    "type": "object",
+                    "properties": {
+                        "primary": { "type": "string" },
+                        "secondary": { "type": "string" },
+                        "accent": { "type": "string" }
+                    }
+                }
+            }
+        },
+        "navigation": {
+            "type": "object",
+            "required": ["items"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": ["bottom", "side", "top"]
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/navItem"
+                    }
+                },
+                "moreMenu": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/navItem"
+                    }
+                }
+            }
+        },
+        "statusBar": {
+            "type": "object",
+            "properties": {
+                "showTime": { "type": "boolean" },
+                "showDate": { "type": "boolean" },
+                "showWeather": { "type": "boolean" },
+                "pills": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/statusPill"
+                    }
+                }
+            }
+        },
+        "views": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/view"
+            }
+        },
+        "rooms": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/room"
+                }
+            }
+        },
+        "entities": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+        },
+        "cameras": {
+            "type": "object",
+            "properties": {
+                "frigate": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/camera" }
+                },
+                "blink": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/camera" }
+                }
+            }
+        },
+        "features": {
+            "type": "object",
+            "additionalProperties": { "type": "boolean" }
+        },
+        "api": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "local": { "type": "string", "format": "uri" },
+                    "external": { "type": "string", "format": "uri" }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "navItem": {
+            "type": "object",
+            "required": ["id", "icon", "label"],
+            "properties": {
+                "id": { "type": "string" },
+                "icon": { "type": "string" },
+                "label": { "type": "string" },
+                "color": { "type": "string" },
+                "badge": { "type": ["string", "number"] }
+            }
+        },
+        "statusPill": {
+            "type": "object",
+            "required": ["id", "type", "icon"],
+            "properties": {
+                "id": { "type": "string" },
+                "type": { "type": "string" },
+                "icon": { "type": "string" },
+                "label": { "type": "string" },
+                "entityId": { "type": "string" },
+                "action": { "type": "string" }
+            }
+        },
+        "view": {
+            "type": "object",
+            "required": ["title", "layout", "components"],
+            "properties": {
+                "title": { "type": "string" },
+                "layout": {
+                    "type": "string",
+                    "enum": ["grid", "stack", "masonry", "flex"]
+                },
+                "components": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/component"
+                    }
+                }
+            }
+        },
+        "component": {
+            "type": "object",
+            "required": ["type", "id"],
+            "properties": {
+                "type": { "type": "string" },
+                "id": { "type": "string" },
+                "props": { "type": "object" }
+            }
+        },
+        "room": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "icon": { "type": "string" },
+                "lights": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "scenes": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["id", "name"],
+                        "properties": {
+                            "id": { "type": "string" },
+                            "name": { "type": "string" }
+                        }
+                    }
+                },
+                "image": { "type": ["string", "null"] }
+            }
+        },
+        "camera": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "detectEntity": { "type": "string" },
+                "powered": { "type": "boolean" }
+            }
+        }
+    }
+}

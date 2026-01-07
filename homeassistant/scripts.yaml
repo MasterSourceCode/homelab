@@ -1,0 +1,600 @@
+# On-Demand AI Camera Analysis Scripts
+
+# Analyze all cameras now
+analyze_all_cameras_now:
+  alias: "AI Analyze All Cameras"
+  description: "Perform AI analysis on all camera feeds immediately"
+  sequence:
+    - service: ai_task.generate_data
+      data:
+        task_name: "Full Camera Analysis"
+        instructions: >
+          Provide a comprehensive security overview of all camera feeds.
+          Describe any people, vehicles, or animals visible.
+          Note any unusual activity or potential security concerns.
+        entity_id: ai_task.google_ai_task
+      response_variable: analysis
+    - service: persistent_notification.create
+      data:
+        title: "Camera Analysis Complete"
+        message: "{{ analysis.data.result }}"
+        notification_id: full_camera_analysis
+
+# Analyze front door on demand
+analyze_front_door_now:
+  alias: "AI Analyze Front Door Now"
+  description: "Analyze front door camera immediately"
+  sequence:
+    - service: ai_task.generate_data
+      data:
+        task_name: "Front Door Analysis"
+        instructions: >
+          Analyze the current front door camera view.
+          Describe: people visible, vehicles in driveway, packages on porch, any concerns.
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: "/api/frigate/notifications/front_door/person/snapshot.jpg"
+      response_variable: analysis
+    - service: persistent_notification.create
+      data:
+        title: "Front Door - Current View"
+        message: "{{ analysis.data.result }}"
+        notification_id: front_door_analysis
+
+# Analyze backyard on demand
+analyze_backyard_now:
+  alias: "AI Analyze Backyard Now"
+  description: "Analyze backyard camera immediately"
+  sequence:
+    - service: ai_task.generate_data
+      data:
+        task_name: "Backyard Analysis"
+        instructions: >
+          Analyze the current backyard camera view.
+          Describe: people in pool or garden, pets visible, any safety concerns.
+        entity_id: ai_task.google_ai_task
+        attachments:
+          - media_content_type: image/jpeg
+            media_content_id: "/api/frigate/notifications/backyard/person/snapshot.jpg"
+      response_variable: analysis
+    - service: persistent_notification.create
+      data:
+        title: "Backyard - Current View"
+        message: "{{ analysis.data.result }}"
+        notification_id: backyard_analysis
+
+# Security check - analyze all areas
+security_check:
+  alias: "AI Security Check"
+  description: "Comprehensive AI security analysis of all monitored areas"
+  sequence:
+    - service: ai_task.generate_data
+      data:
+        task_name: "Security Status Check"
+        instructions: >
+          Perform a security status check:
+          1. Review all motion sensor states
+          2. Check alarm system status
+          3. Identify any active alerts or concerns
+          4. Provide security recommendations if any
+          Be thorough but concise.
+        entity_id: ai_task.google_ai_task
+      response_variable: security_status
+    - service: persistent_notification.create
+      data:
+        title: "Security Check Complete"
+        message: "{{ security_status.data.result }}"
+        notification_id: security_check_result
+
+# Ask AI about home status
+ask_ai_home_status:
+  alias: "Ask AI Home Status"
+  description: "Get an AI-generated summary of current home status"
+  sequence:
+    - service: ai_task.generate_data
+      data:
+        task_name: "Home Status Summary"
+        instructions: >
+          Provide a friendly summary of the home's current status:
+          - Alarm system state
+          - Any motion or occupancy detected
+          - Camera status
+          - Any notable events or alerts
+          Keep it conversational and helpful.
+        entity_id: ai_task.google_ai_task
+      response_variable: home_status
+    - service: persistent_notification.create
+      data:
+        title: "Home Status"
+        message: "{{ home_status.data.result }}"
+        notification_id: home_status_summary
+
+# ============================================
+# DELIVERY MODE - AI-POWERED PACKAGE DETECTION
+# ============================================
+# Opens garage, announces instructions, uses AI to detect package drop
+# Says "Thank you" once when package detected, then stops
+
+delivery_mode:
+  alias: "Delivery Mode"
+  description: "Open garage, announce instructions, AI detects package drop, wait for garage close"
+  icon: mdi:package-variant
+  mode: single
+  sequence:
+    # Log start
+    - service: logbook.log
+      data:
+        name: "Delivery Mode"
+        message: "Starting AI-powered delivery mode"
+
+    # Create notification for dashboard to track state
+    - service: persistent_notification.create
+      data:
+        title: "Delivery Mode Active"
+        message: "AI monitoring for package delivery"
+        notification_id: delivery_mode_active
+
+    # Open the garage if not already open
+    - service: cover.open_cover
+      target:
+        entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+
+    # Wait for garage to open
+    - delay:
+        seconds: 5
+
+    # Send notification to phones
+    - service: notify.mobile_app_nico
+      data:
+        title: "Delivery Mode Active"
+        message: "Garage open. AI monitoring for package drop."
+        data:
+          push:
+            sound: default
+          image: /local/snapshots/delivery_check.jpg
+
+    # Main loop - announce and check for package with AI
+    # Max 15 iterations (~5 min timeout for safety)
+    - repeat:
+        until:
+          - condition: or
+            conditions:
+              # Stop if garage closed
+              - condition: state
+                entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+                state: "closed"
+              # Safety timeout after 15 iterations
+              - condition: template
+                value_template: "{{ repeat.index > 15 }}"
+        sequence:
+          # Announce delivery instructions
+          - service: notify.alexa_media
+            data:
+              message: "Please leave the delivery on the garage floor."
+              target: media_player.everywhere
+              data:
+                type: announce
+
+          # Wait for delivery person to potentially place package
+          - delay:
+              seconds: 8
+
+          # Take snapshot of garage camera
+          - service: camera.snapshot
+            target:
+              entity_id: camera.wyze_garage
+            data:
+              filename: "/config/www/snapshots/delivery_check.jpg"
+
+          # Wait for snapshot to save
+          - delay:
+              seconds: 2
+
+          # AI Analysis - check if package has been placed
+          - service: ai_task.generate_data
+            data:
+              task_name: "Delivery Package Detection"
+              instructions: >
+                Look at this garage floor image carefully.
+                Is there a package, box, parcel, or delivery item visible on the garage floor?
+                Look for cardboard boxes, parcels, envelopes, or any delivery items that weren't there before.
+                Answer with ONLY one of these exact responses:
+                PACKAGE_DETECTED - if you can see a package/box/parcel on the floor
+                NO_PACKAGE - if the floor is empty or no delivery items visible
+              entity_id: ai_task.google_ai_task
+              attachments:
+                - media_content_type: image/jpeg
+                  media_content_id: media-source://media_source/local/snapshots/delivery_check.jpg
+            response_variable: ai_result
+            continue_on_error: true
+
+          # Log AI result for debugging
+          - service: logbook.log
+            data:
+              name: "Delivery Mode AI"
+              message: "AI check #{{ repeat.index }}: {{ ai_result.data | default('no response') }}"
+
+          # If package detected, thank them and break to wait for garage close
+          - if:
+              - condition: template
+                value_template: "{{ 'PACKAGE' in (ai_result.data | default('') | upper) and 'DETECTED' in (ai_result.data | default('') | upper) }}"
+            then:
+              # Update notification for dashboard - package detected state
+              - service: persistent_notification.create
+                data:
+                  title: "Package Received!"
+                  message: "Waiting for garage to close..."
+                  notification_id: delivery_mode_package_detected
+
+              # Thank you announcement (once)
+              - service: notify.alexa_media
+                data:
+                  message: "Thank you! Please proceed to exit. Thank you for the delivery!"
+                  target: media_player.everywhere
+                  data:
+                    type: announce
+
+              # Log success
+              - service: logbook.log
+                data:
+                  name: "Delivery Mode"
+                  message: "Package detected! Thank you message sent. Waiting for garage to close."
+
+              # Notify phone with snapshot
+              - service: notify.mobile_app_nico
+                data:
+                  title: "Package Delivered!"
+                  message: "AI detected package drop. Waiting for garage to close to complete."
+                  data:
+                    push:
+                      sound: default
+                    image: /local/snapshots/delivery_check.jpg
+
+              # Wait for garage to close before ending (up to 5 minutes)
+              - wait_for_trigger:
+                  - platform: state
+                    entity_id: cover.smart_garage_door_2311083729366461070548e1e9e12926_garage
+                    to: "closed"
+                timeout:
+                  minutes: 5
+                continue_on_timeout: true
+
+              # Final cleanup - clear all notifications
+              - service: persistent_notification.dismiss
+                data:
+                  notification_id: delivery_mode_active
+
+              - service: persistent_notification.dismiss
+                data:
+                  notification_id: delivery_mode_package_detected
+
+              # Log completion
+              - service: logbook.log
+                data:
+                  name: "Delivery Mode"
+                  message: "Delivery complete - garage closed, all cleanup done"
+
+              # Final phone notification
+              - service: notify.mobile_app_nico
+                data:
+                  title: "Delivery Complete"
+                  message: "Package received and garage closed. Delivery mode ended."
+                  data:
+                    push:
+                      sound: default
+
+              # Stop script - delivery transaction complete
+              - stop: "Package detected and garage closed - delivery complete"
+
+          # Wait before next check cycle
+          - delay:
+              seconds: 10
+
+    # If we exit the loop (garage closed without package or timeout)
+    # Clear all notifications
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: delivery_mode_active
+
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: delivery_mode_package_detected
+
+    - service: logbook.log
+      data:
+        name: "Delivery Mode"
+        message: "Delivery mode ended - {{ 'garage closed' if states('cover.smart_garage_door_2311083729366461070548e1e9e12926_garage') == 'closed' else 'timeout reached' }}"
+
+    - service: notify.mobile_app_nico
+      data:
+        title: "Delivery Mode Ended"
+        message: >
+          {% if states('cover.smart_garage_door_2311083729366461070548e1e9e12926_garage') == 'closed' %}
+          Garage closed. No package detected by AI.
+          {% else %}
+          Timeout reached (5 min). Check garage manually.
+          {% endif %}
+        data:
+          push:
+            sound: default
+
+# ============================================
+# GATE PLUG - REBOOT GARAGE DOOR SWITCH
+# ============================================
+# eWeLink plug (GatePlug) controls power to garage door switch
+# Device ID: 100258f6fb | Model: CK-BL602-SWP1-02
+
+reboot_garage_door_switch:
+  alias: "Reboot Garage Door Switch"
+  description: "Power cycle the garage door switch via GatePlug to fix connectivity issues"
+  icon: mdi:restart
+  sequence:
+    # Log the action
+    - service: logbook.log
+      data:
+        name: "GatePlug"
+        message: "Rebooting garage door switch - power cycling"
+    # Turn OFF the plug (cut power)
+    - service: switch.turn_off
+      target:
+        entity_id: switch.sonoff_100258f6fb_1
+    # Wait 5 seconds for full power drain
+    - delay:
+        seconds: 5
+    # Turn ON the plug (restore power)
+    - service: switch.turn_on
+      target:
+        entity_id: switch.sonoff_100258f6fb_1
+    # Notify that reboot is complete
+    - service: persistent_notification.create
+      data:
+        title: "Garage Door Switch Rebooted"
+        message: "Power cycle complete. The switch should reconnect in ~30 seconds."
+        notification_id: garage_switch_reboot
+    # Log completion
+    - service: logbook.log
+      data:
+        name: "GatePlug"
+        message: "Garage door switch reboot complete"
+
+# ============================================
+# CRITICAL ALERTS TEST
+# ============================================
+# Test the critical alerts system by sending a test notification
+
+test_critical_alerts:
+  alias: "Test Critical Alerts"
+  description: "Send a test critical notification to verify the system works"
+  icon: mdi:bell-alert
+  fields:
+    mode:
+      description: "Alert mode to set (outside, stay, away)"
+      example: "stay"
+      default: "stay"
+    notify_nico:
+      description: "Send to Nico's phone"
+      example: true
+      default: true
+    notify_tatiana:
+      description: "Send to Tatiana's phone"
+      example: false
+      default: false
+  sequence:
+    # Set the mode
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.critical_alerts_mode
+      data:
+        option: "{{ mode | default('stay') }}"
+
+    # Set notification toggles
+    - service: input_boolean.turn_{{ 'on' if notify_nico | default(true) else 'off' }}
+      target:
+        entity_id: input_boolean.critical_alerts_notify_nico
+
+    - service: input_boolean.turn_{{ 'on' if notify_tatiana | default(false) else 'off' }}
+      target:
+        entity_id: input_boolean.critical_alerts_notify_tatiana
+
+    # Log the test
+    - service: logbook.log
+      data:
+        name: "Critical Alerts Test"
+        message: "Testing critical alerts - Mode: {{ mode | default('stay') }}, Nico: {{ notify_nico | default(true) }}, Tatiana: {{ notify_tatiana | default(false) }}"
+
+    # Send test notification to Nico
+    - if:
+        - condition: template
+          value_template: "{{ notify_nico | default(true) }}"
+      then:
+        - service: notify.mobile_app_nico
+          data:
+            title: "🧪 Critical Alerts Test"
+            message: "This is a test notification. Mode: {{ mode | default('stay') | upper }}"
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              actions:
+                - action: "DISABLE_CRITICAL_ALERTS"
+                  title: "Disable Alerts"
+
+    # Send test notification to Tatiana
+    - if:
+        - condition: template
+          value_template: "{{ notify_tatiana | default(false) }}"
+      then:
+        - service: notify.mobile_app_tatiana_iphone
+          data:
+            title: "🧪 Critical Alerts Test"
+            message: "This is a test notification. Mode: {{ mode | default('stay') | upper }}"
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              actions:
+                - action: "DISABLE_CRITICAL_ALERTS"
+                  title: "Disable Alerts"
+
+    # Confirm the test
+    - service: persistent_notification.create
+      data:
+        title: "Critical Alerts Test Sent"
+        message: "Test notification sent. Mode: {{ mode | default('stay') | upper }}"
+        notification_id: critical_alerts_test
+
+# ============================================
+# REUSABLE NOTIFICATION SCRIPTS
+# ============================================
+# Use these to reduce duplication in automations
+
+# Send critical notification to both phones
+notify_critical_dual:
+  alias: "Notify Critical - Both Phones"
+  description: "Send a critical push notification to both Nico and Tatiana"
+  icon: mdi:bell-alert
+  fields:
+    title:
+      description: "Notification title"
+      example: "Security Alert"
+      required: true
+    message:
+      description: "Notification message body"
+      example: "Person detected at front door"
+      required: true
+    image:
+      description: "Optional image URL (local or Frigate)"
+      example: "/local/snapshots/front_door.jpg"
+      required: false
+    actions:
+      description: "Optional list of action buttons"
+      required: false
+  sequence:
+    - parallel:
+        - service: notify.mobile_app_nico
+          data:
+            title: "{{ title }}"
+            message: "{{ message }}"
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              image: "{{ image | default('') }}"
+              actions: "{{ actions | default([]) }}"
+        - service: notify.mobile_app_tatiana_iphone
+          data:
+            title: "{{ title }}"
+            message: "{{ message }}"
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              image: "{{ image | default('') }}"
+              actions: "{{ actions | default([]) }}"
+
+# Send standard notification to both phones
+notify_info_dual:
+  alias: "Notify Info - Both Phones"
+  description: "Send an informational notification to both phones"
+  icon: mdi:bell-outline
+  fields:
+    title:
+      description: "Notification title"
+      required: true
+    message:
+      description: "Notification message"
+      required: true
+    image:
+      description: "Optional image URL"
+      required: false
+  sequence:
+    - parallel:
+        - service: notify.mobile_app_nico
+          data:
+            title: "{{ title }}"
+            message: "{{ message }}"
+            data:
+              image: "{{ image | default('') }}"
+        - service: notify.mobile_app_tatiana_iphone
+          data:
+            title: "{{ title }}"
+            message: "{{ message }}"
+            data:
+              image: "{{ image | default('') }}"
+
+# Send security alert with snapshot from Frigate event
+notify_security_event:
+  alias: "Notify Security Event"
+  description: "Send security notification with Frigate snapshot to both phones"
+  icon: mdi:shield-alert
+  fields:
+    camera:
+      description: "Camera name (e.g., front_door, backyard)"
+      required: true
+    event_id:
+      description: "Frigate event ID for snapshot"
+      required: true
+    confidence:
+      description: "Detection confidence percentage"
+      required: true
+    label:
+      description: "Detected object label (e.g., person, car)"
+      required: false
+      default: "person"
+  variables:
+    camera_name: "{{ camera | replace('_', ' ') | title }}"
+    snapshot_url: "http://192.168.68.77:5003/api/events/{{ event_id }}/snapshot.jpg"
+  sequence:
+    - parallel:
+        - service: notify.mobile_app_nico
+          data:
+            title: "🚨 {{ label | default('Person') | title }} Detected: {{ camera_name }}"
+            message: "{{ label | default('Person') | title }} detected ({{ confidence }}% confidence). Check cameras."
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              image: "{{ snapshot_url }}"
+              actions:
+                - action: "PANIC_MODE"
+                  title: "🚨 PANIC"
+                  destructive: true
+                - action: "VIEW_CAMERAS"
+                  title: "View Cameras"
+                - action: "CALL_SECURITY"
+                  title: "Call Security"
+                  uri: "tel:10111"
+        - service: notify.mobile_app_tatiana_iphone
+          data:
+            title: "🚨 {{ label | default('Person') | title }} Detected: {{ camera_name }}"
+            message: "{{ label | default('Person') | title }} detected ({{ confidence }}% confidence). Check cameras."
+            data:
+              push:
+                sound:
+                  name: default
+                  critical: 1
+                  volume: 1.0
+                interruption-level: critical
+              image: "{{ snapshot_url }}"
+              actions:
+                - action: "PANIC_MODE"
+                  title: "🚨 PANIC"
+                  destructive: true
+                - action: "VIEW_CAMERAS"
+                  title: "View Cameras"

@@ -1,0 +1,287 @@
+<!-- System Performance View - Futuristic PC Metrics Dashboard Template -->
+<div id="view-system" class="h-full hidden overflow-hidden pc-view-futuristic">
+    <!-- Animated Background -->
+    <div class="pc-grid-bg"></div>
+    <div class="pc-hex-overlay"></div>
+    <div class="pc-scan-line"></div>
+
+    <!-- Corner Accents -->
+    <div class="pc-corner-accent top-left"></div>
+    <div class="pc-corner-accent top-right"></div>
+    <div class="pc-corner-accent bottom-left"></div>
+    <div class="pc-corner-accent bottom-right"></div>
+
+    <div class="h-full flex flex-col p-4 relative z-10">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/30 to-blue-600/30 flex items-center justify-center border border-cyan-500/30" style="animation: pcGlowPulse 3s ease-in-out infinite">
+                        <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="text-xl font-light tracking-wide text-white/90">SYSTEM PERFORMANCE</h2>
+                    <p id="pcLastUpdate" class="text-cyan-400/60 text-xs font-mono">INITIALIZING...</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <!-- Frigate Detection Toggle -->
+                <div class="glass-light rounded-xl px-4 py-2">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        <div>
+                            <div class="text-[10px] text-white/40 uppercase">Frigate AI</div>
+                            <div class="text-xs text-white/60">Save CPU when idle</div>
+                        </div>
+                        <button
+                            id="frigateDetectionToggle"
+                            data-action="toggleFrigateDetection"
+                            class="relative w-12 h-6 rounded-full transition-colors duration-300 bg-white/20"
+                            title="Pause Frigate object detection to reduce CPU load">
+                            <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-lg transition-transform duration-300 transform translate-x-0"></div>
+                        </button>
+                    </div>
+                </div>
+                <!-- System Info -->
+                <div class="glass-light rounded-xl px-4 py-2">
+                    <div class="flex items-center gap-6">
+                        <div>
+                            <div class="text-[10px] text-white/40 uppercase">Hostname</div>
+                            <div id="pcHostname" class="text-sm font-mono text-white/90">--</div>
+                        </div>
+                        <div class="w-px h-8 bg-white/10"></div>
+                        <div>
+                            <div class="text-[10px] text-white/40 uppercase">Uptime</div>
+                            <div id="pcUptime" class="text-sm font-mono text-cyan-400">--</div>
+                        </div>
+                        <div class="w-px h-8 bg-white/10"></div>
+                        <div>
+                            <div class="text-[10px] text-white/40 uppercase">Processes</div>
+                            <div id="pcProcessCount" class="text-sm font-mono text-white/90">--</div>
+                        </div>
+                    </div>
+                </div>
+                <button data-action="showHome" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/50 flex items-center justify-center transition-all duration-300">
+                    <svg class="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="flex-1 grid grid-cols-12 gap-4 min-h-0 overflow-hidden">
+            <!-- LEFT COLUMN: Health Score + CPU + Memory -->
+            <div class="col-span-3 flex flex-col gap-4 overflow-hidden">
+                <!-- Top Row: Health Score + Temperature (side by side) -->
+                <div class="grid grid-cols-2 gap-3 flex-shrink-0">
+                    <!-- Health Score Card - Half Width -->
+                    <div class="pc-card-neo" style="--card-glow: rgba(34, 197, 94, 0.15)">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="relative mb-2">
+                                <svg class="w-14 h-14" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
+                                    <circle id="pcHealthRing" class="pc-health-ring" cx="50" cy="50" r="42" fill="none" stroke="#22c55e"
+                                        stroke-width="8" stroke-linecap="round"
+                                        stroke-dasharray="264" stroke-dashoffset="26"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span id="pcHealthGrade" class="text-lg font-black text-emerald-400">A+</span>
+                                </div>
+                            </div>
+                            <div class="text-[9px] text-white/40 uppercase tracking-wider">Health</div>
+                            <div class="flex items-baseline gap-1">
+                                <span id="pcHealthScore" class="text-2xl font-light text-white">95</span>
+                                <span class="text-sm text-white/40">%</span>
+                            </div>
+                            <span id="pcHealthStatus" class="text-[10px] font-medium text-emerald-400">HEALTHY</span>
+                        </div>
+                        <div id="pcHealthIssues" class="hidden mt-2 pt-2 border-t border-white/5 space-y-1 text-[9px]"></div>
+                    </div>
+
+                    <!-- CPU Temperature Card - Half Width -->
+                    <div class="pc-card-neo pc-card-temp" style="--card-glow: rgba(6, 182, 212, 0.15)">
+                        <div class="flex flex-col items-center text-center h-full">
+                            <div class="text-[9px] text-white/40 uppercase tracking-wider mb-1">CPU Temp</div>
+                            <div id="tempGaugeChart" class="flex-1 w-full min-h-0"></div>
+                            <div id="tempStatus" class="text-[10px] font-medium text-cyan-400 mt-1">COOL</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CPU Card -->
+                <div class="pc-card-neo pc-card-cpu flex-1 flex flex-col min-h-0">
+                    <div class="pc-card-header">
+                        <span class="pc-card-label">CPU</span>
+                        <span id="cpuStatus" class="pc-status-dot active"></span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="cpuUsage" class="pc-value-large cpu">0</span>
+                        <span class="text-2xl text-cyan-400/60">%</span>
+                    </div>
+                    <div class="pc-unit">UTILIZATION</div>
+                    <div class="pc-progress-bar my-3">
+                        <div id="cpuBar" class="pc-progress-fill cpu" style="width: 0%"></div>
+                    </div>
+                    <div id="cpuCoreGrid" class="grid grid-cols-4 gap-1 flex-1 min-h-0"></div>
+                    <div class="pc-stat-row mt-2">
+                        <span>Frequency</span>
+                        <span id="cpuFreq" class="text-cyan-400">0 GHz</span>
+                    </div>
+                </div>
+
+                <!-- Memory Card -->
+                <div class="pc-card-neo pc-card-memory flex-1 flex flex-col">
+                    <div class="pc-card-header">
+                        <span class="pc-card-label">MEMORY</span>
+                        <span id="memStatus" class="pc-status-dot active"></span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="memUsage" class="pc-value-large memory">0</span>
+                        <span class="text-2xl text-purple-400/60">%</span>
+                    </div>
+                    <div class="pc-unit">USED</div>
+                    <div class="pc-progress-bar my-3">
+                        <div id="memBar" class="pc-progress-fill memory" style="width: 0%"></div>
+                    </div>
+                    <div class="pc-chart-container">
+                        <canvas id="memChart"></canvas>
+                    </div>
+                    <div class="pc-stat-row mt-2">
+                        <span>Used / Total</span>
+                        <span><span id="memUsed" class="text-purple-400">0</span> / <span id="memTotal" class="text-white/60">0</span></span>
+                    </div>
+                    <div class="pc-stat-row">
+                        <span id="memCached" class="text-white/40">Cache: 0 GB</span>
+                        <span id="memSwap" class="text-white/40">Swap: 0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER: Charts + Disk Storage -->
+            <div class="col-span-6 flex flex-col gap-4 overflow-hidden">
+                <!-- CPU History Chart -->
+                <div class="pc-card-neo pc-card-cpu" style="height: 180px">
+                    <div class="pc-card-header">
+                        <span class="pc-card-label">CPU HISTORY (6 MIN)</span>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                                <span class="text-[10px] text-white/50">USAGE</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pc-chart-container" style="height: 120px">
+                        <canvas id="cpuChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Disk Storage -->
+                <div class="pc-card-neo pc-card-disk flex-1 flex flex-col min-h-0 overflow-hidden">
+                    <div class="pc-card-header flex-shrink-0">
+                        <span class="pc-card-label">STORAGE</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 flex-1 min-h-0">
+                        <!-- System Disk (compact) -->
+                        <div id="systemDiskCard" class="flex flex-col"></div>
+
+                        <!-- Frigate Recordings Treemap -->
+                        <div class="flex flex-col">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="text-[10px] text-white/60 uppercase tracking-wider">Frigate Cameras</span>
+                                </div>
+                                <span id="frigateStorageTotal" class="text-[10px] text-rose-400/80 font-mono">--</span>
+                            </div>
+                            <div id="frigateTreemap" class="flex-1 min-h-0"></div>
+                            <div id="frigateStorageStats" class="grid grid-cols-4 gap-1 mt-2 pt-2 border-t border-white/5"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Card -->
+                <div class="pc-card-neo pc-card-network">
+                    <div class="pc-card-header">
+                        <span class="pc-card-label">NETWORK I/O</span>
+                        <span id="netInterface" class="text-[10px] text-white/40 font-mono">--</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-green-500/15 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-white/40">DOWNLOAD</div>
+                                <div class="flex items-baseline gap-1">
+                                    <span id="netRecv" class="text-lg font-semibold text-green-400 font-mono">0 GB</span>
+                                    <span id="netRecvSpeed" class="text-xs text-green-400/60 font-mono">0 KB/s</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-white/40">UPLOAD</div>
+                                <div class="flex items-baseline gap-1">
+                                    <span id="netSent" class="text-lg font-semibold text-blue-400 font-mono">0 GB</span>
+                                    <span id="netSentSpeed" class="text-xs text-blue-400/60 font-mono">0 KB/s</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pc-chart-container" style="height: 50px">
+                        <canvas id="netChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Processes + Docker -->
+            <div class="col-span-3 flex flex-col gap-4 overflow-hidden">
+                <!-- Top CPU Processes -->
+                <div class="pc-card-neo pc-card-processes flex-1 flex flex-col min-h-0">
+                    <div class="pc-card-header">
+                        <span class="pc-card-label">TOP CPU</span>
+                        <svg class="w-4 h-4 text-cyan-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                        </svg>
+                    </div>
+                    <div id="processCpuList" class="space-y-2 flex-1 overflow-y-auto no-scrollbar"></div>
+                </div>
+
+                <!-- Top Memory Processes -->
+                <div class="pc-card-neo pc-card-processes flex-1 flex flex-col min-h-0">
+                    <div class="pc-card-header">
+                        <span class="pc-card-label">TOP MEMORY</span>
+                        <svg class="w-4 h-4 text-purple-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                        </svg>
+                    </div>
+                    <div id="processMemList" class="space-y-2 flex-1 overflow-y-auto no-scrollbar"></div>
+                </div>
+
+                <!-- Docker Containers -->
+                <div class="pc-card-neo pc-card-docker flex-1 flex flex-col min-h-0">
+                    <div class="pc-card-header">
+                        <span class="pc-card-label">DOCKER</span>
+                        <span id="dockerCount" class="text-xs text-blue-400 font-mono">0</span>
+                    </div>
+                    <div id="dockerGrid" class="grid grid-cols-2 gap-2 flex-1 overflow-y-auto no-scrollbar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

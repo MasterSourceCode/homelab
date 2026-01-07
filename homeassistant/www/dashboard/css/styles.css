@@ -1,0 +1,5057 @@
+/**
+ * Home Dashboard Styles
+ * Modular CSS for the smart home dashboard
+ */
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================
+   GLASS MORPHISM EFFECTS
+   ============================================ */
+
+.glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.glass-light {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* ============================================
+   GLOW EFFECTS
+   ============================================ */
+
+.glow-amber {
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.4), 0 0 60px rgba(251, 191, 36, 0.2), inset 0 0 20px rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.4) !important;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%) !important;
+}
+
+.glow-green {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.4), 0 0 60px rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.4) !important;
+}
+
+.glow-blue {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+.glow-red {
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.4), 0 0 60px rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+/* ============================================
+   SECURITY KEYPAD STYLES
+   ============================================ */
+
+.keypad-btn:active {
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.security-mode-btn.ring-2 {
+    transform: scale(1.02);
+}
+
+.shake-animation {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+/* ============================================
+   ALARM ANIMATIONS
+   ============================================ */
+
+.alarm-triggered {
+    animation: alarmPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes alarmPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ============================================
+   ZONE CARD STYLES
+   ============================================ */
+
+.zone-card {
+    min-height: 100px;
+    position: relative;
+    overflow: hidden;
+}
+
+.zone-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.zone-card:hover::before {
+    opacity: 1;
+}
+
+.zone-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+
+.zone-card.zone-triggered {
+    animation: zonePulse 2s ease-in-out infinite;
+}
+
+.zone-card.zone-triggered::before {
+    background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.5), transparent);
+    opacity: 1;
+    animation: scanLine 2s ease-in-out infinite;
+}
+
+@keyframes zonePulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+    }
+}
+
+@keyframes scanLine {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+}
+
+/* Camera button hover effect */
+.zone-card button:hover {
+    transform: scale(1.1);
+}
+
+.zone-card button:active {
+    transform: scale(0.95);
+}
+
+.light-on-indicator {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(251, 191, 36, 0.1) 100%);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+/* ============================================
+   GATE/GARAGE CONTROL STYLES
+   ============================================ */
+
+.gate-control-card.activating {
+    box-shadow: 0 0 60px rgba(34, 211, 238, 0.4), inset 0 0 30px rgba(34, 211, 238, 0.1);
+}
+
+.garage-control-card.activating {
+    box-shadow: 0 0 60px rgba(251, 191, 36, 0.4), inset 0 0 30px rgba(251, 191, 36, 0.1);
+}
+
+.gate-control-card.open {
+    border: 2px solid rgba(251, 146, 60, 0.5);
+    box-shadow: 0 0 40px rgba(251, 146, 60, 0.3);
+}
+
+.garage-control-card.open {
+    border: 2px solid rgba(251, 146, 60, 0.5);
+    box-shadow: 0 0 40px rgba(251, 146, 60, 0.3);
+}
+
+.scan-line {
+    animation: none;
+}
+
+.scan-line.active {
+    animation: scanDown 1.5s ease-in-out infinite;
+    opacity: 1;
+}
+
+@keyframes scanDown {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* Pulsing status dot for open state */
+.status-open {
+    background: #f97316 !important;
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.6) !important;
+    animation: pulseOpen 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseOpen {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+/* ============================================
+   ROOM CARD STYLES
+   ============================================ */
+
+.room-card-bg {
+    position: relative;
+    overflow: hidden;
+}
+
+.room-card-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--room-bg-image);
+    background-size: cover;
+    background-position: center top;
+    opacity: 0.35;
+    transition: all 0.4s ease;
+    filter: saturate(0.8);
+}
+
+.room-card-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(10, 10, 15, 0.3) 0%,
+        rgba(10, 10, 15, 0.6) 50%,
+        rgba(10, 10, 15, 0.85) 100%
+    );
+    pointer-events: none;
+}
+
+.room-card-bg:hover::before {
+    opacity: 0.5;
+    filter: saturate(1);
+    transform: scale(1.05);
+}
+
+.room-card-bg .room-content {
+    position: relative;
+    z-index: 10;
+}
+
+/* Futuristic glow border for image cards */
+.room-card-bg {
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    box-shadow:
+        0 0 20px rgba(139, 92, 246, 0.1),
+        inset 0 0 30px rgba(0, 0, 0, 0.3);
+}
+
+.room-card-bg:hover {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow:
+        0 0 30px rgba(139, 92, 246, 0.2),
+        0 0 60px rgba(139, 92, 246, 0.1),
+        inset 0 0 30px rgba(0, 0, 0, 0.3);
+}
+
+.room-card-bg.glow-amber {
+    border-color: rgba(251, 191, 36, 0.4) !important;
+    box-shadow:
+        0 0 30px rgba(251, 191, 36, 0.3),
+        0 0 60px rgba(251, 191, 36, 0.15),
+        inset 0 0 30px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   MODAL STYLES
+   ============================================ */
+
+.modal-zone-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.modal-zone-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-zone-card.has-lights-on {
+    border-color: rgba(251, 191, 36, 0.4);
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.15);
+}
+
+.modal-backdrop {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+/* ============================================
+   LIGHT TOGGLE BUTTON STYLES
+   ============================================ */
+
+.light-toggle-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1rem;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 80px;
+    flex: 1;
+}
+
+.light-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.light-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+.light-toggle-btn.is-on {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(251, 191, 36, 0.1) 100%);
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 25px rgba(251, 191, 36, 0.3), inset 0 0 20px rgba(251, 191, 36, 0.1);
+}
+
+.light-toggle-btn .light-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.light-toggle-btn.is-on .light-icon {
+    background: rgba(251, 191, 36, 0.3);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+}
+
+/* ============================================
+   MASTER TOGGLE BUTTON STYLES
+   ============================================ */
+
+.master-toggle-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.master-toggle-btn.all-on {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(251, 191, 36, 0.15) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    color: #fbbf24;
+}
+
+.master-toggle-btn.all-off {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.master-toggle-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   ROOM ICON STYLES
+   ============================================ */
+
+.room-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.room-icon::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: inherit;
+    opacity: 0.3;
+    filter: blur(8px);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+.pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.9); }
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* ============================================
+   UTILITY STYLES
+   ============================================ */
+
+.btn-control {
+    transition: all 0.2s ease;
+}
+
+.btn-control:active {
+    transform: scale(0.95);
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+/* Hide scrollbar but allow scroll */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ============================================
+   RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .room-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+@media (max-width: 768px) {
+    .room-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .stat-badges { flex-wrap: wrap; }
+}
+
+@media (min-width: 1200px) {
+    .room-grid { grid-template-columns: repeat(4, 1fr) !important; }
+}
+
+/* ============================================
+   FULLCALENDAR DARK THEME STYLES
+   ============================================ */
+
+.calendar-dark {
+    --fc-border-color: rgba(255, 255, 255, 0.1);
+    --fc-button-bg-color: rgba(255, 255, 255, 0.06);
+    --fc-button-border-color: rgba(255, 255, 255, 0.1);
+    --fc-button-text-color: rgba(255, 255, 255, 0.8);
+    --fc-button-hover-bg-color: rgba(255, 255, 255, 0.12);
+    --fc-button-hover-border-color: rgba(255, 255, 255, 0.2);
+    --fc-button-active-bg-color: rgba(139, 92, 246, 0.3);
+    --fc-button-active-border-color: rgba(139, 92, 246, 0.5);
+    --fc-event-bg-color: rgba(139, 92, 246, 0.8);
+    --fc-event-border-color: rgba(139, 92, 246, 0.9);
+    --fc-event-text-color: #ffffff;
+    --fc-today-bg-color: rgba(139, 92, 246, 0.1);
+    --fc-neutral-bg-color: rgba(255, 255, 255, 0.02);
+    --fc-page-bg-color: transparent;
+    --fc-list-event-hover-bg-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Calendar Header */
+.calendar-dark .fc .fc-toolbar-title {
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.calendar-dark .fc .fc-button {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.calendar-dark .fc .fc-button:hover {
+    transform: translateY(-1px);
+}
+
+.calendar-dark .fc .fc-button:focus {
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.4);
+}
+
+.calendar-dark .fc .fc-button-primary:not(:disabled).fc-button-active,
+.calendar-dark .fc .fc-button-primary:not(:disabled):active {
+    background-color: rgba(139, 92, 246, 0.3);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+/* Hide default toolbar since we have custom one */
+.calendar-dark .fc .fc-toolbar.fc-header-toolbar {
+    display: none;
+}
+
+/* Day Grid Styling */
+.calendar-dark .fc .fc-daygrid-day {
+    transition: background-color 0.2s ease;
+}
+
+.calendar-dark .fc .fc-daygrid-day:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.calendar-dark .fc .fc-daygrid-day-number {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    padding: 8px 12px;
+}
+
+.calendar-dark .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(139, 92, 246, 0.6));
+    color: white;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+/* Today's column - subtle green neon glow */
+.calendar-dark .fc .fc-day-today {
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.03) 100%) !important;
+    box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.05);
+}
+
+.calendar-dark .fc .fc-timegrid-col.fc-day-today {
+    background: linear-gradient(180deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.03) 100%) !important;
+}
+
+/* Today's header in week view */
+.calendar-dark .fc .fc-col-header-cell.fc-day-today {
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.calendar-dark .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+    color: rgba(34, 197, 94, 0.9);
+}
+
+.calendar-dark .fc .fc-col-header-cell-cushion {
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 12px 8px;
+}
+
+/* Events Styling */
+.calendar-dark .fc-event {
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-weight: 500;
+    font-size: 0.8rem;
+    border: none !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-dark .fc-event:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.calendar-dark .fc-daygrid-event-dot {
+    border-color: currentColor !important;
+}
+
+/* Google Calendar Event Colors */
+.calendar-dark .gcal-event {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(124, 58, 237, 0.9)) !important;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+/* Time Grid (Week/Day View) Styling */
+.calendar-dark .fc .fc-timegrid-slot {
+    height: 48px;
+}
+
+.calendar-dark .fc .fc-timegrid-slot-label-cushion {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+}
+
+.calendar-dark .fc .fc-timegrid-now-indicator-line {
+    border-color: #ef4444;
+}
+
+.calendar-dark .fc .fc-timegrid-now-indicator-arrow {
+    border-color: #ef4444;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+}
+
+.calendar-dark .fc-timegrid-event {
+    border-radius: 8px;
+    padding: 4px 8px;
+}
+
+/* More Events Link */
+.calendar-dark .fc .fc-daygrid-more-link {
+    color: rgba(139, 92, 246, 0.8);
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.calendar-dark .fc .fc-daygrid-more-link:hover {
+    color: rgba(139, 92, 246, 1);
+}
+
+/* Popover */
+.calendar-dark .fc .fc-popover {
+    background: rgba(26, 26, 36, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.calendar-dark .fc .fc-popover-header {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    padding: 12px;
+    border-radius: 12px 12px 0 0;
+}
+
+.calendar-dark .fc .fc-popover-body {
+    padding: 8px;
+}
+
+/* Scrollbar for calendar */
+.calendar-dark .fc-scroller::-webkit-scrollbar {
+    width: 6px;
+}
+
+.calendar-dark .fc-scroller::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.calendar-dark .fc-scroller::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.calendar-dark .fc-scroller::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Day cells in other months */
+.calendar-dark .fc .fc-day-other .fc-daygrid-day-number {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+/* Week numbers */
+.calendar-dark .fc .fc-daygrid-week-number {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.7rem;
+}
+
+/* ============================================
+   ENERGY DASHBOARD STYLES
+   ============================================ */
+
+/* Animated Background Orbs */
+.energy-bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.3;
+    animation: orbFloat 20s ease-in-out infinite;
+}
+
+.energy-bg-solar {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.4) 0%, transparent 70%);
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation-delay: 0s;
+}
+
+.energy-bg-battery {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, transparent 70%);
+    left: -50px;
+    top: 50%;
+    transform: translateY(-50%);
+    animation-delay: -7s;
+}
+
+.energy-bg-grid {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+    right: -50px;
+    top: 50%;
+    transform: translateY(-50%);
+    animation-delay: -14s;
+}
+
+@keyframes orbFloat {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(20px, -20px) scale(1.1); }
+    50% { transform: translate(-10px, 20px) scale(0.95); }
+    75% { transform: translate(-20px, -10px) scale(1.05); }
+}
+
+/* Energy Flow Container */
+.energy-flow-container {
+    position: relative;
+}
+
+/* Energy Cards */
+.energy-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.energy-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.energy-card:hover {
+    transform: translateY(-4px) scale(1.02);
+}
+
+.energy-card-solar:hover {
+    box-shadow: 0 20px 60px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.2);
+    border-color: rgba(251, 191, 36, 0.5) !important;
+}
+
+.energy-card-battery:hover {
+    box-shadow: 0 20px 60px rgba(34, 197, 94, 0.3), 0 0 40px rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.5) !important;
+}
+
+.energy-card-grid:hover {
+    box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+.energy-card-home:hover {
+    box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.5) !important;
+}
+
+.energy-card-load:hover {
+    box-shadow: 0 20px 60px rgba(168, 85, 247, 0.3), 0 0 40px rgba(168, 85, 247, 0.2);
+    border-color: rgba(168, 85, 247, 0.5) !important;
+}
+
+/* Solar Icon Glow Animation */
+.solar-icon-glow {
+    animation: solarPulse 3s ease-in-out infinite;
+}
+
+@keyframes solarPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), inset 0 0 15px rgba(251, 191, 36, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(251, 191, 36, 0.5), inset 0 0 25px rgba(251, 191, 36, 0.2);
+    }
+}
+
+/* Home Icon Pulse */
+.home-icon-pulse {
+    animation: homePulse 2s ease-in-out infinite;
+}
+
+@keyframes homePulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 35px rgba(139, 92, 246, 0.5);
+    }
+}
+
+/* Energy Value Animation */
+.energy-value {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.energy-value.updating {
+    transform: scale(1.05);
+    text-shadow: 0 0 20px currentColor;
+}
+
+/* Flow Dot Animations */
+.energy-flow-dot {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.energy-flow-dot.hidden {
+    opacity: 0;
+}
+
+/* Active Flow Paths - Brighter when energy is flowing */
+.energy-flow-path-active {
+    stroke-width: 4;
+    filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* Battery Charging Animation */
+.battery-charging #batteryRing {
+    animation: batteryCharge 2s ease-in-out infinite;
+}
+
+@keyframes batteryCharge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Battery Discharging Animation */
+.battery-discharging #batteryRing {
+    animation: batteryDischarge 1.5s ease-in-out infinite;
+}
+
+@keyframes batteryDischarge {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
+}
+
+/* Grid Import/Export Indicators */
+.grid-importing .energy-card-grid {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+}
+
+.grid-exporting .energy-card-grid {
+    border-color: rgba(34, 197, 94, 0.5) !important;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.2);
+}
+
+/* Energy Node Entry Animation */
+.energy-node {
+    animation: nodeEntry 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+}
+
+.energy-node:nth-child(1) { animation-delay: 0.1s; }
+.energy-node:nth-child(2) { animation-delay: 0.2s; }
+.energy-node:nth-child(3) { animation-delay: 0.3s; }
+.energy-node:nth-child(4) { animation-delay: 0.4s; }
+.energy-node:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes nodeEntry {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Fix positioning for specific nodes */
+.energy-node:first-child {
+    animation-name: nodeEntryTop;
+}
+
+@keyframes nodeEntryTop {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+/* Shimmer effect on cards */
+.energy-card::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 70%
+    );
+    animation: shimmer 8s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-50%) translateY(-50%) rotate(0deg); }
+    100% { transform: translateX(-50%) translateY(-50%) rotate(360deg); }
+}
+
+/* Flow line glow when active */
+.flow-line-active {
+    stroke-width: 4;
+    filter: url(#glow);
+}
+
+/* ============================================
+   TESLA-STYLE POWER FLOW ENHANCEMENTS
+   ============================================ */
+
+/* Power flow SVG container */
+#view-energy svg {
+    filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.3));
+}
+
+/* Node circle pulsing animation */
+#view-energy svg circle[fill^="url(#"] {
+    animation: nodePulse 3s ease-in-out infinite;
+}
+
+@keyframes nodePulse {
+    0%, 100% { transform-origin: center; opacity: 1; }
+    50% { opacity: 0.85; }
+}
+
+/* SVG icons - subtle animation */
+#view-energy svg g[transform] path {
+    transition: all 0.3s ease;
+}
+
+/* Battery fill bar animation */
+#batteryFillSvg {
+    transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1), fill 0.5s ease;
+}
+
+/* Power value labels */
+#view-energy svg text[id$="Svg"] {
+    font-family: 'Inter', 'SF Pro Display', -apple-system, sans-serif;
+    transition: all 0.3s ease;
+}
+
+/* Energy dashboard glass cards - premium look */
+#view-energy .glass {
+    background: linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+#view-energy .glass:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Gauge rings - smooth animation */
+#view-energy circle[id$="Ring"] {
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
+}
+
+/* Stat boxes in energy view */
+#view-energy .glass-light,
+#view-energy .bg-white\/5 {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+#view-energy .glass-light:hover,
+#view-energy .bg-white\/5:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Premium typography for energy values */
+#view-energy .text-3xl,
+#view-energy .text-2xl,
+#view-energy .text-xl {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Animated energy particles trail effect */
+#view-energy svg circle[id^="solarFlowDot"],
+#view-energy svg circle[id^="batteryFlowDot"],
+#view-energy svg circle[id^="gridFlowDot"],
+#view-energy svg circle[id^="loadFlowDot"] {
+    filter: drop-shadow(0 0 6px currentColor) drop-shadow(0 0 12px currentColor);
+}
+
+/* Stats bar cards */
+.glass-light.rounded-2xl.p-3 {
+    transition: all 0.3s ease;
+}
+
+.glass-light.rounded-2xl.p-3:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   FUTURISTIC ENERGY DASHBOARD
+   Minimalistic Neo-Tokyo Design
+   ============================================ */
+
+.energy-view-futuristic {
+    background: linear-gradient(135deg, #0a0a12 0%, #0f0f1a 50%, #0a0a12 100%);
+    position: relative;
+}
+
+/* Animated Grid Background */
+.energy-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridPulse 4s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* Scan Line Effect */
+.energy-scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.4), transparent);
+    animation: scanLine 4s linear infinite;
+    z-index: 1;
+}
+
+@keyframes scanLine {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* Logo Container */
+.energy-logo-container {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.energy-logo-ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid rgba(6, 182, 212, 0.3);
+    border-radius: 12px;
+    animation: logoRingPulse 2s ease-in-out infinite;
+}
+
+.energy-logo-ring::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 1px solid rgba(6, 182, 212, 0.1);
+    border-radius: 16px;
+}
+
+@keyframes logoRingPulse {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(6, 182, 212, 0.2), inset 0 0 10px rgba(6, 182, 212, 0.1);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(6, 182, 212, 0.4), inset 0 0 15px rgba(6, 182, 212, 0.2);
+        transform: scale(1.02);
+    }
+}
+
+/* Cost Display */
+.energy-cost-display {
+    text-align: right;
+    padding: 8px 16px;
+    background: rgba(6, 182, 212, 0.05);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    border-radius: 12px;
+}
+
+/* Neo Card Style */
+.energy-card-neo {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.2) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.energy-card-neo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.energy-card-neo::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at top left, var(--card-glow, rgba(255,255,255,0.05)), transparent 70%);
+    pointer-events: none;
+}
+
+/* Card Type Glows */
+.energy-card-solar { --card-glow: rgba(251, 191, 36, 0.15); }
+.energy-card-battery { --card-glow: rgba(34, 197, 94, 0.15); }
+.energy-card-grid { --card-glow: rgba(59, 130, 246, 0.15); }
+.energy-card-load { --card-glow: rgba(168, 85, 247, 0.15); }
+.energy-card-chart { --card-glow: rgba(6, 182, 212, 0.1); }
+
+/* Card Header */
+.energy-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.energy-card-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Status Dot */
+.energy-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.energy-status-dot.active {
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+.energy-status-dot.charging {
+    background: #3b82f6;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+    animation: statusPulse 1.5s ease-in-out infinite;
+}
+
+.energy-status-dot.discharging {
+    background: #fbbf24;
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+    animation: statusPulse 1s ease-in-out infinite;
+}
+
+.energy-status-dot.importing {
+    background: #ef4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+    animation: statusPulse 1s ease-in-out infinite;
+}
+
+.energy-status-dot.exporting {
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    animation: statusPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+/* Large Value Display */
+.energy-value-large {
+    font-size: 2.5rem;
+    font-weight: 200;
+    font-family: 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.energy-card-solar .energy-value-large {
+    background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.energy-card-battery .energy-value-large {
+    background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.energy-card-grid .energy-value-large {
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.energy-card-load .energy-value-large {
+    background: linear-gradient(180deg, #a855f7 0%, #9333ea 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.energy-unit {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 2px;
+}
+
+/* Progress Bar */
+.energy-card-bar {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    margin: 12px 0;
+    overflow: hidden;
+}
+
+.energy-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.energy-bar-fill.solar {
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+.energy-bar-fill.battery {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+.energy-bar-fill.grid {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.energy-bar-fill.load {
+    background: linear-gradient(90deg, #a855f7, #9333ea);
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+/* Card Details */
+.energy-card-detail {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-top: auto;
+}
+
+.energy-card-detail span {
+    display: inline-block;
+}
+
+/* Chart Card */
+.energy-card-chart {
+    padding: 12px 16px;
+}
+
+.energy-card-chart canvas {
+    display: block;
+}
+
+/* Current Power Indicator */
+.energy-current-power {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    border-radius: 8px;
+    padding: 6px 10px;
+    backdrop-filter: blur(10px);
+}
+
+/* Stats Bar */
+.energy-stats-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+.energy-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.energy-stat-total {
+    text-align: right;
+    justify-content: flex-end;
+}
+
+.energy-stat-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.energy-stat-icon.solar {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+}
+
+.energy-stat-icon.import {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.energy-stat-icon.export {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+}
+
+.energy-stat-icon.battery-stat {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+}
+
+.energy-stat-icon.inverter {
+    background: rgba(249, 115, 22, 0.15);
+    color: #f97316;
+}
+
+.energy-stat-label {
+    font-size: 8px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+.energy-stat-value {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', monospace;
+}
+
+.energy-stat-divider {
+    width: 1px;
+    height: 30px;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.1), transparent);
+}
+
+/* Card Hover Effects */
+.energy-card-neo:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.energy-card-solar:hover {
+    box-shadow: 0 10px 40px rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.energy-card-battery:hover {
+    box-shadow: 0 10px 40px rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.energy-card-grid:hover {
+    box-shadow: 0 10px 40px rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.energy-card-load:hover {
+    box-shadow: 0 10px 40px rgba(168, 85, 247, 0.15);
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.energy-card-chart:hover {
+    box-shadow: 0 10px 40px rgba(6, 182, 212, 0.1);
+    border-color: rgba(6, 182, 212, 0.2);
+}
+
+/* ============================================
+   APPLIANCE POWER MONITOR CARDS
+   ============================================ */
+
+.energy-card-appliance {
+    --card-glow: rgba(6, 182, 212, 0.15);
+    transition: all 0.4s ease;
+}
+
+.energy-card-appliance:hover {
+    box-shadow: 0 10px 40px var(--card-glow);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Donut Chart Container */
+.appliance-donut-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+}
+
+.appliance-donut {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 8px var(--donut-glow, rgba(34, 197, 94, 0.4)));
+    transition: filter 0.5s ease;
+}
+
+.appliance-donut .donut-ring {
+    transition: stroke 0.5s ease, stroke-dashoffset 0.3s ease;
+}
+
+.appliance-donut-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.5s ease;
+}
+
+/* Power Level Color States */
+/* Idle/Off - Dim */
+.energy-card-appliance.power-idle {
+    --card-glow: rgba(255, 255, 255, 0.05);
+    --donut-glow: rgba(255, 255, 255, 0.1);
+}
+.energy-card-appliance.power-idle .donut-ring {
+    stroke: rgba(255, 255, 255, 0.2);
+}
+.energy-card-appliance.power-idle .appliance-donut-icon {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Under 200W - Neon Green */
+.energy-card-appliance.power-low {
+    --card-glow: rgba(34, 197, 94, 0.2);
+    --donut-glow: rgba(34, 197, 94, 0.5);
+}
+.energy-card-appliance.power-low .donut-ring {
+    stroke: #22c55e;
+}
+.energy-card-appliance.power-low .appliance-donut-icon {
+    color: #22c55e;
+}
+.energy-card-appliance.power-low #washerPowerValue,
+.energy-card-appliance.power-low #dishwasherPowerValue {
+    background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Under 500W - Neon Blue/Cyan */
+.energy-card-appliance.power-medium {
+    --card-glow: rgba(6, 182, 212, 0.2);
+    --donut-glow: rgba(6, 182, 212, 0.5);
+}
+.energy-card-appliance.power-medium .donut-ring {
+    stroke: #06b6d4;
+}
+.energy-card-appliance.power-medium .appliance-donut-icon {
+    color: #06b6d4;
+}
+.energy-card-appliance.power-medium #washerPowerValue,
+.energy-card-appliance.power-medium #dishwasherPowerValue {
+    background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Under 1000W - Neon Orange */
+.energy-card-appliance.power-high {
+    --card-glow: rgba(249, 115, 22, 0.2);
+    --donut-glow: rgba(249, 115, 22, 0.5);
+}
+.energy-card-appliance.power-high .donut-ring {
+    stroke: #f97316;
+}
+.energy-card-appliance.power-high .appliance-donut-icon {
+    color: #f97316;
+}
+.energy-card-appliance.power-high #washerPowerValue,
+.energy-card-appliance.power-high #dishwasherPowerValue {
+    background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Over 1000W - Neon Red */
+.energy-card-appliance.power-critical {
+    --card-glow: rgba(239, 68, 68, 0.25);
+    --donut-glow: rgba(239, 68, 68, 0.6);
+}
+.energy-card-appliance.power-critical .donut-ring {
+    stroke: #ef4444;
+    animation: criticalPulse 1s ease-in-out infinite;
+}
+.energy-card-appliance.power-critical .appliance-donut-icon {
+    color: #ef4444;
+}
+.energy-card-appliance.power-critical #washerPowerValue,
+.energy-card-appliance.power-critical #dishwasherPowerValue {
+    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+@keyframes criticalPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Active Running State */
+.energy-card-appliance.running {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+.energy-card-appliance.running .appliance-donut {
+    animation: donutSpin 8s linear infinite;
+}
+
+@keyframes donutSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Battery Low Warning */
+.energy-card-battery.low .energy-value-large {
+    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: batteryLowPulse 1s ease-in-out infinite;
+}
+
+@keyframes batteryLowPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Grid Importing State */
+.energy-card-grid.importing .energy-value-large {
+    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.energy-card-grid.importing .energy-bar-fill {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+/* Responsive adjustments for chart */
+@media (max-width: 1200px) {
+    .energy-value-large {
+        font-size: 2rem;
+    }
+}
+
+/* Chart Canvas Styling */
+#energyTrendChart {
+    background: transparent;
+    margin-left: 40px;
+}
+
+/* ============================================
+   DEVICE TOGGLE CONTROLS (Geyser/Pool)
+   ============================================ */
+
+.energy-device-control {
+    flex: 0 0 auto !important;
+}
+
+.device-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0.1) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.device-toggle-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.03) 100%);
+    pointer-events: none;
+}
+
+.device-toggle-btn:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.device-toggle-btn:active {
+    transform: scale(0.98);
+}
+
+.device-toggle-btn.is-on {
+    border-color: rgba(34, 197, 94, 0.5);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), inset 0 0 20px rgba(34, 197, 94, 0.05);
+}
+
+/* Device Icon */
+.device-toggle-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.device-toggle-icon.geyser {
+    background: rgba(239, 68, 68, 0.15);
+    color: rgba(239, 68, 68, 0.6);
+}
+
+.device-toggle-btn.is-on .device-toggle-icon.geyser {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    animation: geyserPulse 2s ease-in-out infinite;
+}
+
+@keyframes geyserPulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+    50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.6); }
+}
+
+.device-toggle-icon.pool {
+    background: rgba(6, 182, 212, 0.15);
+    color: rgba(6, 182, 212, 0.6);
+}
+
+.device-toggle-btn.is-on .device-toggle-icon.pool {
+    background: rgba(6, 182, 212, 0.25);
+    color: #06b6d4;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+    animation: poolPulse 3s ease-in-out infinite;
+}
+
+@keyframes poolPulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(6, 182, 212, 0.4); }
+    50% { box-shadow: 0 0 25px rgba(6, 182, 212, 0.6); }
+}
+
+/* Device Info */
+.device-toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 50px;
+}
+
+.device-toggle-label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+.device-toggle-state {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.3s ease;
+}
+
+.device-toggle-btn.is-on .device-toggle-state {
+    color: #22c55e;
+}
+
+/* Status Indicator */
+.device-toggle-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.device-toggle-btn.is-on .device-toggle-indicator {
+    background: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+    animation: indicatorPulse 2s ease-in-out infinite;
+}
+
+@keyframes indicatorPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+/* ============================================
+   CALENDAR MODAL FORM STYLING
+   ============================================ */
+
+/* Fix dropdown/select visibility in modals */
+#eventCreateModal select,
+#eventDetailModal select,
+#eventCreateModal input[type="date"],
+#eventDetailModal input[type="date"],
+#eventCreateModal input[type="time"],
+#eventDetailModal input[type="time"] {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.05);
+    color-scheme: dark;
+}
+
+/* Style select options for visibility */
+#eventCreateModal select option,
+#eventDetailModal select option {
+    background-color: #1a1a24;
+    color: white;
+    padding: 12px;
+}
+
+/* Improved focus states */
+#eventCreateModal select:focus,
+#eventDetailModal select:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+/* Date/time input calendar picker styling */
+#eventCreateModal input[type="date"]::-webkit-calendar-picker-indicator,
+#eventCreateModal input[type="time"]::-webkit-calendar-picker-indicator,
+#eventDetailModal input[type="date"]::-webkit-calendar-picker-indicator,
+#eventDetailModal input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+#eventCreateModal input[type="date"]::-webkit-calendar-picker-indicator:hover,
+#eventCreateModal input[type="time"]::-webkit-calendar-picker-indicator:hover,
+#eventDetailModal input[type="date"]::-webkit-calendar-picker-indicator:hover,
+#eventDetailModal input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* ============================================
+   CALENDAR SIDEBAR ENHANCEMENTS
+   ============================================ */
+
+/* Family Member Filter Chips */
+.calendar-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-filter-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.calendar-filter-chip.active {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
+.calendar-filter-chip.active[data-color="pink"] {
+    background: rgba(236, 72, 153, 0.2);
+    border-color: rgba(236, 72, 153, 0.4);
+}
+
+.calendar-filter-chip.active[data-color="blue"] {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.calendar-filter-chip.active[data-color="purple"] {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: rgba(168, 85, 247, 0.4);
+}
+
+.calendar-filter-chip.active[data-color="teal"] {
+    background: rgba(20, 184, 166, 0.2);
+    border-color: rgba(20, 184, 166, 0.4);
+}
+
+.calendar-filter-chip.active[data-color="amber"] {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Upcoming Event Card */
+.upcoming-event-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.upcoming-event-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
+}
+
+.upcoming-event-date {
+    width: 40px;
+    flex-shrink: 0;
+    text-align: center;
+    padding: 6px;
+    border-radius: 8px;
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.upcoming-event-date .day {
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(139, 92, 246, 0.9);
+    line-height: 1;
+}
+
+.upcoming-event-date .month {
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(139, 92, 246, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.upcoming-event-card.today .upcoming-event-date {
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.upcoming-event-card.today .upcoming-event-date .day,
+.upcoming-event-card.today .upcoming-event-date .month {
+    color: rgba(34, 197, 94, 0.9);
+}
+
+.upcoming-event-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.upcoming-event-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.upcoming-event-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 2px;
+}
+
+.upcoming-event-assignee {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+}
+
+/* Empty State */
+.calendar-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.calendar-empty-state svg {
+    opacity: 0.5;
+    margin-bottom: 8px;
+}
+
+/* Event Type Colors */
+.event-color-bar {
+    width: 3px;
+    height: 100%;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.event-color-bar.reminder { background: linear-gradient(180deg, #fbbf24, #f59e0b); }
+.event-color-bar.task { background: linear-gradient(180deg, #22c55e, #16a34a); }
+.event-color-bar.birthday { background: linear-gradient(180deg, #ec4899, #db2777); }
+.event-color-bar.default { background: linear-gradient(180deg, #8b5cf6, #7c3aed); }
+
+/* Assignee Colors */
+.assignee-tatiana { background: linear-gradient(135deg, #ec4899, #db2777); }
+.assignee-nico { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.assignee-alexandra { background: linear-gradient(135deg, #a855f7, #9333ea); }
+.assignee-mila { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+.assignee-everyone { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+/* ============================================
+   PC PERFORMANCE DASHBOARD STYLES
+   Futuristic Neo-HUD Design
+   ============================================ */
+
+/* Main View Container */
+.pc-view-futuristic {
+    background: linear-gradient(135deg, #050510 0%, #0a0a1a 50%, #050510 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animated HUD Grid Background */
+.pc-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(6, 182, 212, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 182, 212, 0.02) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: pcGridPulse 6s ease-in-out infinite;
+}
+
+@keyframes pcGridPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+}
+
+/* Hexagon pattern overlay */
+.pc-hex-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%2306b6d4' fill-opacity='0.02' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+}
+
+/* Scan line effect */
+.pc-scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.6), transparent);
+    animation: pcScanLine 8s linear infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes pcScanLine {
+    0% { top: -2px; opacity: 0; }
+    5% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* Corner accents */
+.pc-corner-accent {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border: 2px solid rgba(6, 182, 212, 0.3);
+    z-index: 2;
+}
+
+.pc-corner-accent.top-left { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+.pc-corner-accent.top-right { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+.pc-corner-accent.bottom-left { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+.pc-corner-accent.bottom-right { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+/* Health Score Circle */
+.pc-health-ring {
+    transform: rotate(-90deg);
+    transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pc-health-score {
+    font-family: 'Inter', monospace;
+    font-weight: 200;
+    font-size: 3.5rem;
+    letter-spacing: -0.05em;
+    background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Neo Card Style */
+.pc-card-neo {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.3) 100%);
+    border: 1px solid rgba(6, 182, 212, 0.1);
+    border-radius: 16px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pc-card-neo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.3), transparent);
+}
+
+.pc-card-neo::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle at top left, var(--card-glow, rgba(6, 182, 212, 0.08)), transparent 70%);
+    pointer-events: none;
+}
+
+.pc-card-neo:hover {
+    border-color: rgba(6, 182, 212, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(6, 182, 212, 0.1);
+}
+
+/* Card type variants */
+.pc-card-cpu { --card-glow: rgba(6, 182, 212, 0.15); }
+.pc-card-memory { --card-glow: rgba(168, 85, 247, 0.15); }
+.pc-card-disk { --card-glow: rgba(34, 197, 94, 0.15); }
+.pc-card-network { --card-glow: rgba(59, 130, 246, 0.15); }
+.pc-card-docker { --card-glow: rgba(37, 99, 235, 0.15); }
+.pc-card-processes { --card-glow: rgba(249, 115, 22, 0.15); }
+
+/* Status Dot */
+.pc-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.pc-status-dot.active {
+    background: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+    animation: pcStatusPulse 2s ease-in-out infinite;
+}
+
+.pc-status-dot.warning {
+    background: #fbbf24;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+    animation: pcStatusPulse 1.5s ease-in-out infinite;
+}
+
+.pc-status-dot.critical {
+    background: #ef4444;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+    animation: pcStatusPulse 1s ease-in-out infinite;
+}
+
+@keyframes pcStatusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.3); }
+}
+
+/* Large metric value */
+.pc-value-large {
+    font-size: 2.75rem;
+    font-weight: 200;
+    font-family: 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.pc-value-large.cpu {
+    background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.pc-value-large.memory {
+    background: linear-gradient(180deg, #a855f7 0%, #9333ea 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Progress bars */
+.pc-progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.pc-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.pc-progress-fill.cpu {
+    background: linear-gradient(90deg, #06b6d4, #0891b2);
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+}
+
+.pc-progress-fill.memory {
+    background: linear-gradient(90deg, #a855f7, #9333ea);
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+}
+
+.pc-progress-fill.disk {
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+}
+
+.pc-progress-fill.network {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+/* Shimmer effect on progress bars */
+.pc-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: pcShimmer 2s infinite;
+}
+
+@keyframes pcShimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* CPU Core Bars */
+.cpu-core-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.cpu-core-fill {
+    width: 100%;
+    background: linear-gradient(180deg, #06b6d4, #0891b2);
+    position: absolute;
+    bottom: 0;
+    transition: height 0.3s ease;
+    border-radius: 4px 4px 0 0;
+}
+
+.cpu-core-fill.warning {
+    background: linear-gradient(180deg, #fbbf24, #f59e0b);
+}
+
+.cpu-core-fill.critical {
+    background: linear-gradient(180deg, #ef4444, #dc2626);
+}
+
+.cpu-core-label {
+    position: absolute;
+    bottom: 2px;
+    font-size: 8px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    z-index: 1;
+}
+
+/* Disk Grid - Fill available space */
+#diskGrid {
+    grid-auto-rows: 1fr;
+}
+
+/* Disk Cards - Full Height Fill */
+.pc-disk-card-fill {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.3) 100%);
+    border: 1px solid rgba(6, 182, 212, 0.15);
+    border-radius: 16px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.pc-disk-card-fill:hover {
+    border-color: rgba(6, 182, 212, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(6, 182, 212, 0.15);
+}
+
+.pc-disk-card-fill.warning {
+    border-color: rgba(251, 191, 36, 0.25);
+}
+
+.pc-disk-card-fill.warning:hover {
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 8px 30px rgba(251, 191, 36, 0.15);
+}
+
+.pc-disk-card-fill.critical {
+    border-color: rgba(239, 68, 68, 0.3);
+    animation: pcDiskPulse 2s ease-in-out infinite;
+}
+
+.pc-disk-card-fill.critical:hover {
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+@keyframes pcDiskPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0), inset 0 0 0 rgba(239, 68, 68, 0); }
+    50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.2), inset 0 0 15px rgba(239, 68, 68, 0.05); }
+}
+
+.disk-icon-sm {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.disk-icon-sm.ssd {
+    background: rgba(6, 182, 212, 0.2);
+    color: #06b6d4;
+}
+
+.disk-icon-sm.hdd {
+    background: rgba(168, 85, 247, 0.2);
+    color: #a855f7;
+}
+
+.disk-icon-sm.usb {
+    background: rgba(249, 115, 22, 0.2);
+    color: #f97316;
+}
+
+.disk-icon-sm svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* Legacy disk card styles */
+.pc-disk-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.02) 0%, rgba(0, 0, 0, 0.2) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.disk-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.disk-icon.ssd {
+    background: rgba(6, 182, 212, 0.15);
+    color: #06b6d4;
+}
+
+.disk-icon.hdd {
+    background: rgba(168, 85, 247, 0.15);
+    color: #a855f7;
+}
+
+.disk-icon.usb {
+    background: rgba(249, 115, 22, 0.15);
+    color: #f97316;
+}
+
+/* Process List */
+.process-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    transition: all 0.2s ease;
+}
+
+.process-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.process-rank {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(6, 182, 212, 0.15);
+    color: #06b6d4;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.process-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.process-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.process-meta {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.process-bar-container {
+    width: 60px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.process-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.process-value {
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'Inter', monospace;
+    width: 45px;
+    text-align: right;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Docker Container Cards */
+.docker-container-card {
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.3s ease;
+}
+
+.docker-container-card:hover {
+    background: rgba(37, 99, 235, 0.12);
+    transform: translateY(-2px);
+}
+
+.docker-container-card.high {
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.docker-container-card.medium {
+    border-color: rgba(251, 191, 36, 0.4);
+    background: rgba(251, 191, 36, 0.08);
+}
+
+.docker-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.docker-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 10px;
+    font-family: 'Inter', monospace;
+}
+
+.docker-cpu {
+    color: #06b6d4;
+}
+
+.docker-mem {
+    color: #a855f7;
+}
+
+/* Chart Container */
+.pc-chart-container {
+    position: relative;
+    height: 80px;
+    width: 100%;
+}
+
+.pc-chart-container canvas {
+    position: absolute;
+    inset: 0;
+}
+
+/* Card Labels */
+.pc-card-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+.pc-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+/* Unit Labels */
+.pc-unit {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 2px;
+}
+
+/* Stats Row */
+.pc-stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pc-stat-row span:first-child {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.pc-stat-row span:last-child {
+    font-family: 'Inter', monospace;
+}
+
+/* Header Health Badge */
+#pcHealthBadge {
+    transition: all 0.3s ease;
+}
+
+#pcHealthBadge:hover {
+    transform: translateY(-1px);
+}
+
+.pc-icon-container {
+    transition: all 0.3s ease;
+}
+
+/* Glowing border animation */
+@keyframes pcGlowPulse {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(6, 182, 212, 0.2), inset 0 0 5px rgba(6, 182, 212, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(6, 182, 212, 0.4), inset 0 0 10px rgba(6, 182, 212, 0.2);
+    }
+}
+
+/* Network speed indicators */
+.net-speed-up { color: #22c55e; }
+.net-speed-down { color: #3b82f6; }
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+    .pc-value-large {
+        font-size: 2.25rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .pc-value-large {
+        font-size: 2rem;
+    }
+}
+
+/* ============================================
+   AI CAMERA HUB / SURVEILLANCE DASHBOARD
+   Futuristic 2026 Design
+   ============================================ */
+
+/* Main View Container */
+.surveillance-view-futuristic {
+    background: linear-gradient(135deg, #0a0508 0%, #120a10 50%, #0a0508 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animated Grid Background */
+.surv-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(244, 63, 94, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(244, 63, 94, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: survGridPulse 5s ease-in-out infinite;
+}
+
+@keyframes survGridPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.9; }
+}
+
+/* Scan Line Effect */
+.surv-scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(244, 63, 94, 0.5), transparent);
+    animation: survScanLine 6s linear infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes survScanLine {
+    0% { top: -2px; opacity: 0; }
+    5% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* Corner Accents */
+.surv-corner-accent {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 2px solid rgba(244, 63, 94, 0.25);
+    z-index: 2;
+}
+
+.surv-corner-accent.top-left { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+.surv-corner-accent.top-right { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+.surv-corner-accent.bottom-left { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+.surv-corner-accent.bottom-right { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+
+/* Logo Ring Animation */
+.surv-logo-ring {
+    position: absolute;
+    inset: -4px;
+    border: 2px solid rgba(244, 63, 94, 0.3);
+    border-radius: 16px;
+    animation: survLogoRingPulse 3s ease-in-out infinite;
+}
+
+@keyframes survLogoRingPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(244, 63, 94, 0.2), inset 0 0 10px rgba(244, 63, 94, 0.1);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(244, 63, 94, 0.4), inset 0 0 20px rgba(244, 63, 94, 0.2);
+        transform: scale(1.03);
+    }
+}
+
+/* Neo Card Style */
+.surv-card-neo {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.3) 100%);
+    border: 1px solid rgba(244, 63, 94, 0.12);
+    border-radius: 16px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.surv-card-neo::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(244, 63, 94, 0.25), transparent);
+}
+
+.surv-card-neo::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle at top left, var(--card-glow, rgba(244, 63, 94, 0.08)), transparent 70%);
+    pointer-events: none;
+}
+
+.surv-card-neo:hover {
+    border-color: rgba(244, 63, 94, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(244, 63, 94, 0.1);
+}
+
+/* Card Variants */
+.surv-card-cameras { --card-glow: rgba(244, 63, 94, 0.12); }
+.surv-card-timeline { --card-glow: rgba(139, 92, 246, 0.12); }
+.surv-card-detail { --card-glow: rgba(59, 130, 246, 0.12); }
+.surv-card-filter { --card-glow: rgba(34, 197, 94, 0.08); }
+.surv-card-stats { --card-glow: rgba(251, 191, 36, 0.08); }
+
+/* Card Header */
+.surv-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.surv-card-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+/* Time Filter Buttons */
+.surv-time-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.surv-time-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.surv-time-btn.active {
+    background: rgba(244, 63, 94, 0.2);
+    color: #f43f5e;
+    box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
+}
+
+/* Object Filter Buttons */
+.surv-obj-btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.surv-obj-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.surv-obj-btn.active {
+    background: rgba(244, 63, 94, 0.2);
+    color: #f43f5e;
+}
+
+/* Camera Tile */
+.surv-camera-tile {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    aspect-ratio: 16 / 9;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.surv-camera-tile:hover {
+    border-color: rgba(244, 63, 94, 0.4);
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(244, 63, 94, 0.15);
+}
+
+.surv-camera-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.surv-camera-tile:hover img {
+    transform: scale(1.05);
+}
+
+.surv-camera-tile .camera-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.surv-camera-tile .camera-status {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+}
+
+.surv-camera-tile .camera-status.offline {
+    background: #ef4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+}
+
+.surv-camera-tile .camera-detection {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    background: rgba(244, 63, 94, 0.9);
+    color: white;
+    animation: detectionPulse 1s ease-in-out infinite;
+}
+
+.surv-camera-tile .camera-expand {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    color: white;
+    backdrop-blur: 4px;
+}
+
+.surv-camera-tile:hover .camera-expand {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+@keyframes detectionPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+/* Camera Filter Chips */
+.surv-cam-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.surv-cam-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.surv-cam-chip.active {
+    background: rgba(244, 63, 94, 0.2);
+    border-color: rgba(244, 63, 94, 0.4);
+    color: #f43f5e;
+}
+
+.surv-cam-chip .chip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Event Card */
+.surv-event-card {
+    display: flex;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.surv-event-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(244, 63, 94, 0.3);
+    transform: translateX(4px);
+}
+
+.surv-event-card.selected {
+    background: rgba(244, 63, 94, 0.1);
+    border-color: rgba(244, 63, 94, 0.4);
+    box-shadow: 0 0 20px rgba(244, 63, 94, 0.1);
+}
+
+.surv-event-card.has-ai {
+    border-left: 3px solid rgba(139, 92, 246, 0.6);
+}
+
+.surv-event-thumb {
+    width: 80px;
+    height: 45px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.surv-event-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.surv-event-thumb .detection-box {
+    position: absolute;
+    border: 2px solid rgba(244, 63, 94, 0.8);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.surv-event-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.surv-event-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.surv-event-title .event-label {
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.surv-event-title .event-label.person {
+    background: rgba(244, 63, 94, 0.2);
+    color: #f43f5e;
+}
+
+.surv-event-title .event-label.car {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.surv-event-title .event-label.dog {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.surv-event-title .event-label.cat {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.surv-event-meta {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.surv-event-meta .camera-name {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.surv-event-ai {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: 10px;
+    color: rgba(139, 92, 246, 0.8);
+}
+
+.surv-event-ai svg {
+    width: 12px;
+    height: 12px;
+}
+
+.surv-event-time {
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 11px;
+    font-family: 'Inter', monospace;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Empty State */
+.surv-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.surv-empty-state svg {
+    opacity: 0.3;
+    margin-bottom: 12px;
+}
+
+/* Refresh Animation */
+.surv-refreshing #survRefreshIcon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Video Modal Enhancements */
+#survVideoModal video {
+    max-height: 80vh;
+    background: #000;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+    .surveillance-view-futuristic .grid-cols-12 {
+        grid-template-columns: repeat(12, 1fr);
+    }
+
+    .surveillance-view-futuristic .col-span-4 {
+        grid-column: span 4;
+    }
+
+    .surveillance-view-futuristic .col-span-5 {
+        grid-column: span 5;
+    }
+
+    .surveillance-view-futuristic .col-span-3 {
+        grid-column: span 3;
+    }
+}
+
+@media (max-width: 1200px) {
+    .surveillance-view-futuristic .col-span-4,
+    .surveillance-view-futuristic .col-span-5,
+    .surveillance-view-futuristic .col-span-3 {
+        grid-column: span 6;
+    }
+}
+
+/* Live indicator animation */
+.surv-live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.surv-live-indicator::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: livePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* ============================================
+   COMMAND CENTER 2.0 - Enhanced Styles
+   ============================================ */
+
+/* Compact Camera Grid - Fixed 2x2 layout */
+.surv-camera-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, auto);
+    gap: 6px;
+    flex: 0 0 auto;
+}
+
+.surv-camera-grid-compact .surv-camera-tile {
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.surv-camera-grid-compact .surv-camera-tile:hover {
+    transform: scale(1.01);
+}
+
+.surv-camera-grid-compact .surv-camera-tile .camera-label {
+    padding: 4px 6px;
+    font-size: 8px;
+}
+
+.surv-camera-grid-compact .surv-camera-tile .camera-expand {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+}
+
+/* Icon Buttons */
+.surv-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.surv-icon-btn:hover {
+    background: rgba(244, 63, 94, 0.15);
+    border-color: rgba(244, 63, 94, 0.3);
+    color: #f43f5e;
+}
+
+.surv-close-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+/* Stats Bar - Compact */
+.surv-stats-bar {
+    padding: 10px 12px;
+}
+
+.surv-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.surv-stat-value {
+    font-size: 16px;
+    font-weight: 300;
+    font-family: 'Inter', sans-serif;
+}
+
+.surv-stat-label {
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Camera Health Indicators */
+.surv-health-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.surv-health-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.surv-health-dot.online {
+    background: #22c55e;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+
+.surv-health-dot.offline {
+    background: #ef4444;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+}
+
+.surv-health-dot.warning {
+    background: #fbbf24;
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
+}
+
+.surv-health-name {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.6);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.surv-health-fps {
+    font-size: 8px;
+    font-family: monospace;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* Timeline Graph - Frigate Style */
+.surv-timeline-graph {
+    padding: 12px 16px;
+}
+
+.surv-timeline-canvas {
+    position: relative;
+    height: 48px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.surv-timeline-bars {
+    position: absolute;
+    top: 4px;
+    left: 0;
+    right: 0;
+    bottom: 16px;
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+    padding: 0 4px;
+}
+
+.surv-timeline-bar {
+    flex: 1;
+    min-width: 2px;
+    max-width: 8px;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.surv-timeline-bar:hover {
+    filter: brightness(1.3);
+}
+
+.surv-timeline-bar.person { background: linear-gradient(to top, rgba(244, 63, 94, 0.3), rgba(244, 63, 94, 0.8)); }
+.surv-timeline-bar.car { background: linear-gradient(to top, rgba(59, 130, 246, 0.3), rgba(59, 130, 246, 0.8)); }
+.surv-timeline-bar.dog, .surv-timeline-bar.cat { background: linear-gradient(to top, rgba(251, 191, 36, 0.3), rgba(251, 191, 36, 0.8)); }
+.surv-timeline-bar.motion { background: linear-gradient(to top, rgba(107, 114, 128, 0.2), rgba(107, 114, 128, 0.5)); }
+
+.surv-timeline-bar::after {
+    content: attr(data-count);
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.surv-timeline-bar:hover::after {
+    opacity: 1;
+}
+
+.surv-timeline-labels {
+    position: absolute;
+    bottom: 2px;
+    left: 4px;
+    right: 4px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.surv-timeline-label {
+    font-size: 8px;
+    font-family: monospace;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.surv-timeline-scrubber {
+    position: absolute;
+    top: 0;
+    bottom: 16px;
+    width: 2px;
+    background: rgba(244, 63, 94, 0.8);
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.5);
+    pointer-events: none;
+    display: none;
+}
+
+.surv-timeline-canvas:hover .surv-timeline-scrubber {
+    display: block;
+}
+
+/* Event Card - Compact */
+.surv-event-card {
+    padding: 8px;
+    gap: 8px;
+    border-radius: 8px;
+}
+
+.surv-event-thumb {
+    width: 64px;
+    height: 36px;
+    border-radius: 6px;
+}
+
+.surv-event-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+}
+
+.surv-event-title .event-label {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.surv-event-title .event-label.person { background: rgba(244, 63, 94, 0.25); color: #f43f5e; }
+.surv-event-title .event-label.car { background: rgba(59, 130, 246, 0.25); color: #3b82f6; }
+.surv-event-title .event-label.dog, .surv-event-title .event-label.cat { background: rgba(251, 191, 36, 0.25); color: #fbbf24; }
+
+.surv-event-meta {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 2px;
+}
+
+.surv-event-time {
+    font-size: 9px;
+}
+
+.surv-event-ai {
+    font-size: 8px;
+    margin-top: 3px;
+}
+
+.surv-event-ai svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* Compact card padding */
+.surv-card-neo {
+    padding: 12px;
+    border-radius: 12px;
+}
+
+/* Detail snapshot wrap */
+.surv-detail-snapshot-wrap {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Smaller filter chips */
+.surv-cam-chip {
+    padding: 3px 8px;
+    font-size: 9px;
+    border-radius: 12px;
+}
+
+.surv-cam-chip .chip-dot {
+    width: 5px;
+    height: 5px;
+}
+
+/* Time/Object buttons compact */
+.surv-time-btn, .surv-obj-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+    border-radius: 6px;
+}
+
+/* No events state compact */
+.surv-empty-state {
+    padding: 20px;
+}
+
+.surv-empty-state svg {
+    width: 40px;
+    height: 40px;
+}
+
+/* ============================================
+   ENERGY DISPLAY VIEW - WALL TABLET DASHBOARD
+   ============================================ */
+
+.energy-display-view {
+    background: linear-gradient(135deg, #030712 0%, #0f172a 50%, #030712 100%);
+}
+
+/* LARGE Gauge Cards - 50% of screen */
+.gauge-card-large {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.gauge-card-large::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+
+.gauge-label-lg {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.gauge-container-lg {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gauge-svg-lg {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+}
+
+.gauge-arc {
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gauge-value-lg-container {
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.gauge-value-lg {
+    font-size: clamp(48px, 8vw, 72px);
+    font-weight: 200;
+    color: white;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.gauge-unit-lg {
+    font-size: clamp(20px, 3vw, 32px);
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.gauge-status-lg {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+/* Grid gauge colors */
+.grid-gauge .gauge-value-lg {
+    color: #3b82f6;
+}
+.grid-gauge.exporting .gauge-value-lg {
+    color: #22c55e;
+}
+
+/* ============================================
+   MEGA PULSATING APPLIANCES
+   ============================================ */
+
+.active-loads-row {
+    overflow: visible !important;
+}
+
+#activeAppliancesContainer {
+    overflow: visible !important;
+}
+
+.appliance-mega {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding: 20px 32px;
+    z-index: 10;
+}
+
+/* Button reset for clickable appliances */
+button.appliance-mega {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+button.appliance-mega:hover {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+}
+
+button.appliance-mega:active {
+    transform: scale(0.95);
+}
+
+.appliance-mega.active {
+    display: flex !important;
+}
+
+/* MEGA Pulse Rings - extend beyond container */
+.appliance-mega-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.appliance-mega-pulse.delay-1 {
+    animation-delay: 1s;
+}
+
+/* Geyser - Red/Orange */
+.geyser-pulse {
+    border: 3px solid rgba(239, 68, 68, 0.6);
+    animation: megaPulse 2s ease-out infinite;
+    box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+}
+
+.geyser-mega-icon {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+    box-shadow: 0 0 60px rgba(239, 68, 68, 0.5), inset 0 0 30px rgba(239, 68, 68, 0.2);
+}
+
+/* Pool - Cyan */
+.pool-pulse {
+    border: 3px solid rgba(6, 182, 212, 0.6);
+    animation: megaPulse 2s ease-out infinite;
+    box-shadow: 0 0 40px rgba(6, 182, 212, 0.3);
+}
+
+.pool-mega-icon {
+    background: rgba(6, 182, 212, 0.25);
+    color: #06b6d4;
+    box-shadow: 0 0 60px rgba(6, 182, 212, 0.5), inset 0 0 30px rgba(6, 182, 212, 0.2);
+}
+
+/* Washer - Green */
+.washer-pulse {
+    border: 3px solid rgba(34, 197, 94, 0.6);
+    animation: megaPulse 2s ease-out infinite;
+    box-shadow: 0 0 40px rgba(34, 197, 94, 0.3);
+}
+
+.washer-mega-icon {
+    background: rgba(34, 197, 94, 0.25);
+    color: #22c55e;
+    box-shadow: 0 0 60px rgba(34, 197, 94, 0.5), inset 0 0 30px rgba(34, 197, 94, 0.2);
+}
+
+/* Dishwasher - Purple */
+.dishwasher-pulse {
+    border: 3px solid rgba(168, 85, 247, 0.6);
+    animation: megaPulse 2s ease-out infinite;
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.3);
+}
+
+.dishwasher-mega-icon {
+    background: rgba(168, 85, 247, 0.25);
+    color: #a855f7;
+    box-shadow: 0 0 60px rgba(168, 85, 247, 0.5), inset 0 0 30px rgba(168, 85, 247, 0.2);
+}
+
+@keyframes megaPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+.appliance-mega-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    animation: megaIconPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes megaIconPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.appliance-mega-label {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    margin-top: 12px;
+    text-transform: uppercase;
+    color: inherit;
+}
+
+.appliance-mega-power {
+    font-size: 24px;
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+    margin-top: 4px;
+    color: inherit;
+}
+
+/* High power = faster + bigger */
+.appliance-mega.high-power .appliance-mega-pulse {
+    width: 220px;
+    height: 220px;
+    animation-duration: 1s;
+}
+
+.appliance-mega.high-power .appliance-mega-icon {
+    animation-duration: 0.8s;
+    transform: scale(1.1);
+}
+
+/* Color inheritance for labels */
+#applianceGeyser { color: #ef4444; }
+#appliancePool { color: #06b6d4; }
+#applianceWasher { color: #22c55e; }
+#applianceDishwasher { color: #a855f7; }
+
+/* Battery Bar - Original (kept for backwards compat) */
+.battery-bar-container {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.battery-bar-track {
+    position: relative;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.battery-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444 0%, #eab308 30%, #22c55e 60%, #22c55e 100%);
+    border-radius: 20px;
+    position: relative;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.battery-bar-glow {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+    animation: batteryGlow 2s ease-in-out infinite;
+}
+
+@keyframes batteryGlow {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+}
+
+.battery-markers {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.battery-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.battery-marker.critical {
+    background: rgba(239, 68, 68, 0.5);
+    width: 3px;
+}
+
+.battery-marker span {
+    position: absolute;
+    bottom: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    white-space: nowrap;
+}
+
+.battery-marker.critical span {
+    color: rgba(239, 68, 68, 0.7);
+    font-weight: 600;
+}
+
+/* Low battery warning state */
+.battery-bar-container.low-battery {
+    border-color: rgba(239, 68, 68, 0.4);
+    animation: lowBatteryPulse 2s ease-in-out infinite;
+}
+
+@keyframes lowBatteryPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    50% { box-shadow: 0 0 30px 5px rgba(239, 68, 68, 0.3); }
+}
+
+/* Appliances Row */
+.appliances-row {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 20px;
+}
+
+/* Pulsating Appliance Indicators */
+.appliance-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding: 20px 30px;
+    min-width: 120px;
+}
+
+.appliance-indicator.active {
+    display: flex !important;
+}
+
+.appliance-pulse-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    opacity: 0;
+    animation: appliancePulseRing 2s ease-out infinite;
+}
+
+@keyframes appliancePulseRing {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+.appliance-icon-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    animation: applianceIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes applianceIconPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+/* Appliance-specific colors */
+.geyser-icon {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+}
+.appliance-indicator:has(.geyser-icon) {
+    color: #ef4444;
+}
+.appliance-indicator:has(.geyser-icon) .appliance-pulse-ring {
+    border-color: rgba(239, 68, 68, 0.6);
+}
+
+.pool-icon {
+    background: rgba(6, 182, 212, 0.2);
+    color: #06b6d4;
+    box-shadow: 0 0 40px rgba(6, 182, 212, 0.4);
+}
+.appliance-indicator:has(.pool-icon) {
+    color: #06b6d4;
+}
+.appliance-indicator:has(.pool-icon) .appliance-pulse-ring {
+    border-color: rgba(6, 182, 212, 0.6);
+}
+
+.washer-icon {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    box-shadow: 0 0 40px rgba(34, 197, 94, 0.4);
+}
+.appliance-indicator:has(.washer-icon) {
+    color: #22c55e;
+}
+.appliance-indicator:has(.washer-icon) .appliance-pulse-ring {
+    border-color: rgba(34, 197, 94, 0.6);
+}
+
+.dishwasher-icon {
+    background: rgba(168, 85, 247, 0.2);
+    color: #a855f7;
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.4);
+}
+.appliance-indicator:has(.dishwasher-icon) {
+    color: #a855f7;
+}
+.appliance-indicator:has(.dishwasher-icon) .appliance-pulse-ring {
+    border-color: rgba(168, 85, 247, 0.6);
+}
+
+.appliance-label {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    margin-top: 16px;
+    text-transform: uppercase;
+}
+
+.appliance-power-display {
+    font-size: 28px;
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+    margin-top: 4px;
+}
+
+/* High power draw - more intense animation */
+.appliance-indicator.high-power .appliance-icon-container {
+    animation: applianceIconPulseHigh 1s ease-in-out infinite;
+}
+
+.appliance-indicator.high-power .appliance-pulse-ring {
+    animation: appliancePulseRing 1s ease-out infinite;
+}
+
+@keyframes applianceIconPulseHigh {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+/* Grid Connection Status */
+#gridConnectionStatus.disconnected {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    animation: gridDisconnectedPulse 1s ease-in-out infinite;
+}
+
+#gridConnectionStatus.disconnected span {
+    color: #ef4444;
+}
+
+#gridConnectionStatus.disconnected .w-3 {
+    background: #ef4444;
+}
+
+@keyframes gridDisconnectedPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    50% { box-shadow: 0 0 20px 5px rgba(239, 68, 68, 0.4); }
+}
+
+/* ============================================
+   ALEXA ANNOUNCEMENTS DASHBOARD
+   Optimized for Fire Tablet 10 (1920x1200)
+   ============================================ */
+
+.alexa-view {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+}
+
+/* Compact Button Style for Fire Tablet Grid */
+.alexa-btn-compact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.alexa-btn-compact:hover {
+    transform: scale(1.02);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.alexa-btn-compact:active {
+    transform: scale(0.97);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.alexa-btn-compact svg {
+    opacity: 0.9;
+}
+
+.alexa-btn-compact span {
+    opacity: 0.9;
+    line-height: 1.2;
+}
+
+/* Food Buttons - Amber */
+.alexa-btn-food {
+    border-color: rgba(251, 191, 36, 0.4);
+    color: #fbbf24;
+}
+
+.alexa-btn-food:hover {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+}
+
+.alexa-btn-food:active {
+    background: rgba(251, 191, 36, 0.25);
+}
+
+/* Come Down Buttons - Cyan */
+.alexa-btn-come {
+    border-color: rgba(34, 211, 238, 0.4);
+    color: #22d3ee;
+}
+
+.alexa-btn-come:hover {
+    background: rgba(34, 211, 238, 0.15);
+    border-color: rgba(34, 211, 238, 0.6);
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+}
+
+.alexa-btn-come:active {
+    background: rgba(34, 211, 238, 0.25);
+}
+
+/* Alexandra Buttons - Pink */
+.alexa-btn-alexandra {
+    border-color: rgba(236, 72, 153, 0.4);
+    color: #ec4899;
+}
+
+.alexa-btn-alexandra:hover {
+    background: rgba(236, 72, 153, 0.15);
+    border-color: rgba(236, 72, 153, 0.6);
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.2);
+}
+
+.alexa-btn-alexandra:active {
+    background: rgba(236, 72, 153, 0.25);
+}
+
+/* Mila Buttons - Purple */
+.alexa-btn-mila {
+    border-color: rgba(168, 85, 247, 0.4);
+    color: #a855f7;
+}
+
+.alexa-btn-mila:hover {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: rgba(168, 85, 247, 0.6);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+}
+
+.alexa-btn-mila:active {
+    background: rgba(168, 85, 247, 0.25);
+}
+
+/* Routine Buttons - Violet */
+.alexa-btn-routine {
+    border-color: rgba(139, 92, 246, 0.4);
+    color: #8b5cf6;
+}
+
+.alexa-btn-routine:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+.alexa-btn-routine:active {
+    background: rgba(139, 92, 246, 0.25);
+}
+
+/* ============================================
+   DELAYED EXIT OVERLAY
+   ============================================ */
+
+.delayed-exit-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.delayed-exit-overlay.delayed-exit-active {
+    opacity: 1;
+}
+
+.delayed-exit-overlay.delayed-exit-exit {
+    opacity: 0;
+}
+
+/* Animated particles background */
+.delayed-exit-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.delayed-exit-particles .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0;
+    animation: particle-float 8s infinite;
+}
+
+.delayed-exit-particles .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.delayed-exit-particles .particle:nth-child(2) { left: 30%; animation-delay: 1.5s; }
+.delayed-exit-particles .particle:nth-child(3) { left: 50%; animation-delay: 3s; }
+.delayed-exit-particles .particle:nth-child(4) { left: 70%; animation-delay: 4.5s; }
+.delayed-exit-particles .particle:nth-child(5) { left: 90%; animation-delay: 6s; }
+
+@keyframes particle-float {
+    0% {
+        transform: translateY(100vh) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.6;
+    }
+    90% {
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(-100px) scale(1);
+        opacity: 0;
+    }
+}
+
+/* Mode selection buttons */
+.exit-mode-btn {
+    position: relative;
+}
+
+.exit-mode-glow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    border-radius: inherit;
+}
+
+.exit-mode-btn:hover .exit-mode-glow {
+    opacity: 1;
+}
+
+/* Countdown ring */
+.countdown-ring {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    --glow-color: rgba(6, 182, 212, 0.4);
+}
+
+.countdown-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 20px var(--glow-color));
+}
+
+.countdown-glow {
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+    opacity: 0.5;
+    animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.05); }
+}
+
+/* Countdown time display */
+.countdown-time {
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 40px rgba(255, 255, 255, 0.5);
+}
+
+/* Urgent countdown (last 30 seconds) */
+.countdown-urgent .countdown-time {
+    animation: urgent-pulse 1s ease-in-out infinite;
+    color: #f87171;
+}
+
+.countdown-urgent .countdown-glow {
+    --glow-color: rgba(248, 113, 113, 0.5);
+    animation: glow-pulse 0.5s ease-in-out infinite;
+}
+
+.countdown-urgent #countdownProgress {
+    stroke: #f87171 !important;
+}
+
+@keyframes urgent-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.02); opacity: 0.9; }
+}
+
+/* Pulse effect on last 10 seconds */
+.countdown-pulse {
+    animation: ring-pulse 0.2s ease-out;
+}
+
+@keyframes ring-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+/* Text glow pulse for activation */
+.text-glow-pulse {
+    animation: text-glow 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes text-glow {
+    from {
+        text-shadow: 0 0 20px rgba(16, 185, 129, 0.5), 0 0 40px rgba(16, 185, 129, 0.3);
+    }
+    to {
+        text-shadow: 0 0 40px rgba(16, 185, 129, 0.8), 0 0 80px rgba(16, 185, 129, 0.5);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .countdown-ring {
+        width: 260px;
+        height: 260px;
+    }
+
+    .countdown-time {
+        font-size: 4rem;
+    }
+
+    #exitModeSelection .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .exit-mode-btn {
+        padding: 1.5rem;
+    }
+
+    .exit-mode-btn .w-20 {
+        width: 4rem;
+        height: 4rem;
+    }
+}
+
+/* ============================================
+   ACTION OVERLAY - Gate/Garage Feedback
+   ============================================ */
+
+.action-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: all;
+}
+
+.action-overlay.visible {
+    opacity: 1;
+}
+
+.action-overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 48px 80px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 32px;
+    animation: overlayPulse 2s ease-in-out infinite;
+}
+
+@keyframes overlayPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+.action-overlay-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-overlay-icon.gate {
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.3), rgba(59, 130, 246, 0.2));
+    border: 2px solid rgba(34, 211, 238, 0.5);
+    box-shadow: 0 0 50px rgba(34, 211, 238, 0.3);
+}
+
+.action-overlay-icon.garage {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.2));
+    border: 2px solid rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 50px rgba(251, 191, 36, 0.3);
+}
+
+.action-overlay-icon svg {
+    width: 48px;
+    height: 48px;
+}
+
+.action-overlay-icon.gate svg {
+    color: #22d3ee;
+}
+
+.action-overlay-icon.garage svg {
+    color: #fbbf24;
+}
+
+.action-overlay-text {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-align: center;
+}
+
+.action-overlay-subtext {
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+}
+
+.action-overlay-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.action-overlay-spinner.loading {
+    width: 56px;
+    height: 56px;
+    border-width: 4px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.action-overlay.not-ready .action-overlay-content {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================
+   PREMIUM BUTTON FEEDBACK SYSTEM
+   2025 Neumorphism + 3D Transform Trends
+   ============================================ */
+
+/* Base interactive element - applies to all pressable items */
+.pressable {
+    position: relative;
+    transform-style: preserve-3d;
+    transform: perspective(1000px) translateZ(0);
+    transition:
+        transform 0.15s cubic-bezier(0.2, 0, 0.2, 1),
+        box-shadow 0.2s cubic-bezier(0.2, 0, 0.2, 1),
+        filter 0.15s ease;
+    will-change: transform, box-shadow;
+    cursor: pointer;
+}
+
+/* Neumorphic raised state (default) */
+.pressable::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    background: radial-gradient(
+        circle at 30% 30%,
+        rgba(255, 255, 255, 0.15) 0%,
+        transparent 60%
+    );
+}
+
+/* Active/pressed state - 3D depth effect */
+.pressable:active,
+.pressable.pressing {
+    transform: perspective(1000px) translateZ(-8px) scale(0.97);
+    filter: brightness(0.92);
+}
+
+/* Press ripple effect */
+.press-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(255, 255, 255, 0.1) 40%,
+        transparent 70%
+    );
+    transform: scale(0);
+    animation: rippleExpand 0.5s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes rippleExpand {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   DESKTOP BUTTON TYPE VARIANTS
+   ============================================ */
+
+/* Glass buttons - Primary interactions */
+.glass.btn-control,
+button.glass,
+.btn-control {
+    transform-style: preserve-3d;
+    transform: perspective(800px) translateZ(0);
+    transition:
+        transform 0.15s cubic-bezier(0.2, 0, 0.2, 1),
+        box-shadow 0.2s ease,
+        background 0.2s ease,
+        filter 0.15s ease;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.15),
+        0 1px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass.btn-control:active,
+button.glass:active,
+.btn-control:active {
+    transform: perspective(800px) translateZ(-8px) scale(0.96);
+    box-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.2),
+        inset 0 3px 12px rgba(0, 0, 0, 0.15);
+    filter: brightness(0.92);
+}
+
+/* Navigation tabs */
+.nav-tab,
+[role="tab"] {
+    transform-style: preserve-3d;
+    transform: perspective(600px) translateZ(0);
+    transition:
+        transform 0.12s cubic-bezier(0.2, 0, 0.2, 1),
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.nav-tab:active,
+[role="tab"]:active {
+    transform: perspective(600px) translateZ(-5px) scale(0.96);
+}
+
+/* Card interactions */
+.card-interactive,
+.clickable-card {
+    transform-style: preserve-3d;
+    transform: perspective(1000px) translateZ(0);
+    transition:
+        transform 0.2s cubic-bezier(0.2, 0, 0.2, 1),
+        box-shadow 0.25s ease,
+        filter 0.2s ease;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.2),
+        0 2px 8px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.card-interactive:active,
+.clickable-card:active {
+    transform: perspective(1000px) translateZ(-12px) scale(0.98);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.25),
+        inset 0 3px 12px rgba(0, 0, 0, 0.15);
+    filter: brightness(0.95);
+}
+
+/* Security mode buttons */
+.security-mode-btn,
+.exit-mode-btn {
+    transform-style: preserve-3d;
+    transform: perspective(600px) translateZ(0);
+    transition:
+        transform 0.12s cubic-bezier(0.2, 0, 0.2, 1),
+        box-shadow 0.18s ease,
+        filter 0.12s ease;
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.security-mode-btn:active,
+.exit-mode-btn:active {
+    transform: perspective(600px) translateZ(-8px) scale(0.95);
+    box-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.25),
+        inset 0 3px 12px rgba(0, 0, 0, 0.2);
+    filter: brightness(0.88);
+}
+
+/* Camera control cards */
+#gateControlCard,
+#garageControlCard {
+    transform-style: preserve-3d;
+    transform: perspective(1200px) translateZ(0);
+    transition:
+        transform 0.15s cubic-bezier(0.2, 0, 0.2, 1),
+        box-shadow 0.2s ease,
+        filter 0.15s ease;
+}
+
+#gateControlCard:active,
+#garageControlCard:active {
+    transform: perspective(1200px) translateZ(-12px) scale(0.97);
+    filter: brightness(0.9) saturate(1.05);
+}
+
+/* Modal close buttons */
+.modal-close,
+.close-btn,
+[data-action="closeModal"] {
+    transform-style: preserve-3d;
+    transform: perspective(300px) translateZ(0);
+    transition:
+        transform 0.1s cubic-bezier(0.2, 0, 0.2, 1),
+        background 0.15s ease;
+}
+
+.modal-close:active,
+.close-btn:active,
+[data-action="closeModal"]:active {
+    transform: perspective(300px) translateZ(-4px) scale(0.88);
+}
+
+/* Icon buttons */
+.icon-btn,
+button svg {
+    transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+button:active svg,
+.icon-btn:active {
+    transform: scale(0.9);
+}
+
+/* ============================================
+   VISUAL FEEDBACK ENHANCEMENTS
+   ============================================ */
+
+/* Press highlight flash */
+.press-flash {
+    animation: flashHighlight 0.3s ease-out;
+}
+
+@keyframes flashHighlight {
+    0% { filter: brightness(1.3); }
+    100% { filter: brightness(1); }
+}
+
+/* Success feedback pulse */
+.press-success {
+    animation: successPulse 0.4s ease-out;
+}
+
+@keyframes successPulse {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+    50% { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+/* Icon bounce on press release */
+.icon-bounce {
+    animation: iconBounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes iconBounce {
+    0% { transform: scale(0.9); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+/* Hover state enhancements for desktop */
+@media (hover: hover) {
+    .glass.btn-control:hover,
+    button.glass:hover,
+    .btn-control:hover {
+        transform: perspective(800px) translateZ(4px) scale(1.02);
+        box-shadow:
+            0 8px 24px rgba(0, 0, 0, 0.2),
+            0 2px 8px rgba(0, 0, 0, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .card-interactive:hover,
+    .clickable-card:hover {
+        transform: perspective(1000px) translateZ(8px) scale(1.01);
+        box-shadow:
+            0 12px 32px rgba(0, 0, 0, 0.25),
+            0 4px 12px rgba(0, 0, 0, 0.18);
+    }
+
+    #gateControlCard:hover,
+    #garageControlCard:hover {
+        transform: perspective(1200px) translateZ(6px) scale(1.01);
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY - Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .pressable,
+    .glass.btn-control,
+    button.glass,
+    .btn-control,
+    .nav-tab,
+    [role="tab"],
+    .card-interactive,
+    .clickable-card,
+    .security-mode-btn,
+    .exit-mode-btn,
+    #gateControlCard,
+    #garageControlCard,
+    .modal-close,
+    .close-btn {
+        transition: none !important;
+        transform: none !important;
+    }
+
+    .pressable:active,
+    .glass.btn-control:active,
+    button.glass:active,
+    .btn-control:active,
+    .nav-tab:active,
+    [role="tab"]:active,
+    .card-interactive:active,
+    .clickable-card:active,
+    .security-mode-btn:active,
+    .exit-mode-btn:active,
+    #gateControlCard:active,
+    #garageControlCard:active,
+    .modal-close:active,
+    .close-btn:active {
+        opacity: 0.7;
+        transform: none !important;
+    }
+
+    .press-ripple,
+    .press-flash,
+    .press-success,
+    .icon-bounce {
+        animation: none !important;
+    }
+}
+
+/* ============================================
+   SECURITY COMMAND CENTER STYLES
+   ============================================ */
+
+/* Security icon pulse effect */
+.security-icon-pulse {
+    animation: securityPulse 3s ease-in-out infinite;
+}
+
+@keyframes securityPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 20px 5px rgba(16, 185, 129, 0.2);
+    }
+}
+
+/* Security banner icon animation */
+.security-banner-icon {
+    transition: all 0.5s ease;
+}
+
+/* Countdown overlay glow effect */
+.countdown-glow {
+    text-shadow:
+        0 0 20px rgba(251, 191, 36, 0.6),
+        0 0 40px rgba(251, 191, 36, 0.4),
+        0 0 60px rgba(251, 191, 36, 0.2);
+    animation: countdownPulse 1s ease-in-out infinite;
+}
+
+@keyframes countdownPulse {
+    0%, 100% {
+        transform: scale(1);
+        text-shadow:
+            0 0 20px rgba(251, 191, 36, 0.6),
+            0 0 40px rgba(251, 191, 36, 0.4);
+    }
+    50% {
+        transform: scale(1.02);
+        text-shadow:
+            0 0 30px rgba(251, 191, 36, 0.8),
+            0 0 60px rgba(251, 191, 36, 0.5);
+    }
+}
+
+/* Zone bypassed state */
+.zone-card.zone-bypassed {
+    opacity: 0.7;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(251, 191, 36, 0.02) 100%);
+}
+
+.zone-card.zone-bypassed::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(251, 191, 36, 0.05) 10px,
+        rgba(251, 191, 36, 0.05) 20px
+    );
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+/* Zone bypass button animation */
+.zone-bypass-btn {
+    transition: all 0.2s ease;
+}
+
+.zone-bypass-btn:active {
+    transform: scale(0.9);
+}
+
+/* Security countdown panel */
+.security-countdown-panel {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    animation: countdownPanelGlow 2s ease-in-out infinite;
+}
+
+@keyframes countdownPanelGlow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(251, 191, 36, 0.4);
+    }
+}
+
+/* Activity timeline styling */
+.timeline-item {
+    position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 32px;
+    bottom: -8px;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+}
+
+/* ============================================
+   ARMED STATE - CRIMSON WITH HEARTBEAT
+   ============================================ */
+
+/* Crimson color variables */
+:root {
+    --armed-crimson: #DC143C;
+    --armed-crimson-glow: rgba(220, 20, 60, 0.6);
+    --armed-crimson-bg: rgba(220, 20, 60, 0.15);
+
+    /* Critical Alerts Only - Pink */
+    --alerts-pink: #ec4899;
+    --alerts-pink-glow: rgba(236, 72, 153, 0.6);
+    --alerts-pink-bg: rgba(236, 72, 153, 0.15);
+}
+
+/* Heartbeat pulse animation - shield icon */
+@keyframes shieldHeartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    15% {
+        transform: scale(1.08);
+    }
+    30% {
+        transform: scale(1);
+    }
+    45% {
+        transform: scale(1.05);
+    }
+    60% {
+        transform: scale(1);
+    }
+}
+
+/* Wave propagation animation */
+@keyframes wavePropagate {
+    0% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* Armed state indicator - applies to security icons/pills */
+.security-armed-indicator {
+    position: relative;
+    background: var(--armed-crimson-bg) !important;
+    border-color: var(--armed-crimson) !important;
+}
+
+.security-armed-indicator svg {
+    color: var(--armed-crimson) !important;
+    animation: shieldHeartbeat 1.5s ease-in-out infinite;
+}
+
+/* Wave rings emanating from shield */
+.security-armed-indicator::before,
+.security-armed-indicator::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid var(--armed-crimson);
+    animation: wavePropagate 2s ease-out infinite;
+    pointer-events: none;
+}
+
+.security-armed-indicator::after {
+    animation-delay: 1s;
+}
+
+/* Critical Alerts Only - Pink heartbeat indicator */
+.security-alerts-indicator {
+    position: relative;
+    background: var(--alerts-pink-bg) !important;
+    border-color: var(--alerts-pink) !important;
+}
+
+.security-alerts-indicator svg {
+    color: var(--alerts-pink) !important;
+    animation: shieldHeartbeat 1.5s ease-in-out infinite;
+}
+
+.security-alerts-indicator::before,
+.security-alerts-indicator::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid var(--alerts-pink);
+    animation: wavePropagate 2s ease-out infinite;
+    pointer-events: none;
+}
+
+.security-alerts-indicator::after {
+    animation-delay: 1s;
+}
+
+/* Alerts Only status banner */
+.security-status-banner.alerts-only {
+    border-left-color: var(--alerts-pink);
+    background: linear-gradient(135deg, var(--alerts-pink-bg) 0%, rgba(236, 72, 153, 0.02) 100%);
+}
+
+/* Armed text styling - high contrast white on crimson */
+.security-armed-text {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 20px var(--armed-crimson-glow);
+}
+
+/* Armed header in security view */
+.security-header-armed {
+    background: linear-gradient(135deg, var(--armed-crimson-bg) 0%, transparent 100%) !important;
+    border-bottom: 2px solid var(--armed-crimson) !important;
+}
+
+.security-header-armed h2 {
+    color: #fff !important;
+    text-shadow: 0 0 15px var(--armed-crimson-glow);
+}
+
+/* Critical Alerts header styling */
+.security-header-alerts {
+    background: linear-gradient(135deg, var(--alerts-pink-bg) 0%, transparent 100%) !important;
+    border-bottom: 2px solid var(--alerts-pink) !important;
+}
+
+.security-header-alerts h2 {
+    color: #fff !important;
+    text-shadow: 0 0 15px var(--alerts-pink-glow);
+}
+
+/* Security status banner states */
+.security-status-banner.armed-away {
+    border-left-color: var(--armed-crimson);
+    background: linear-gradient(135deg, var(--armed-crimson-bg) 0%, rgba(220, 20, 60, 0.02) 100%);
+}
+
+.security-status-banner.armed-home {
+    border-left-color: #f59e0b;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.02) 100%);
+}
+
+.security-status-banner.armed-night {
+    border-left-color: #3b82f6;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.02) 100%);
+}
+
+.security-status-banner.triggered {
+    border-left-color: #ef4444;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.05) 100%);
+    animation: triggeredPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes triggeredPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
+    }
+}
+
+/* Alarm mode button active state */
+.alarm-mode-btn.active {
+    transform: scale(0.98);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Security panel styling */
+.security-panel {
+    transition: all 0.3s ease;
+}
+
+/* No scrollbar for zones */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Countdown overlay backdrop */
+#countdownOverlay {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}

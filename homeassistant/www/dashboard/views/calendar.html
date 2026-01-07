@@ -1,0 +1,184 @@
+<!-- Calendar View Template -->
+<div id="view-calendar" class="h-full p-6 hidden">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-violet-500/20 flex items-center justify-center border border-violet-500/30">
+                <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold">Family Calendar</h2>
+                <p class="text-white/50 text-sm">Synced with Google Calendar</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <!-- Add Event Button -->
+            <button data-action="openCreateEventModal" data-param-date="" class="glass-light rounded-xl px-4 py-2 hover:bg-white/10 transition btn-control flex items-center gap-2 text-sm font-medium">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Add Event</span>
+            </button>
+            <!-- Auth Button -->
+            <button id="calendarAuthBtn" data-action="toggleCalendarAuth" class="glass-light rounded-xl px-3 py-2 hover:bg-white/10 transition btn-control flex items-center gap-2 text-sm font-medium bg-violet-500/20 border border-violet-500/30 text-violet-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                </svg>
+                <span>Sign In</span>
+            </button>
+            <!-- Separator -->
+            <div class="w-px h-8 bg-white/10"></div>
+            <!-- View Toggle Buttons -->
+            <div class="flex items-center gap-1 glass-light rounded-xl p-1">
+                <button id="calBtnMonth" data-action="changeCalendarView" data-param-view="month"
+                    class="px-4 py-2 rounded-lg text-sm font-medium transition bg-violet-500/30 border border-violet-500/50 text-violet-400">
+                    Month
+                </button>
+                <button id="calBtnWeek" data-action="changeCalendarView" data-param-view="week"
+                    class="px-4 py-2 rounded-lg text-sm font-medium transition bg-white/5 border border-white/10 text-white/60 hover:bg-white/10">
+                    Week
+                </button>
+                <button id="calBtnDay" data-action="changeCalendarView" data-param-view="day"
+                    class="px-4 py-2 rounded-lg text-sm font-medium transition bg-white/5 border border-white/10 text-white/60 hover:bg-white/10">
+                    Day
+                </button>
+            </div>
+            <!-- Navigation -->
+            <div class="flex items-center gap-1">
+                <button data-action="calendarPrev" class="glass-light rounded-xl p-2 hover:bg-white/10 transition btn-control" title="Previous">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <button data-action="calendarToday" class="glass-light rounded-xl px-4 py-2 hover:bg-white/10 transition btn-control text-sm font-medium">
+                    Today
+                </button>
+                <button data-action="calendarNext" class="glass-light rounded-xl p-2 hover:bg-white/10 transition btn-control" title="Next">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+            <!-- Close Button -->
+            <button data-action="showHome" class="glass-light rounded-xl p-2 hover:bg-white/10 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Calendar Main Content -->
+    <div class="flex gap-4 h-[calc(100%-5rem)]">
+        <!-- Left Sidebar - Upcoming Events & Quick Actions -->
+        <div class="w-72 flex-shrink-0 flex flex-col gap-4">
+            <!-- Quick Stats Card -->
+            <div class="glass rounded-2xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-white/80">This Week</h3>
+                    <span id="calendarWeekRange" class="text-xs text-white/40"></span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="glass-light rounded-xl p-2">
+                        <div id="weekEventCount" class="text-lg font-bold text-violet-400">0</div>
+                        <div class="text-[10px] text-white/40 uppercase tracking-wide">Events</div>
+                    </div>
+                    <div class="glass-light rounded-xl p-2">
+                        <div id="weekTaskCount" class="text-lg font-bold text-emerald-400">0</div>
+                        <div class="text-[10px] text-white/40 uppercase tracking-wide">Tasks</div>
+                    </div>
+                    <div class="glass-light rounded-xl p-2">
+                        <div id="weekBusyDays" class="text-lg font-bold text-amber-400">0</div>
+                        <div class="text-[10px] text-white/40 uppercase tracking-wide">Busy Days</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Family Member Filters -->
+            <div class="glass rounded-2xl p-4">
+                <h3 class="text-sm font-semibold text-white/80 mb-3">Family Members</h3>
+                <div class="flex flex-wrap gap-2">
+                    <button data-action="toggleCalendarFilter" data-param-filter="everyone" id="filterEveryone"
+                        class="calendar-filter-chip active" data-color="amber">
+                        <span class="chip-dot bg-amber-500"></span>
+                        Everyone
+                    </button>
+                    <button data-action="toggleCalendarFilter" data-param-filter="tatiana" id="filterTatiana"
+                        class="calendar-filter-chip" data-color="pink">
+                        <span class="chip-dot bg-pink-500"></span>
+                        Tatiana
+                    </button>
+                    <button data-action="toggleCalendarFilter" data-param-filter="nico" id="filterNico"
+                        class="calendar-filter-chip" data-color="blue">
+                        <span class="chip-dot bg-blue-500"></span>
+                        Nico
+                    </button>
+                    <button data-action="toggleCalendarFilter" data-param-filter="alexandra" id="filterAlexandra"
+                        class="calendar-filter-chip" data-color="purple">
+                        <span class="chip-dot bg-purple-500"></span>
+                        Alexandra
+                    </button>
+                    <button data-action="toggleCalendarFilter" data-param-filter="mila" id="filterMila"
+                        class="calendar-filter-chip" data-color="teal">
+                        <span class="chip-dot bg-teal-500"></span>
+                        Mila
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="glass rounded-2xl p-4 flex-1 overflow-hidden flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-white/80">Upcoming</h3>
+                    <span class="text-xs text-white/40">Next 7 days</span>
+                </div>
+                <div id="upcomingEventsList" class="space-y-2 overflow-y-auto flex-1 no-scrollbar">
+                    <div class="text-center py-8 text-white/30 text-sm">
+                        <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        Loading events...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Add Buttons -->
+            <div class="glass rounded-2xl p-3">
+                <div class="flex gap-2">
+                    <button onclick="quickAddEvent('reminder')" class="flex-1 glass-light rounded-xl px-3 py-2 text-xs font-medium text-white/70 hover:bg-white/10 transition flex items-center justify-center gap-1">
+                        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                        Reminder
+                    </button>
+                    <button onclick="quickAddEvent('task')" class="flex-1 glass-light rounded-xl px-3 py-2 text-xs font-medium text-white/70 hover:bg-white/10 transition flex items-center justify-center gap-1">
+                        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                        </svg>
+                        Task
+                    </button>
+                    <button onclick="quickAddEvent('birthday')" class="flex-1 glass-light rounded-xl px-3 py-2 text-xs font-medium text-white/70 hover:bg-white/10 transition flex items-center justify-center gap-1">
+                        <svg class="w-3.5 h-3.5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18z"/>
+                        </svg>
+                        Birthday
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Container -->
+        <div class="glass rounded-2xl p-4 flex-1 relative overflow-hidden">
+            <!-- Loading Indicator -->
+            <div id="calendarLoader" class="absolute inset-0 flex items-center justify-center bg-dark-900/50 z-10 hidden">
+                <div class="flex items-center gap-3 glass-light rounded-xl px-6 py-3">
+                    <div class="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span class="text-white/70">Loading events...</span>
+                </div>
+            </div>
+            <!-- FullCalendar Mount Point -->
+            <div id="calendarContainer" class="h-full calendar-dark"></div>
+        </div>
+    </div>
+</div>

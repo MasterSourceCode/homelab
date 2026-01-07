@@ -1,0 +1,393 @@
+# Frigate NVR Configuration
+# Optimized for Beelink N95 with Intel UHD Graphics + OpenVINO
+# Version 0.16.3
+
+# Logging configuration - reduced from debug for production
+logger:
+  default: warning
+  logs:
+    frigate.events.maintainer: info
+    frigate.object_processing: warning
+    frigate.ptz.autotrack: warning
+    frigate.record.maintainer: warning
+
+# Auth with trusted proxies for HA integration and dashboard
+auth:
+  enabled: true
+  trusted_proxies:
+    - 192.168.68.0/24    # Local LAN - HA, dashboard, browsers
+    - 172.16.0.0/12      # Docker networks
+    - 127.0.0.1          # Localhost
+
+mqtt:
+  enabled: true
+  host: mosquitto
+  port: 1883
+  user: "{FRIGATE_MQTT_USER}"
+  password: "{FRIGATE_MQTT_PASSWORD}"
+  topic_prefix: frigate
+
+# OpenVINO detector with YOLOv8s model (~45% mAP vs 22% for SSDLite)
+detectors:
+  ov:
+    type: openvino
+    device: GPU
+
+model:
+  model_type: yolo-generic
+  path: /config/models/yolov8s_u8.xml
+  width: 640
+  height: 640
+  input_tensor: nchw
+  input_pixel_format: rgb
+  labelmap_path: /config/models/coco_80cl.txt
+
+# License Plate Recognition
+lpr:
+  enabled: true
+  device: GPU
+  model_size: large
+  detection_threshold: 0.7
+  recognition_threshold: 0.85
+  min_area: 500
+  min_plate_length: 3
+  known_plates: {}
+
+# Face Recognition
+face_recognition:
+  enabled: true
+  min_area: 1000
+  model_size: small
+
+# Hardware acceleration for video processing using Intel QuickSync
+ffmpeg:
+  hwaccel_args: preset-vaapi
+  output_args:
+    record: preset-record-generic-audio-aac
+
+# Global object detection settings
+# Reduced settings for N95 stability
+detect:
+  enabled: true
+  fps: 3
+  width: 1280
+  height: 720
+  max_disappeared: 30
+
+# Global motion detection settings
+# Tuned to filter out bugs, leaves, and small distant movement
+motion:
+  threshold: 30              # Default 20 - higher = less sensitive to small changes
+  contour_area: 50           # Default 10 - minimum size of motion blob (filters bugs)
+  improve_contrast: true     # Better detection in varying lighting
+  frame_alpha: 0.01          # How quickly motion history fades (lower = more stable)
+
+objects:
+  track:
+    - person
+    - dog
+    - cat
+    - car
+  filters:
+    person:
+      min_area: 7500           # Increased from 5000 - filters distant/small detections
+      max_area: 100000
+      min_score: 0.55          # Slightly higher confidence required
+      threshold: 0.75          # Higher threshold for confirmed detection
+    dog:
+      min_area: 800             # Lowered for distant dogs
+      max_area: 50000
+      min_score: 0.35           # Allow lower initial detection
+      threshold: 0.45           # Lowered for night vision
+    cat:
+      min_area: 1000
+      max_area: 30000
+      min_score: 0.5
+      threshold: 0.7
+    car:
+      min_area: 10000
+      max_area: 200000
+      min_score: 0.5
+      threshold: 0.7
+
+# Recording settings - Full resolution to 1TB SSD
+record:
+  enabled: true
+  retain:
+    days: 30
+    mode: motion
+snapshots:
+  enabled: true
+  timestamp: true
+  bounding_box: true
+  crop: false
+  retain:
+    default: 14
+
+# go2rtc for RTSP restreaming with WebRTC support
+go2rtc:
+  # Use non-default RTSP port to avoid conflict with wyze-bridge
+  rtsp:
+    listen: :18554
+
+  webrtc:
+    candidates:
+      - 192.168.68.77:8555      # Server LAN IP for WebRTC
+      - stun:8555               # STUN for NAT traversal
+
+  streams:
+    # ===========================================
+    # LIVE STREAMS - Low latency for real-time viewing (WebRTC)
+    # Use these for dashboard clicks and live monitoring
+    # ===========================================
+    front_door_live:
+      - rtsp://{FRIGATE_AMCREST_USER}:{FRIGATE_AMCREST_PASS}@{FRIGATE_FRONT_DOOR_IP}:554/cam/realmonitor?channel=1&subtype=1
+    backyard_live:
+      - rtsp://{FRIGATE_AMCREST_USER}:{FRIGATE_AMCREST_PASS}@{FRIGATE_BACKYARD_IP}:554/cam/realmonitor?channel=1&subtype=1
+
+    # ===========================================
+    # DETECTION STREAMS - For Frigate AI processing
+    # ===========================================
+    front_door:
+      - rtsp://{FRIGATE_AMCREST_USER}:{FRIGATE_AMCREST_PASS}@{FRIGATE_FRONT_DOOR_IP}:554/cam/realmonitor?channel=1&subtype=1
+    backyard:
+      - rtsp://{FRIGATE_AMCREST_USER}:{FRIGATE_AMCREST_PASS}@{FRIGATE_BACKYARD_IP}:554/cam/realmonitor?channel=1&subtype=1
+
+    # ===========================================
+    # RECORDING STREAMS - Full 4K resolution
+    # ===========================================
+    front_door_hq:
+      - rtsp://{FRIGATE_AMCREST_USER}:{FRIGATE_AMCREST_PASS}@{FRIGATE_FRONT_DOOR_IP}:554/cam/realmonitor?channel=1&subtype=0
+    backyard_hq:
+      - rtsp://{FRIGATE_AMCREST_USER}:{FRIGATE_AMCREST_PASS}@{FRIGATE_BACKYARD_IP}:554/cam/realmonitor?channel=1&subtype=0
+
+    # ===========================================
+    # THUMBNAIL STREAMS - Ultra-low bandwidth for dashboard idle view
+    # Tiny resolution (320x180), 5fps for responsive feel
+    # ===========================================
+    front_door_thumb:
+      - ffmpeg:rtsp://{FRIGATE_AMCREST_USER}:{FRIGATE_AMCREST_PASS}@{FRIGATE_FRONT_DOOR_IP}:554/cam/realmonitor?channel=1&subtype=1#video=mjpeg#width=320#height=180#raw=-r 5
+    backyard_thumb:
+      - ffmpeg:rtsp://{FRIGATE_AMCREST_USER}:{FRIGATE_AMCREST_PASS}@{FRIGATE_BACKYARD_IP}:554/cam/realmonitor?channel=1&subtype=1#video=mjpeg#width=320#height=180#raw=-r 5
+
+    # ===========================================
+    # WYZE GARAGE CAMERA - via docker-wyze-bridge
+    # ===========================================
+    # Access via host.docker.internal (configured via extra_hosts)
+    wyze_garage:
+      - rtsp://host.docker.internal:8554/garagedoor
+    wyze_garage_live:
+      - rtsp://host.docker.internal:8554/garagedoor
+
+    # ===========================================
+    # EZVIZ INDOOR CAMERA
+    # ===========================================
+    ezviz_indoor:
+      - rtsp://{FRIGATE_EZVIZ_USER}:{FRIGATE_EZVIZ_PASS}@{FRIGATE_EZVIZ_IP}:554/h264_stream
+    ezviz_indoor_hq:
+      - rtsp://{FRIGATE_EZVIZ_USER}:{FRIGATE_EZVIZ_PASS}@{FRIGATE_EZVIZ_IP}:554/h264_stream
+    ezviz_indoor_live:
+      - rtsp://{FRIGATE_EZVIZ_USER}:{FRIGATE_EZVIZ_PASS}@{FRIGATE_EZVIZ_IP}:554/h264_stream
+
+# Camera configurations
+cameras:
+  front_door:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:18554/front_door
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+        - path: rtsp://127.0.0.1:18554/front_door_hq
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+    detect:
+      enabled: true
+      width: 1280
+      height: 720
+      fps: 3
+    lpr:
+      enabled: true
+    face_recognition:
+      enabled: true
+    snapshots:
+      enabled: true
+      bounding_box: true
+    record:
+      enabled: true
+      retain:
+        days: 30
+        mode: motion
+    review:
+      alerts:
+        required_zones:
+          - External_Front_Corridor
+      detections:
+        required_zones:
+          - External_Front_Corridor
+    zones:
+      External_Front_Corridor:
+        coordinates:
+          0.012,0.986,0.543,0.353,0.522,0.22,0.547,0.007,0.997,0.004,0.998,0.997
+        loitering_time: 1
+  backyard:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:18554/backyard
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+        - path: rtsp://127.0.0.1:18554/backyard_hq
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+    detect:
+      enabled: true
+      width: 1280
+      height: 720
+      fps: 3
+    lpr:
+      enabled: false
+    face_recognition:
+      enabled: false
+    snapshots:
+      enabled: true
+      bounding_box: true
+    record:
+      enabled: true
+      retain:
+        days: 30
+        mode: motion
+    review:
+      alerts:
+        required_zones:
+          - Back_Yard
+      detections:
+        required_zones:
+          - Back_Yard
+    zones:
+      Back_Yard:
+        coordinates:
+          0.002,0.994,0.004,0.67,0.415,0.092,0.566,0.095,0.591,0.189,0.724,0.342,0.737,0.298,0.998,0.661,0.997,0.993
+        inertia: 3
+        loitering_time: 0
+  wyze_garage:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://host.docker.internal:8554/garagedoor
+          input_args: preset-rtsp-generic
+          roles:
+            - detect
+            - record
+    detect:
+      enabled: true
+      width: 640
+      height: 360
+      fps: 5
+    lpr:
+      enabled: true
+    face_recognition:
+      enabled: true
+    snapshots:
+      enabled: true
+      bounding_box: true
+    record:
+      enabled: true
+      retain:
+        days: 14
+        mode: motion
+    review:
+      alerts:
+        required_zones:
+          - Garage_Entrance
+          - Garage
+      detections:
+        required_zones:
+          - Garage_Entrance
+          - Garage
+    zones:
+      Garage_Entrance:
+        coordinates: 0.115,0.156,0.879,0.12,0.804,0.705,0.179,0.734
+        loitering_time: 0
+      Garage:
+        coordinates:
+          0.886,0.131,0.996,0.209,0.999,0.999,0.003,0.993,0.002,0.175,0.099,0.164,0.179,0.732,0.809,0.712
+        loitering_time: 0
+  ezviz_indoor:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://127.0.0.1:18554/ezviz_indoor
+          input_args: preset-rtsp-restream
+          roles:
+            - detect
+        - path: rtsp://127.0.0.1:18554/ezviz_indoor_hq
+          input_args: preset-rtsp-restream
+          roles:
+            - record
+    detect:
+      enabled: true
+      width: 1280
+      height: 720
+      fps: 5
+    lpr:
+      enabled: false
+    face_recognition:
+      enabled: true
+    snapshots:
+      enabled: true
+      bounding_box: true
+    record:
+      enabled: true
+      retain:
+        days: 30
+        mode: all
+    review:
+      alerts:
+        required_zones:
+          - Front_Door_and_Stairs
+          - Kitchen
+          - Ground_Passage
+          - TV_Room
+      detections:
+        required_zones:
+          - Front_Door_and_Stairs
+          - Kitchen
+          - Ground_Passage
+          - TV_Room
+    zones:
+      Front_Door_and_Stairs:
+        coordinates: 0.435,0.598,0.42,0.004,0.004,0.003,0.005,0.997,0.457,0.996
+        loitering_time: 0
+        objects:
+          - dog
+          - person
+      Kitchen:
+        coordinates:
+          0.428,0.085,0.565,0.081,0.565,0.27,0.53,0.274,0.53,0.33,0.435,0.335
+        loitering_time: 0
+      Ground_Passage:
+        coordinates:
+          0.462,0.993,0.994,0.987,0.995,0.003,0.647,0.015,0.625,0.554,0.437,0.561
+        loitering_time: 0
+        objects:
+          - dog
+          - person
+      TV_Room:
+        coordinates:
+          0.438,0.549,0.433,0.334,0.536,0.332,0.533,0.281,0.572,0.275,0.569,0.076,0.637,0.032,0.625,0.551
+        loitering_time: 0
+ui:
+  timezone: Africa/Johannesburg
+
+version: 0.16-0
+semantic_search:
+  enabled: true
+  model_size: small
+classification:
+  bird:
+    enabled: false

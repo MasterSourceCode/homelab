@@ -1,0 +1,1946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Home Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#0a0a0f',
+                            800: '#12121a',
+                            700: '#1a1a24',
+                            600: '#22222e',
+                            500: '#2a2a38',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/media.css">
+
+    <!-- FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.10/index.global.min.js"></script>
+</head>
+<body class="bg-dark-900 text-white font-sans min-h-screen overflow-hidden">
+    <!-- Ambient Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-emerald-600/10 rounded-full blur-[80px]"></div>
+    </div>
+
+    <!-- Connection Modal -->
+    <div id="connectModal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+        <div class="glass rounded-3xl p-8 max-w-md w-full mx-4 slide-up">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold">Welcome Home</h2>
+                <p class="text-white/50 mt-2">Enter your access token to connect</p>
+            </div>
+            <div class="space-y-4">
+                <input type="password" id="haToken" placeholder="Long-lived access token"
+                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500 focus:outline-none transition">
+                <button onclick="connectHA()"
+                    class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 font-semibold hover:opacity-90 transition">
+                    Connect
+                </button>
+                <p id="errorMsg" class="text-red-400 text-sm text-center hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="relative z-10 h-screen flex flex-col hidden">
+        <!-- Header -->
+        <header class="glass border-b border-white/5 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Left: Time & Date -->
+                <div class="flex items-center gap-6">
+                    <div>
+                        <div class="text-3xl font-bold" id="timeDisplay">--:--</div>
+                        <div class="text-white/40 text-sm" id="dateDisplay">Loading...</div>
+                    </div>
+                    <!-- Weather -->
+                    <div class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3">
+                        <svg class="w-8 h-8 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="5"/>
+                            <path stroke="currentColor" stroke-width="2" d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                        <div>
+                            <div class="text-xl font-semibold" id="weatherTemp">--°</div>
+                            <div class="text-xs text-white/50" id="weatherCondition">Loading</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center: Quick Stats -->
+                <div class="stat-badges flex items-center gap-3">
+                    <!-- Lights Badge -->
+                    <button id="lightsBadge" onclick="openAllLightsModal()" oncontextmenu="allLightsOff(); return false;"
+                        class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3 hover:bg-white/10 transition cursor-pointer btn-control">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-lg font-semibold" id="lightsOnCount">0</div>
+                            <div class="text-xs text-white/50">Lights On</div>
+                        </div>
+                    </button>
+
+                    <!-- Power Badge -->
+                    <div class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3">
+                        <div class="relative w-12 h-12">
+                            <svg class="w-12 h-12 progress-ring" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                                <circle id="powerRing" cx="24" cy="24" r="20" fill="none" stroke="url(#powerGradient)" stroke-width="4"
+                                    stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="125.6" class="progress-ring-circle"/>
+                                <defs>
+                                    <linearGradient id="powerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#22c55e"/>
+                                        <stop offset="50%" stop-color="#eab308"/>
+                                        <stop offset="100%" stop-color="#ef4444"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-lg font-semibold" id="totalPower">0W</div>
+                            <div class="text-xs text-white/50">Power</div>
+                        </div>
+                    </div>
+
+                    <!-- Security Badge -->
+                    <button onclick="showView('security')" class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3 hover:bg-white/10 transition btn-control">
+                        <div id="securityIcon" class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-sm font-semibold" id="securityStatus">Disarmed</div>
+                            <div class="text-xs text-white/50">Security</div>
+                        </div>
+                    </button>
+
+                    <!-- People Home - Links to Family Dashboard -->
+                    <a href="family-status.html" class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3 hover:bg-white/10 transition cursor-pointer btn-control group">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <div class="text-left min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold" id="peopleHomeCount">0</span>
+                                <span class="text-xs text-white/50">Home</span>
+                            </div>
+                            <div class="text-[10px] text-white/40 truncate" id="peopleHomeNames">Loading...</div>
+                        </div>
+                        <div id="batteryWarningDot" class="hidden w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                    </a>
+
+                    <!-- PC Health Badge -->
+                    <button id="pcHealthBadge" onclick="showView('system')" class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3 hover:bg-white/10 transition cursor-pointer btn-control group">
+                        <div class="pc-icon-container w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center group-hover:bg-cyan-500/30 transition">
+                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                            </svg>
+                        </div>
+                        <div class="text-left min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold" id="pcHealthBadgeScore">--</span>
+                                <div id="pcHealthDot" class="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></div>
+                            </div>
+                            <div class="text-[10px] text-white/40">System</div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Right: Connection Status -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div id="connDot" class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></div>
+                        <span id="connStatus" class="text-sm text-white/50">Connected</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main id="main-content" class="flex-1 overflow-hidden">
+            <!-- Home View -->
+            <div id="view-home" class="h-full flex flex-col p-6 gap-4">
+                <!-- Floor Selector -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <button id="floorGround" onclick="selectFloor('ground')"
+                            class="px-5 py-2 rounded-xl font-medium transition floor-btn bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-white">
+                            Ground Floor
+                        </button>
+                        <button id="floorUpper" onclick="selectFloor('upper')"
+                            class="px-5 py-2 rounded-xl font-medium transition floor-btn bg-white/5 border border-white/10 text-white/60 hover:bg-white/10">
+                            Upper Floor
+                        </button>
+                    </div>
+
+                    <!-- Quick Navigation -->
+                    <div class="flex items-center gap-2">
+                        <!-- Media Portal -->
+                        <button onclick="showView('media')" class="glass-light rounded-xl p-3 hover:bg-white/10 transition btn-control relative group" title="Media Portal">
+                            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
+                            </svg>
+                        </button>
+                        <button onclick="showView('cameras')" class="glass-light rounded-xl p-3 hover:bg-white/10 transition btn-control relative group" title="Gate & Garage Control">
+                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                        </button>
+                        <button onclick="showView('energy')" class="glass-light rounded-xl p-3 hover:bg-white/10 transition btn-control" title="Energy">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </button>
+                        <button onclick="showView('garage')" class="glass-light rounded-xl p-3 hover:bg-white/10 transition btn-control" title="Garage">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                        </button>
+                        <button onclick="showView('calendar')" class="glass-light rounded-xl p-3 hover:bg-white/10 transition btn-control" title="Calendar">
+                            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </button>
+                        <button onclick="showView('surveillance')" class="glass-light rounded-xl p-3 hover:bg-white/10 transition btn-control relative group" title="AI Camera Hub">
+                            <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            <span id="aiEventBadge" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+                        </button>
+                        <button onclick="showView('system')" class="glass-light rounded-xl p-3 hover:bg-white/10 transition btn-control relative group" title="System Performance">
+                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Room Grid -->
+                <div id="roomGrid" class="room-grid grid grid-cols-3 gap-4 flex-1 overflow-y-auto no-scrollbar pb-4">
+                    <!-- Rooms populated by JS -->
+                </div>
+            </div>
+
+            <!-- Gate & Garage Control View -->
+            <div id="view-cameras" class="h-full hidden">
+                <div class="h-full flex gap-3 p-3">
+                    <!-- GATE CONTROL -->
+                    <div id="gateControlCard" onclick="toggleGateWithFeedback()"
+                        class="gate-control-card relative flex-1 rounded-3xl overflow-hidden cursor-pointer group transition-all duration-500">
+                        <img id="cam-gate" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="" alt="Gate Camera">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent"></div>
+                        <div id="gateScanLine" class="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-0 scan-line"></div>
+
+                        <div class="absolute top-6 right-6">
+                            <div id="gateStatusRing" class="relative w-16 h-16">
+                                <svg class="w-full h-full -rotate-90" viewBox="0 0 64 64">
+                                    <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                                    <circle id="gateRingProgress" cx="32" cy="32" r="28" fill="none" stroke="url(#gateGradient)"
+                                        stroke-width="4" stroke-linecap="round" stroke-dasharray="176" stroke-dashoffset="176" class="transition-all duration-1000"/>
+                                    <defs>
+                                        <linearGradient id="gateGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#22d3ee"/>
+                                            <stop offset="100%" stop-color="#0ea5e9"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div id="gateStatusDot" class="w-3 h-3 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="absolute top-6 left-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm">
+                            <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                            <span class="text-xs font-medium text-white/90">LIVE</span>
+                        </div>
+                        <div id="gateLastUpdate" class="absolute top-6 left-24 text-xs text-white/50 py-1.5"></div>
+
+                        <div class="absolute bottom-0 left-0 right-0 p-8">
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <div class="flex items-center gap-4 mb-3">
+                                        <div id="gateIconContainer" class="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-blue-600/30 backdrop-blur-sm flex items-center justify-center border border-white/10 transition-all duration-500 group-hover:scale-110 group-hover:shadow-2xl group-hover:shadow-cyan-500/30">
+                                            <svg id="gateIcon" class="w-10 h-10 text-cyan-400 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 class="text-3xl font-bold text-white tracking-tight">Gate</h2>
+                                            <p id="gateStatusText" class="text-lg text-emerald-400 font-medium">Closed</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-white/50 text-sm">Tap anywhere to toggle</p>
+                                </div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 group-hover:bg-cyan-500/20 group-hover:border-cyan-500/40 transition-all duration-300">
+                                        <svg class="w-8 h-8 text-white/70 group-hover:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                                        </svg>
+                                    </div>
+                                    <span class="text-xs text-white/40">OPEN</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                            <div class="absolute inset-0 bg-gradient-to-t from-cyan-500/10 to-transparent"></div>
+                        </div>
+                    </div>
+
+                    <!-- GARAGE CONTROL -->
+                    <div id="garageControlCard" onclick="toggleGarageWithFeedback()"
+                        class="garage-control-card relative flex-1 rounded-3xl overflow-hidden cursor-pointer group transition-all duration-500">
+                        <img id="cam-garage" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="" alt="Garage Camera">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                        <div class="absolute inset-0 bg-gradient-to-l from-black/30 to-transparent"></div>
+                        <div id="garageScanLine" class="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-0 scan-line"></div>
+
+                        <div class="absolute top-6 right-6">
+                            <div id="garageStatusRing" class="relative w-16 h-16">
+                                <svg class="w-full h-full -rotate-90" viewBox="0 0 64 64">
+                                    <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                                    <circle id="garageRingProgress" cx="32" cy="32" r="28" fill="none" stroke="url(#garageGradient)"
+                                        stroke-width="4" stroke-linecap="round" stroke-dasharray="176" stroke-dashoffset="176" class="transition-all duration-1000"/>
+                                    <defs>
+                                        <linearGradient id="garageGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#fbbf24"/>
+                                            <stop offset="100%" stop-color="#f59e0b"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div id="garageStatusDot" class="w-3 h-3 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="absolute top-6 left-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm">
+                            <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                            <span class="text-xs font-medium text-white/90">LIVE</span>
+                        </div>
+                        <div id="garageLastUpdate" class="absolute top-6 left-24 text-xs text-white/50 py-1.5"></div>
+
+                        <div class="absolute bottom-0 left-0 right-0 p-8">
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <div class="flex items-center gap-4 mb-3">
+                                        <div id="garageIconContainer" class="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/30 to-orange-600/30 backdrop-blur-sm flex items-center justify-center border border-white/10 transition-all duration-500 group-hover:scale-110 group-hover:shadow-2xl group-hover:shadow-amber-500/30">
+                                            <svg id="garageIcon" class="w-10 h-10 text-amber-400 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 class="text-3xl font-bold text-white tracking-tight">Garage</h2>
+                                            <p id="garageStatusText" class="text-lg text-emerald-400 font-medium">Closed</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-white/50 text-sm">Tap anywhere to toggle</p>
+                                </div>
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 group-hover:bg-amber-500/20 group-hover:border-amber-500/40 transition-all duration-300">
+                                        <svg class="w-8 h-8 text-white/70 group-hover:text-amber-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                                        </svg>
+                                    </div>
+                                    <span class="text-xs text-white/40">OPEN</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                            <div class="absolute inset-0 bg-gradient-to-t from-amber-500/10 to-transparent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="showView('home')" class="absolute top-6 right-6 z-20 glass-light rounded-xl p-3 hover:bg-white/20 transition group">
+                    <svg class="w-5 h-5 text-white/70 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Security View -->
+            <div id="view-security" class="h-full p-6 hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-4">
+                        <div id="securityHeaderIcon" class="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                            <svg class="w-7 h-7 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold">Security Center</h2>
+                            <div id="securityHeaderStatus" class="text-emerald-400 text-sm font-medium">System Disarmed</div>
+                        </div>
+                    </div>
+                    <button onclick="showView('home')" class="glass-light rounded-xl p-3 hover:bg-white/10 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-12 gap-4 h-[calc(100%-5rem)]">
+                    <!-- Left Column -->
+                    <div class="col-span-3 flex flex-col gap-4">
+                        <!-- Alarm Controls -->
+                        <div class="glass rounded-2xl p-4">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-9 h-9 rounded-xl bg-slate-500/20 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-base font-semibold">Alarm Panel</h3>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button id="btnArmStay" onclick="armAlarm('arm_home')" class="security-mode-btn py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/30 active:scale-95 transition btn-control flex flex-col items-center gap-1">
+                                    <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                    </svg>
+                                    <span class="text-amber-400 font-medium text-xs">Stay</span>
+                                </button>
+                                <button id="btnArmAway" onclick="armAlarm('arm_away')" class="security-mode-btn py-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/30 active:scale-95 transition btn-control flex flex-col items-center gap-1">
+                                    <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    <span class="text-red-400 font-medium text-xs">Away</span>
+                                </button>
+                                <button id="btnArmOutside" onclick="armAlarm('arm_custom_bypass')" class="security-mode-btn py-3 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/30 active:scale-95 transition btn-control flex flex-col items-center gap-1">
+                                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span class="text-blue-400 font-medium text-xs">Outside</span>
+                                </button>
+                                <button id="btnDisarm" onclick="armAlarm('disarm')" class="security-mode-btn py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 transition btn-control flex flex-col items-center gap-1">
+                                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="text-emerald-400 font-medium text-xs">Disarm</span>
+                                </button>
+                            </div>
+                            <div id="alarmFeedback" class="mt-3 text-center text-xs text-white/40 hidden">Command sent...</div>
+                        </div>
+
+                        <!-- Camera Controls -->
+                        <div class="glass rounded-2xl p-4 flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-9 h-9 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-semibold">Cameras</h3>
+                                    <div id="cameraArmStatus" class="text-xs text-white/40">All disarmed</div>
+                                </div>
+                            </div>
+                            <button onclick="toggleCameraArm('all')" id="btnArmAllCameras" class="w-full py-2 px-3 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20 transition btn-control flex items-center justify-between mb-3">
+                                <span class="text-violet-400 font-medium text-sm">Arm All</span>
+                                <div id="allCamerasToggle" class="w-9 h-5 rounded-full bg-white/10 relative transition">
+                                    <div class="absolute w-4 h-4 bg-white/60 rounded-full top-0.5 left-0.5 transition-transform"></div>
+                                </div>
+                            </button>
+                            <div class="space-y-2">
+                                <button onclick="toggleCameraArm('front_door')" class="w-full py-2 px-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition btn-control flex items-center justify-between">
+                                    <span class="text-white/70 text-sm">Front Door</span>
+                                    <div id="cameraFrontDoorDot" class="w-2.5 h-2.5 rounded-full bg-white/30"></div>
+                                </button>
+                                <button onclick="toggleCameraArm('backyard')" class="w-full py-2 px-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition btn-control flex items-center justify-between">
+                                    <span class="text-white/70 text-sm">Backyard</span>
+                                    <div id="cameraBackyardDot" class="w-2.5 h-2.5 rounded-full bg-white/30"></div>
+                                </button>
+                                <button onclick="toggleCameraArm('aqara_g3')" class="w-full py-2 px-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition btn-control flex items-center justify-between">
+                                    <span class="text-white/70 text-sm">Indoor</span>
+                                    <div id="cameraAqaraG3Dot" class="w-2.5 h-2.5 rounded-full bg-white/30"></div>
+                                </button>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-white/10">
+                                <button onclick="toggleAutoArmCameras()" class="w-full flex items-center justify-between">
+                                    <span class="text-xs text-white/50">Auto-arm with alarm</span>
+                                    <div id="autoArmCamerasToggle" class="w-8 h-4 rounded-full bg-violet-500 relative transition cursor-pointer">
+                                        <div class="absolute w-3 h-3 bg-white rounded-full top-0.5 left-4 transition-transform"></div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-span-9 flex flex-col gap-4">
+                        <!-- Status Banner -->
+                        <div id="securityBanner" class="glass rounded-2xl p-4 flex items-center justify-between border-l-4 border-emerald-500">
+                            <div class="flex items-center gap-4">
+                                <div id="bannerIcon" class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div id="bannerTitle" class="text-lg font-semibold">System Disarmed</div>
+                                    <div id="bannerSubtitle" class="text-sm text-white/50">All zones inactive</div>
+                                </div>
+                            </div>
+                            <div id="bannerBadge" class="px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 font-medium text-sm">Ready</div>
+                        </div>
+
+                        <!-- Zone Grid -->
+                        <div class="glass rounded-2xl p-5 flex-1 overflow-hidden flex flex-col">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-semibold">Security Zones</h3>
+                                </div>
+                                <div id="zoneStats" class="text-sm text-white/40">0 active</div>
+                            </div>
+                            <div id="zoneGrid" class="grid grid-cols-4 gap-3 overflow-y-auto no-scrollbar flex-1 pb-2"></div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="grid grid-cols-3 gap-4">
+                            <button onclick="triggerPanic('police')" class="glass rounded-2xl p-4 flex items-center gap-3 hover:bg-red-500/10 transition btn-control border border-transparent hover:border-red-500/30">
+                                <div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-medium text-red-400">Panic</div>
+                                    <div class="text-xs text-white/40">Emergency</div>
+                                </div>
+                            </button>
+                            <button onclick="bypassZone()" class="glass rounded-2xl p-4 flex items-center gap-3 hover:bg-amber-500/10 transition btn-control border border-transparent hover:border-amber-500/30">
+                                <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                                    </svg>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-medium text-amber-400">Bypass</div>
+                                    <div class="text-xs text-white/40">Skip zone</div>
+                                </div>
+                            </button>
+                            <button onclick="refreshSecurityStatus()" class="glass rounded-2xl p-4 flex items-center gap-3 hover:bg-cyan-500/10 transition btn-control border border-transparent hover:border-cyan-500/30">
+                                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-medium text-cyan-400">Refresh</div>
+                                    <div class="text-xs text-white/40">Update status</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Energy View - Futuristic Power Analytics -->
+            <div id="view-energy" class="h-full hidden overflow-hidden energy-view-futuristic">
+                <!-- Animated Background Grid -->
+                <div class="energy-grid-bg"></div>
+                <div class="energy-scan-line"></div>
+
+                <div class="h-full flex flex-col p-4 relative z-10">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-4">
+                            <div class="energy-logo-container">
+                                <div class="energy-logo-ring"></div>
+                                <svg class="w-6 h-6 text-cyan-400 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-light tracking-wide text-white/90">POWER ANALYTICS</h2>
+                                <p id="energyLastUpdate" class="text-cyan-400/60 text-xs font-mono">INITIALIZING...</p>
+                            </div>
+                        </div>
+                        <!-- Live Cost Display -->
+                        <div class="flex items-center gap-4">
+                            <div class="energy-cost-display">
+                                <div class="text-[10px] text-white/40 uppercase tracking-widest">Today's Cost</div>
+                                <div id="energyCostToday" class="text-lg font-light text-cyan-400 font-mono">R 0.00</div>
+                            </div>
+                            <button onclick="showView('home')" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/50 flex items-center justify-center transition-all duration-300">
+                                <svg class="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main Grid Layout -->
+                    <div class="flex-1 grid grid-cols-12 gap-3 min-h-0">
+                        <!-- LEFT: Power Sources Column -->
+                        <div class="col-span-3 flex flex-col gap-3">
+                            <!-- Solar Card -->
+                            <div class="flex-1 energy-card-neo energy-card-solar">
+                                <div class="energy-card-header">
+                                    <span class="energy-card-label">SOLAR</span>
+                                    <span id="solarStatus" class="energy-status-dot active"></span>
+                                </div>
+                                <div class="energy-value-large" id="solarPower">0</div>
+                                <div class="energy-unit">WATTS</div>
+                                <div class="energy-card-bar">
+                                    <div id="solarBar" class="energy-bar-fill solar" style="width: 0%"></div>
+                                </div>
+                                <div class="energy-card-detail">
+                                    <div><span class="text-white/40">PV1</span> <span id="pv1Power" class="text-amber-400 font-mono">0W</span></div>
+                                    <div><span class="text-white/40">PV2</span> <span id="pv2Power" class="text-amber-400 font-mono">0W</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Battery Card -->
+                            <div class="flex-1 energy-card-neo energy-card-battery">
+                                <div class="energy-card-header">
+                                    <span class="energy-card-label">BATTERY</span>
+                                    <span id="batteryStatus" class="energy-status-dot"></span>
+                                </div>
+                                <div class="flex items-baseline gap-1">
+                                    <div class="energy-value-large" id="batteryPercent">0</div>
+                                    <span class="text-2xl text-emerald-400/60">%</span>
+                                </div>
+                                <div id="batteryState" class="energy-unit">IDLE</div>
+                                <div class="energy-card-bar">
+                                    <div id="batteryBar" class="energy-bar-fill battery" style="width: 0%"></div>
+                                </div>
+                                <div class="energy-card-detail">
+                                    <div><span class="text-white/40">Power</span> <span id="batteryPower" class="text-emerald-400 font-mono">0W</span></div>
+                                    <div><span class="text-white/40">Temp</span> <span id="batteryTemp" class="text-emerald-400 font-mono">0°C</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CENTER: 6-Hour Trend Chart -->
+                        <div class="col-span-6 energy-card-neo energy-card-chart">
+                            <div class="energy-card-header mb-2">
+                                <span class="energy-card-label">6-HOUR POWER TREND</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                                        <span class="text-[10px] text-white/50">ACTUAL</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-purple-400/50"></span>
+                                        <span class="text-[10px] text-white/50">AVG</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chart Container -->
+                            <div id="chartContainer" class="flex-1 relative" style="min-height: 180px;">
+                                <canvas id="energyTrendChart" class="absolute inset-0"></canvas>
+                                <!-- Y-Axis Labels -->
+                                <div class="absolute left-0 top-0 bottom-6 w-10 flex flex-col justify-between text-[9px] text-white/30 font-mono">
+                                    <span id="chartYMax">8kW</span>
+                                    <span id="chartYMid">4kW</span>
+                                    <span>0kW</span>
+                                </div>
+                                <!-- Current Power Indicator -->
+                                <div id="chartCurrentIndicator" class="absolute right-2 top-2 energy-current-power">
+                                    <div class="text-[10px] text-white/40 uppercase">Now</div>
+                                    <div id="chartCurrentValue" class="text-lg font-mono text-cyan-400">0W</div>
+                                </div>
+                            </div>
+
+                            <!-- Time Labels -->
+                            <div class="flex justify-between px-10 text-[9px] text-white/30 font-mono mt-1">
+                                <span id="chartT0">-6h</span>
+                                <span id="chartT1">-5h</span>
+                                <span id="chartT2">-4h</span>
+                                <span id="chartT3">-3h</span>
+                                <span id="chartT4">-2h</span>
+                                <span id="chartT5">-1h</span>
+                                <span>Now</span>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT: Grid & Load Column -->
+                        <div class="col-span-3 flex flex-col gap-3">
+                            <!-- Grid Card -->
+                            <div class="flex-1 energy-card-neo energy-card-grid">
+                                <div class="energy-card-header">
+                                    <span class="energy-card-label">GRID</span>
+                                    <span id="gridStatus" class="energy-status-dot"></span>
+                                </div>
+                                <div class="energy-value-large" id="gridPower">0</div>
+                                <div id="gridDirection" class="energy-unit">IDLE</div>
+                                <div class="energy-card-bar">
+                                    <div id="gridBar" class="energy-bar-fill grid" style="width: 0%"></div>
+                                </div>
+                                <div class="energy-card-detail">
+                                    <div><span class="text-white/40">Voltage</span> <span id="gridVoltage" class="text-blue-400 font-mono">0V</span></div>
+                                    <div><span class="text-white/40">Freq</span> <span id="gridFrequency" class="text-blue-400 font-mono">0Hz</span></div>
+                                </div>
+                            </div>
+
+                            <!-- Load Card -->
+                            <div class="flex-1 energy-card-neo energy-card-load">
+                                <div class="energy-card-header">
+                                    <span class="energy-card-label">LOAD</span>
+                                    <span id="loadStatus" class="energy-status-dot active"></span>
+                                </div>
+                                <div class="energy-value-large" id="loadPower">0</div>
+                                <div class="energy-unit">WATTS</div>
+                                <div class="energy-card-bar">
+                                    <div id="loadBar" class="energy-bar-fill load" style="width: 0%"></div>
+                                </div>
+                                <div class="energy-card-detail">
+                                    <div><span class="text-white/40">Today</span> <span id="loadToday" class="text-purple-400 font-mono">0kWh</span></div>
+                                    <div><span class="text-white/40">Cost</span> <span id="loadCost" class="text-purple-400 font-mono">R0</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Stats Bar -->
+                    <div class="energy-stats-bar mt-3">
+                        <div class="energy-stat-item">
+                            <div class="energy-stat-icon solar">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/></svg>
+                            </div>
+                            <div>
+                                <div class="energy-stat-label">SOLAR TODAY</div>
+                                <div id="solarToday" class="energy-stat-value text-amber-400">0 kWh</div>
+                            </div>
+                        </div>
+                        <div class="energy-stat-divider"></div>
+                        <div class="energy-stat-item">
+                            <div class="energy-stat-icon import">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                            </div>
+                            <div>
+                                <div class="energy-stat-label">IMPORTED</div>
+                                <div id="gridImportToday" class="energy-stat-value text-red-400">0 kWh</div>
+                            </div>
+                        </div>
+                        <div class="energy-stat-divider"></div>
+                        <!-- Geyser Control -->
+                        <div class="energy-stat-item energy-device-control">
+                            <button id="geyserControlBtn" onclick="window.dashboard.toggleEntity('switch.sonoff_10018908af')"
+                                class="device-toggle-btn" title="Toggle Geyser">
+                                <div class="device-toggle-icon geyser">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/>
+                                    </svg>
+                                </div>
+                                <div class="device-toggle-info">
+                                    <div class="device-toggle-label">GEYSER</div>
+                                    <div id="geyserState" class="device-toggle-state">Off</div>
+                                </div>
+                                <div id="geyserIndicator" class="device-toggle-indicator"></div>
+                            </button>
+                        </div>
+                        <div class="energy-stat-divider"></div>
+                        <!-- Pool Pump Control -->
+                        <div class="energy-stat-item energy-device-control">
+                            <button id="poolControlBtn" onclick="window.dashboard.toggleEntity('switch.sonoff_10017f2d90_1')"
+                                class="device-toggle-btn" title="Toggle Pool Pump">
+                                <div class="device-toggle-icon pool">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                                    </svg>
+                                </div>
+                                <div class="device-toggle-info">
+                                    <div class="device-toggle-label">POOL</div>
+                                    <div id="poolState" class="device-toggle-state">Off</div>
+                                </div>
+                                <div id="poolIndicator" class="device-toggle-indicator"></div>
+                            </button>
+                        </div>
+                        <div class="energy-stat-divider"></div>
+                        <div class="energy-stat-item energy-stat-total">
+                            <div>
+                                <div class="energy-stat-label">TOTAL PRODUCTION</div>
+                                <div id="totalProduction" class="energy-stat-value text-cyan-400">0 MWh</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Garage View -->
+            <div id="view-garage" class="h-full p-6 hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold">Garage & Gate</h2>
+                    <button onclick="showView('home')" class="glass-light rounded-xl p-2 hover:bg-white/10 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="grid grid-cols-3 gap-4 h-[calc(100%-4rem)]">
+                    <button onclick="toggleGarage()" class="glass rounded-2xl p-6 flex flex-col items-center justify-center hover:bg-white/5 transition btn-control">
+                        <div id="garageDoorIcon" class="w-24 h-24 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4 transition">
+                            <svg class="w-12 h-12 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold">Garage Door</h3>
+                        <div id="garageDoorState" class="text-white/50 mt-1">Closed</div>
+                    </button>
+                    <button onclick="toggleGate()" class="glass rounded-2xl p-6 flex flex-col items-center justify-center hover:bg-white/5 transition btn-control">
+                        <div id="gateIcon" class="w-24 h-24 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4 transition">
+                            <svg class="w-12 h-12 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold">Gate</h3>
+                        <div id="gateState" class="text-white/50 mt-1">Closed</div>
+                    </button>
+                    <button onclick="toggleEntity('switch.garage_switch')" class="glass rounded-2xl p-6 flex flex-col items-center justify-center hover:bg-white/5 transition btn-control">
+                        <div id="garageLightIcon" class="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center mb-4 transition">
+                            <svg class="w-12 h-12 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold">Garage Light</h3>
+                        <div id="garageLightState" class="text-white/50 mt-1">Off</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calendar View -->
+            <div id="view-calendar" class="h-full p-6 hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-violet-500/20 flex items-center justify-center border border-violet-500/30">
+                            <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold">Family Calendar</h2>
+                            <p class="text-white/50 text-sm">Synced with Google Calendar</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <!-- Add Event Button -->
+                        <button onclick="openCreateEventModal(new Date().toISOString().split('T')[0])" class="glass-light rounded-xl px-4 py-2 hover:bg-white/10 transition btn-control flex items-center gap-2 text-sm font-medium">
+                            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            <span>Add Event</span>
+                        </button>
+                        <!-- Auth Button -->
+                        <button id="calendarAuthBtn" onclick="toggleCalendarAuth()" class="glass-light rounded-xl px-3 py-2 hover:bg-white/10 transition btn-control flex items-center gap-2 text-sm font-medium bg-violet-500/20 border border-violet-500/30 text-violet-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                            </svg>
+                            <span>Sign In</span>
+                        </button>
+                        <!-- Separator -->
+                        <div class="w-px h-8 bg-white/10"></div>
+                        <!-- View Toggle Buttons -->
+                        <div class="flex items-center gap-1 glass-light rounded-xl p-1">
+                            <button id="calBtnMonth" onclick="changeCalendarView('month')"
+                                class="px-4 py-2 rounded-lg text-sm font-medium transition bg-violet-500/30 border border-violet-500/50 text-violet-400">
+                                Month
+                            </button>
+                            <button id="calBtnWeek" onclick="changeCalendarView('week')"
+                                class="px-4 py-2 rounded-lg text-sm font-medium transition bg-white/5 border border-white/10 text-white/60 hover:bg-white/10">
+                                Week
+                            </button>
+                            <button id="calBtnDay" onclick="changeCalendarView('day')"
+                                class="px-4 py-2 rounded-lg text-sm font-medium transition bg-white/5 border border-white/10 text-white/60 hover:bg-white/10">
+                                Day
+                            </button>
+                        </div>
+                        <!-- Navigation -->
+                        <div class="flex items-center gap-1">
+                            <button onclick="calendarPrev()" class="glass-light rounded-xl p-2 hover:bg-white/10 transition btn-control" title="Previous">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <button onclick="calendarToday()" class="glass-light rounded-xl px-4 py-2 hover:bg-white/10 transition btn-control text-sm font-medium">
+                                Today
+                            </button>
+                            <button onclick="calendarNext()" class="glass-light rounded-xl p-2 hover:bg-white/10 transition btn-control" title="Next">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <!-- Close Button -->
+                        <button onclick="showView('home')" class="glass-light rounded-xl p-2 hover:bg-white/10 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Calendar Main Content -->
+                <div class="flex gap-4 h-[calc(100%-5rem)]">
+                    <!-- Left Sidebar - Upcoming Events & Quick Actions -->
+                    <div class="w-72 flex-shrink-0 flex flex-col gap-4">
+                        <!-- Quick Stats Card -->
+                        <div class="glass rounded-2xl p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-semibold text-white/80">This Week</h3>
+                                <span id="calendarWeekRange" class="text-xs text-white/40"></span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-center">
+                                <div class="glass-light rounded-xl p-2">
+                                    <div id="weekEventCount" class="text-lg font-bold text-violet-400">0</div>
+                                    <div class="text-[10px] text-white/40 uppercase tracking-wide">Events</div>
+                                </div>
+                                <div class="glass-light rounded-xl p-2">
+                                    <div id="weekTaskCount" class="text-lg font-bold text-emerald-400">0</div>
+                                    <div class="text-[10px] text-white/40 uppercase tracking-wide">Tasks</div>
+                                </div>
+                                <div class="glass-light rounded-xl p-2">
+                                    <div id="weekBusyDays" class="text-lg font-bold text-amber-400">0</div>
+                                    <div class="text-[10px] text-white/40 uppercase tracking-wide">Busy Days</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Family Member Filters -->
+                        <div class="glass rounded-2xl p-4">
+                            <h3 class="text-sm font-semibold text-white/80 mb-3">Family Members</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="toggleCalendarFilter('everyone')" id="filterEveryone"
+                                    class="calendar-filter-chip active" data-color="amber">
+                                    <span class="chip-dot bg-amber-500"></span>
+                                    Everyone
+                                </button>
+                                <button onclick="toggleCalendarFilter('tatiana')" id="filterTatiana"
+                                    class="calendar-filter-chip" data-color="pink">
+                                    <span class="chip-dot bg-pink-500"></span>
+                                    Tatiana
+                                </button>
+                                <button onclick="toggleCalendarFilter('nico')" id="filterNico"
+                                    class="calendar-filter-chip" data-color="blue">
+                                    <span class="chip-dot bg-blue-500"></span>
+                                    Nico
+                                </button>
+                                <button onclick="toggleCalendarFilter('alexandra')" id="filterAlexandra"
+                                    class="calendar-filter-chip" data-color="purple">
+                                    <span class="chip-dot bg-purple-500"></span>
+                                    Alexandra
+                                </button>
+                                <button onclick="toggleCalendarFilter('mila')" id="filterMila"
+                                    class="calendar-filter-chip" data-color="teal">
+                                    <span class="chip-dot bg-teal-500"></span>
+                                    Mila
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Upcoming Events -->
+                        <div class="glass rounded-2xl p-4 flex-1 overflow-hidden flex flex-col">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-semibold text-white/80">Upcoming</h3>
+                                <span class="text-xs text-white/40">Next 7 days</span>
+                            </div>
+                            <div id="upcomingEventsList" class="space-y-2 overflow-y-auto flex-1 no-scrollbar">
+                                <div class="text-center py-8 text-white/30 text-sm">
+                                    <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    Loading events...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Add Buttons -->
+                        <div class="glass rounded-2xl p-3">
+                            <div class="flex gap-2">
+                                <button onclick="quickAddEvent('reminder')" class="flex-1 glass-light rounded-xl px-3 py-2 text-xs font-medium text-white/70 hover:bg-white/10 transition flex items-center justify-center gap-1">
+                                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                    </svg>
+                                    Reminder
+                                </button>
+                                <button onclick="quickAddEvent('task')" class="flex-1 glass-light rounded-xl px-3 py-2 text-xs font-medium text-white/70 hover:bg-white/10 transition flex items-center justify-center gap-1">
+                                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                                    </svg>
+                                    Task
+                                </button>
+                                <button onclick="quickAddEvent('birthday')" class="flex-1 glass-light rounded-xl px-3 py-2 text-xs font-medium text-white/70 hover:bg-white/10 transition flex items-center justify-center gap-1">
+                                    <svg class="w-3.5 h-3.5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18z"/>
+                                    </svg>
+                                    Birthday
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Container -->
+                    <div class="glass rounded-2xl p-4 flex-1 relative overflow-hidden">
+                        <!-- Loading Indicator -->
+                        <div id="calendarLoader" class="absolute inset-0 flex items-center justify-center bg-dark-900/50 z-10 hidden">
+                            <div class="flex items-center gap-3 glass-light rounded-xl px-6 py-3">
+                                <div class="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+                                <span class="text-white/70">Loading events...</span>
+                            </div>
+                        </div>
+                        <!-- FullCalendar Mount Point -->
+                        <div id="calendarContainer" class="h-full calendar-dark"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Detail Modal -->
+            <div id="eventDetailModal" class="fixed inset-0 z-50 hidden">
+                <div class="absolute inset-0 modal-backdrop" onclick="closeEventModal()"></div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 glass rounded-2xl p-6 max-w-lg w-full mx-4 slide-up">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <h3 id="eventTitle" class="text-xl font-bold">Event Title</h3>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="eventEditBtn" onclick="editCurrentEvent()" class="p-2 hover:bg-white/10 rounded-lg transition hidden" title="Edit">
+                                <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </button>
+                            <button onclick="closeEventModal()" class="p-2 hover:bg-white/10 rounded-lg transition">
+                                <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span id="eventDate" class="text-white/70">Date & Time</span>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-white/40 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span id="eventLocation" class="text-white/70">Location</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <div id="eventAssignee" class="flex items-center gap-2 text-white/70">Assigned to</div>
+                        </div>
+                        <div class="pt-3 border-t border-white/10">
+                            <p id="eventDescription" class="text-white/60 text-sm leading-relaxed">Event description goes here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Create/Edit Modal -->
+            <div id="eventCreateModal" class="fixed inset-0 z-50 hidden">
+                <div class="absolute inset-0 modal-backdrop" onclick="closeCreateEventModal()"></div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 glass rounded-2xl p-6 max-w-lg w-full mx-4 slide-up">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 id="eventModalTitle" class="text-xl font-bold">New Event</h3>
+                        <button onclick="closeCreateEventModal()" class="p-2 hover:bg-white/10 rounded-lg transition">
+                            <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Title -->
+                        <div>
+                            <label class="block text-sm text-white/50 mb-1">Event Title</label>
+                            <input id="eventFormTitle" type="text" placeholder="What's happening?"
+                                class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white placeholder-white/30">
+                        </div>
+
+                        <!-- Assignee -->
+                        <div>
+                            <label class="block text-sm text-white/50 mb-1">Assign To</label>
+                            <div class="flex items-center gap-3">
+                                <div id="assigneePreview" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-amber-500">E</div>
+                                <select id="eventFormAssignee" onchange="updateAssigneePreview(this.value)"
+                                    class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white">
+                                    <option value="everyone">Everyone</option>
+                                    <option value="tatiana">Tatiana</option>
+                                    <option value="nico">Nico</option>
+                                    <option value="alexandra">Alexandra</option>
+                                    <option value="mila">Mila</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- All Day Toggle -->
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm text-white/70">All-day event</label>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input id="eventFormAllDay" type="checkbox" checked onchange="onAllDayChange()" class="sr-only peer">
+                                <div class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-violet-500 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                            </label>
+                        </div>
+
+                        <!-- Date/Time -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm text-white/50 mb-1">Start Date</label>
+                                <input id="eventFormStartDate" type="date"
+                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-white/50 mb-1">End Date</label>
+                                <input id="eventFormEndDate" type="date"
+                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white">
+                            </div>
+                        </div>
+
+                        <div id="eventTimeInputs" class="grid grid-cols-2 gap-3 hidden">
+                            <div>
+                                <label class="block text-sm text-white/50 mb-1">Start Time</label>
+                                <input id="eventFormStartTime" type="time"
+                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-white/50 mb-1">End Time</label>
+                                <input id="eventFormEndTime" type="time"
+                                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white">
+                            </div>
+                        </div>
+
+                        <!-- Location -->
+                        <div>
+                            <label class="block text-sm text-white/50 mb-1">Location (optional)</label>
+                            <input id="eventFormLocation" type="text" placeholder="Add location"
+                                class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white placeholder-white/30">
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label class="block text-sm text-white/50 mb-1">Description (optional)</label>
+                            <textarea id="eventFormDescription" rows="2" placeholder="Add details"
+                                class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white placeholder-white/30 resize-none"></textarea>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="flex items-center justify-between pt-4">
+                            <button id="eventDeleteBtn" onclick="deleteCurrentEvent()" class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 font-medium hover:bg-red-500/30 transition hidden">
+                                Delete
+                            </button>
+                            <div class="flex items-center gap-3 ml-auto">
+                                <button onclick="closeCreateEventModal()" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 font-medium hover:bg-white/10 transition">
+                                    Cancel
+                                </button>
+                                <button id="eventSaveBtn" onclick="saveEvent()" class="px-6 py-2 rounded-xl bg-violet-500 text-white font-medium hover:bg-violet-600 transition">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Auth Prompt Modal -->
+            <div id="calendarAuthModal" class="fixed inset-0 z-50 hidden">
+                <div class="absolute inset-0 modal-backdrop" onclick="closeAuthModal()"></div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 glass rounded-2xl p-6 max-w-md w-full mx-4 slide-up text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-violet-500/20 flex items-center justify-center">
+                        <svg class="w-8 h-8 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Sign In Required</h3>
+                    <p class="text-white/50 mb-6">To add or edit calendar events, you need to sign in with your Google account.</p>
+                    <div class="flex items-center justify-center gap-3">
+                        <button onclick="closeAuthModal()" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 font-medium hover:bg-white/10 transition">
+                            Cancel
+                        </button>
+                        <button onclick="signInAndClose()" class="px-6 py-2 rounded-xl bg-violet-500 text-white font-medium hover:bg-violet-600 transition flex items-center gap-2">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            Sign in with Google
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Media Portal View -->
+            <div id="view-media" class="h-full hidden media-view">
+                <!-- Cinematic Backdrop -->
+                <div id="mediaBackdrop" class="media-backdrop"></div>
+                <div class="media-backdrop-overlay"></div>
+
+                <div class="h-full flex flex-col relative z-10">
+                    <!-- Header -->
+                    <div class="media-header flex items-center justify-between px-6 py-4">
+                        <!-- Left: Title & Device Selector -->
+                        <div class="flex items-center gap-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center border border-red-500/30">
+                                    <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-white">Media Portal</h2>
+                                    <div id="mediaDeviceStatus" class="text-white/50 text-sm">Stream to Living Room</div>
+                                </div>
+                            </div>
+
+                            <!-- Device Display (Living Room Fire TV) -->
+                            <div class="glass-light rounded-xl px-4 py-2 flex items-center gap-3">
+                                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                <span id="selectedDeviceName" class="text-white font-medium">Living Room Fire TV</span>
+                                <div id="device-dot-living_room" class="w-2 h-2 rounded-full bg-white/30"></div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Cinema Mode + Close -->
+                        <div class="flex items-center gap-3">
+                            <button id="mediaCinemaBtn" onclick="window.dashboard.toggleCinemaMode()"
+                                class="media-cinema-btn glass-light rounded-xl px-4 py-2 flex items-center gap-3 hover:bg-white/10 transition">
+                                <svg class="w-5 h-5 cinema-icon text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                                </svg>
+                                <span class="text-white/80 text-sm">Cinema Mode</span>
+                                <div id="mediaCinemaIndicator" class="w-2 h-2 rounded-full bg-white/30"></div>
+                            </button>
+
+                            <button onclick="showView('home')" class="glass-light rounded-xl p-3 hover:bg-white/10 transition">
+                                <svg class="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="flex-1 overflow-y-auto px-6 pb-6 no-scrollbar">
+                        <!-- Continue Watching -->
+                        <div id="continueWatchingSection" class="media-continue-section hidden">
+                            <h3 class="media-section-title">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                Continue Watching
+                            </h3>
+                            <div id="continueWatchingRow" class="media-continue-row"></div>
+                        </div>
+
+                        <!-- Library Section -->
+                        <div class="mt-6 media-library-section">
+                            <h3 class="media-section-title mb-4">
+                                <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                                New Releases
+                            </h3>
+                            <!-- Library Tabs -->
+                            <div id="libraryTabs" class="library-tabs"></div>
+                            <!-- Poster Grid -->
+                            <div id="mediaPosterGrid" class="media-poster-grid"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Show Detail Modal -->
+                <div id="mediaDetailModal" class="media-detail-modal hidden">
+                    <div class="media-detail-backdrop" onclick="window.dashboard.closeShowDetail()"></div>
+                    <div class="media-detail-container">
+                        <!-- Hero Backdrop -->
+                        <div id="mediaDetailHero" class="media-detail-hero"></div>
+
+                        <!-- Close Button -->
+                        <button onclick="window.dashboard.closeShowDetail()" class="media-detail-close">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+
+                        <!-- Content -->
+                        <div class="media-detail-content">
+                            <!-- Service Badge -->
+                            <span id="mediaDetailService" class="inline-block px-3 py-1 rounded-full text-white text-xs font-bold mb-4">Netflix</span>
+
+                            <h2 id="mediaDetailTitle" class="media-detail-title">Show Title</h2>
+
+                            <div class="media-detail-meta">
+                                <span id="mediaDetailYear">2024</span>
+                                <span class="dot"></span>
+                                <span id="mediaDetailRating">TV-14</span>
+                                <span class="dot"></span>
+                                <span id="mediaDetailDuration">1h 30m</span>
+                            </div>
+
+                            <div id="mediaDetailGenres" class="media-detail-genres"></div>
+
+                            <!-- Actions -->
+                            <div class="media-detail-actions">
+                                <button onclick="window.dashboard.playMedia()" class="media-play-btn">
+                                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    <span id="mediaPlayBtnText">Play</span>
+                                </button>
+                            </div>
+
+                            <!-- Episodes (Series only) -->
+                            <div id="mediaEpisodeSection" class="media-episode-section hidden">
+                                <div class="media-season-selector">
+                                    <select id="mediaSeasonSelect" onchange="window.dashboard.selectSeason(this.value)" class="media-season-select"></select>
+                                </div>
+                                <div id="mediaEpisodeGrid" class="media-episode-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Performance View - Futuristic PC Metrics Dashboard -->
+            <div id="view-system" class="h-full hidden overflow-hidden pc-view-futuristic">
+                <!-- Animated Background -->
+                <div class="pc-grid-bg"></div>
+                <div class="pc-hex-overlay"></div>
+                <div class="pc-scan-line"></div>
+
+                <!-- Corner Accents -->
+                <div class="pc-corner-accent top-left"></div>
+                <div class="pc-corner-accent top-right"></div>
+                <div class="pc-corner-accent bottom-left"></div>
+                <div class="pc-corner-accent bottom-right"></div>
+
+                <div class="h-full flex flex-col p-4 relative z-10">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-4">
+                            <div class="relative">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/30 to-blue-600/30 flex items-center justify-center border border-cyan-500/30" style="animation: pcGlowPulse 3s ease-in-out infinite">
+                                    <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-light tracking-wide text-white/90">SYSTEM PERFORMANCE</h2>
+                                <p id="pcLastUpdate" class="text-cyan-400/60 text-xs font-mono">INITIALIZING...</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <!-- System Info -->
+                            <div class="glass-light rounded-xl px-4 py-2">
+                                <div class="flex items-center gap-6">
+                                    <div>
+                                        <div class="text-[10px] text-white/40 uppercase">Hostname</div>
+                                        <div id="pcHostname" class="text-sm font-mono text-white/90">--</div>
+                                    </div>
+                                    <div class="w-px h-8 bg-white/10"></div>
+                                    <div>
+                                        <div class="text-[10px] text-white/40 uppercase">Uptime</div>
+                                        <div id="pcUptime" class="text-sm font-mono text-cyan-400">--</div>
+                                    </div>
+                                    <div class="w-px h-8 bg-white/10"></div>
+                                    <div>
+                                        <div class="text-[10px] text-white/40 uppercase">Processes</div>
+                                        <div id="pcProcessCount" class="text-sm font-mono text-white/90">--</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="showView('home')" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/50 flex items-center justify-center transition-all duration-300">
+                                <svg class="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main Dashboard Grid -->
+                    <div class="flex-1 grid grid-cols-12 gap-4 min-h-0 overflow-hidden">
+                        <!-- LEFT COLUMN: Health Score + CPU + Memory -->
+                        <div class="col-span-3 flex flex-col gap-4 overflow-hidden">
+                            <!-- Health Score Card - Compact -->
+                            <div class="pc-card-neo flex-shrink-0" style="--card-glow: rgba(34, 197, 94, 0.15)">
+                                <div class="flex items-center gap-4">
+                                    <div class="relative flex-shrink-0">
+                                        <svg class="w-16 h-16" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
+                                            <circle id="pcHealthRing" class="pc-health-ring" cx="50" cy="50" r="42" fill="none" stroke="#22c55e"
+                                                stroke-width="8" stroke-linecap="round"
+                                                stroke-dasharray="264" stroke-dashoffset="26"/>
+                                        </svg>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <span id="pcHealthGrade" class="text-xl font-black text-emerald-400">A+</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-[10px] text-white/40 uppercase tracking-wider mb-1">System Health</div>
+                                        <div class="flex items-baseline gap-2">
+                                            <span id="pcHealthScore" class="text-3xl font-light text-white">95</span>
+                                            <span class="text-lg text-white/40">/ 100</span>
+                                        </div>
+                                        <span id="pcHealthStatus" class="text-xs font-medium text-emerald-400">HEALTHY</span>
+                                    </div>
+                                </div>
+                                <div id="pcHealthIssues" class="hidden mt-3 pt-3 border-t border-white/5 space-y-1"></div>
+                            </div>
+
+                            <!-- CPU Card -->
+                            <div class="pc-card-neo pc-card-cpu flex-1 flex flex-col min-h-0">
+                                <div class="pc-card-header">
+                                    <span class="pc-card-label">CPU</span>
+                                    <span id="cpuStatus" class="pc-status-dot active"></span>
+                                </div>
+                                <div class="flex items-baseline gap-1">
+                                    <span id="cpuUsage" class="pc-value-large cpu">0</span>
+                                    <span class="text-2xl text-cyan-400/60">%</span>
+                                </div>
+                                <div class="pc-unit">UTILIZATION</div>
+                                <div class="pc-progress-bar my-3">
+                                    <div id="cpuBar" class="pc-progress-fill cpu" style="width: 0%"></div>
+                                </div>
+                                <div id="cpuCoreGrid" class="grid grid-cols-4 gap-1 flex-1 min-h-0"></div>
+                                <div class="pc-stat-row mt-2">
+                                    <span>Frequency</span>
+                                    <span id="cpuFreq" class="text-cyan-400">0 GHz</span>
+                                </div>
+                                <div class="pc-stat-row">
+                                    <span>Temperature</span>
+                                    <span id="cpuTemp" class="text-cyan-400">0°C</span>
+                                </div>
+                            </div>
+
+                            <!-- Memory Card -->
+                            <div class="pc-card-neo pc-card-memory flex-1 flex flex-col">
+                                <div class="pc-card-header">
+                                    <span class="pc-card-label">MEMORY</span>
+                                    <span id="memStatus" class="pc-status-dot active"></span>
+                                </div>
+                                <div class="flex items-baseline gap-1">
+                                    <span id="memUsage" class="pc-value-large memory">0</span>
+                                    <span class="text-2xl text-purple-400/60">%</span>
+                                </div>
+                                <div class="pc-unit">USED</div>
+                                <div class="pc-progress-bar my-3">
+                                    <div id="memBar" class="pc-progress-fill memory" style="width: 0%"></div>
+                                </div>
+                                <div class="pc-chart-container">
+                                    <canvas id="memChart"></canvas>
+                                </div>
+                                <div class="pc-stat-row mt-2">
+                                    <span>Used / Total</span>
+                                    <span><span id="memUsed" class="text-purple-400">0</span> / <span id="memTotal" class="text-white/60">0</span></span>
+                                </div>
+                                <div class="pc-stat-row">
+                                    <span id="memCached" class="text-white/40">Cache: 0 GB</span>
+                                    <span id="memSwap" class="text-white/40">Swap: 0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CENTER: Charts + Disk Storage -->
+                        <div class="col-span-6 flex flex-col gap-4 overflow-hidden">
+                            <!-- CPU History Chart -->
+                            <div class="pc-card-neo pc-card-cpu" style="height: 180px">
+                                <div class="pc-card-header">
+                                    <span class="pc-card-label">CPU HISTORY (6 MIN)</span>
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex items-center gap-1">
+                                            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                                            <span class="text-[10px] text-white/50">USAGE</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pc-chart-container" style="height: 120px">
+                                    <canvas id="cpuChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Disk Storage -->
+                            <div class="pc-card-neo pc-card-disk flex-1 flex flex-col min-h-0 overflow-hidden">
+                                <div class="pc-card-header flex-shrink-0">
+                                    <span class="pc-card-label">STORAGE</span>
+                                </div>
+                                <div id="diskGrid" class="grid grid-cols-2 gap-3 flex-1 min-h-0"></div>
+                            </div>
+
+                            <!-- Network Card -->
+                            <div class="pc-card-neo pc-card-network">
+                                <div class="pc-card-header">
+                                    <span class="pc-card-label">NETWORK I/O</span>
+                                    <span id="netInterface" class="text-[10px] text-white/40 font-mono">--</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 mb-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-green-500/15 flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-[10px] text-white/40">DOWNLOAD</div>
+                                            <div class="flex items-baseline gap-1">
+                                                <span id="netRecv" class="text-lg font-semibold text-green-400 font-mono">0 GB</span>
+                                                <span id="netRecvSpeed" class="text-xs text-green-400/60 font-mono">0 KB/s</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-[10px] text-white/40">UPLOAD</div>
+                                            <div class="flex items-baseline gap-1">
+                                                <span id="netSent" class="text-lg font-semibold text-blue-400 font-mono">0 GB</span>
+                                                <span id="netSentSpeed" class="text-xs text-blue-400/60 font-mono">0 KB/s</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pc-chart-container" style="height: 50px">
+                                    <canvas id="netChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COLUMN: Processes + Docker -->
+                        <div class="col-span-3 flex flex-col gap-4 overflow-hidden">
+                            <!-- Top CPU Processes -->
+                            <div class="pc-card-neo pc-card-processes flex-1 flex flex-col min-h-0">
+                                <div class="pc-card-header">
+                                    <span class="pc-card-label">TOP CPU</span>
+                                    <svg class="w-4 h-4 text-cyan-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                                    </svg>
+                                </div>
+                                <div id="processCpuList" class="space-y-2 flex-1 overflow-y-auto no-scrollbar"></div>
+                            </div>
+
+                            <!-- Top Memory Processes -->
+                            <div class="pc-card-neo pc-card-processes flex-1 flex flex-col min-h-0">
+                                <div class="pc-card-header">
+                                    <span class="pc-card-label">TOP MEMORY</span>
+                                    <svg class="w-4 h-4 text-purple-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                                    </svg>
+                                </div>
+                                <div id="processMemList" class="space-y-2 flex-1 overflow-y-auto no-scrollbar"></div>
+                            </div>
+
+                            <!-- Docker Containers -->
+                            <div class="pc-card-neo pc-card-docker flex-1 flex flex-col min-h-0">
+                                <div class="pc-card-header">
+                                    <span class="pc-card-label">DOCKER</span>
+                                    <span id="dockerCount" class="text-xs text-blue-400 font-mono">0</span>
+                                </div>
+                                <div id="dockerGrid" class="grid grid-cols-2 gap-2 flex-1 overflow-y-auto no-scrollbar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Camera Hub / Surveillance Dashboard - Command Center 2.0 -->
+            <div id="view-surveillance" class="h-full hidden overflow-hidden surveillance-view-futuristic">
+                <!-- Animated Background -->
+                <div class="surv-grid-bg"></div>
+                <div class="surv-scan-line"></div>
+
+                <!-- Corner Accents -->
+                <div class="surv-corner-accent top-left"></div>
+                <div class="surv-corner-accent top-right"></div>
+                <div class="surv-corner-accent bottom-left"></div>
+                <div class="surv-corner-accent bottom-right"></div>
+
+                <div class="h-full flex flex-col p-4 relative z-10">
+                    <!-- Compact Header -->
+                    <div class="flex items-center justify-between mb-3 flex-shrink-0">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <div class="surv-logo-ring"></div>
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/30 to-red-600/30 flex items-center justify-center border border-rose-500/30">
+                                    <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-light tracking-wide text-white/90">COMMAND CENTER</h2>
+                                <p id="survLastUpdate" class="text-rose-400/60 text-[10px] font-mono">INITIALIZING FRIGATE...</p>
+                            </div>
+                        </div>
+
+                        <!-- Compact Controls -->
+                        <div class="flex items-center gap-2">
+                            <!-- Time Filter Pills -->
+                            <div class="flex items-center bg-black/30 rounded-lg p-0.5 border border-white/5">
+                                <button onclick="window.surveillance.setTimeFilter('1h')" class="surv-time-btn active" data-time="1h">1H</button>
+                                <button onclick="window.surveillance.setTimeFilter('6h')" class="surv-time-btn" data-time="6h">6H</button>
+                                <button onclick="window.surveillance.setTimeFilter('24h')" class="surv-time-btn" data-time="24h">24H</button>
+                                <button onclick="window.surveillance.setTimeFilter('7d')" class="surv-time-btn" data-time="7d">7D</button>
+                            </div>
+
+                            <!-- Object Filter -->
+                            <div class="flex items-center bg-black/30 rounded-lg p-0.5 border border-white/5">
+                                <button onclick="window.surveillance.setObjectFilter('all')" class="surv-obj-btn active" data-obj="all">All</button>
+                                <button onclick="window.surveillance.setObjectFilter('person')" class="surv-obj-btn" data-obj="person" title="Person">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                                </button>
+                                <button onclick="window.surveillance.setObjectFilter('car')" class="surv-obj-btn" data-obj="car" title="Vehicle">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM3 9l2-4h10l2 4M3 9v6h14V9M3 9h14"/></svg>
+                                </button>
+                                <button onclick="window.surveillance.setObjectFilter('dog')" class="surv-obj-btn" data-obj="dog" title="Pet">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6 4a2 2 0 00-2 2v1.5a.5.5 0 01-.5.5H3a1 1 0 00-1 1v4a1 1 0 001 1h.5a.5.5 0 01.5.5V16a2 2 0 002 2h8a2 2 0 002-2v-1.5a.5.5 0 01.5-.5h.5a1 1 0 001-1V9a1 1 0 00-1-1h-.5a.5.5 0 01-.5-.5V6a2 2 0 00-2-2H6z"/></svg>
+                                </button>
+                            </div>
+
+                            <!-- Actions -->
+                            <button onclick="window.surveillance.refresh()" class="surv-icon-btn" title="Refresh">
+                                <svg id="survRefreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                            </button>
+                            <a href="http://192.168.68.77:8971" target="_blank" class="surv-icon-btn" title="Open Frigate">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                            </a>
+                            <button onclick="showView('home')" class="surv-icon-btn surv-close-btn" title="Close">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main Content Area -->
+                    <div class="flex-1 flex flex-col gap-3 min-h-0 overflow-hidden">
+
+                        <!-- Top Section: Cameras + Events + Detail -->
+                        <div class="flex-1 grid grid-cols-12 gap-3 min-h-0 overflow-hidden">
+
+                            <!-- LEFT: Camera Grid with Status -->
+                            <div class="col-span-4 flex flex-col gap-3 overflow-hidden">
+                                <!-- Camera Grid Card -->
+                                <div class="surv-card-neo flex flex-col overflow-hidden" style="flex: 2;">
+                                    <div class="surv-card-header mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+                                            <span class="surv-card-label">LIVE FEEDS</span>
+                                        </div>
+                                        <span id="survCameraCount" class="text-[10px] text-rose-400 font-mono">4 CAM</span>
+                                    </div>
+                                    <!-- Compact 2x2 Camera Grid -->
+                                    <div id="survCameraGrid" class="surv-camera-grid-compact">
+                                        <!-- Camera tiles inserted by JS -->
+                                    </div>
+                                </div>
+
+                                <!-- Camera Health Status -->
+                                <div class="surv-card-neo flex-shrink-0">
+                                    <div class="surv-card-header mb-2">
+                                        <span class="surv-card-label">SYSTEM STATUS</span>
+                                    </div>
+                                    <div id="survCameraHealth" class="grid grid-cols-2 gap-2">
+                                        <!-- Health indicators inserted by JS -->
+                                    </div>
+                                </div>
+
+                                <!-- Quick Stats -->
+                                <div class="surv-card-neo surv-stats-bar flex-shrink-0">
+                                    <div class="grid grid-cols-4 gap-2">
+                                        <div class="surv-stat-item">
+                                            <span id="survTodayEvents" class="surv-stat-value text-rose-400">0</span>
+                                            <span class="surv-stat-label">Events</span>
+                                        </div>
+                                        <div class="surv-stat-item">
+                                            <span id="survPersonCount" class="surv-stat-value text-amber-400">0</span>
+                                            <span class="surv-stat-label">People</span>
+                                        </div>
+                                        <div class="surv-stat-item">
+                                            <span id="survVehicleCount" class="surv-stat-value text-blue-400">0</span>
+                                            <span class="surv-stat-label">Vehicles</span>
+                                        </div>
+                                        <div class="surv-stat-item">
+                                            <span id="survAiAnalyzed" class="surv-stat-value text-emerald-400">0</span>
+                                            <span class="surv-stat-label">AI</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CENTER: Event Timeline -->
+                            <div class="col-span-5 flex flex-col gap-3 overflow-hidden">
+                                <!-- Event List -->
+                                <div class="surv-card-neo flex-1 flex flex-col min-h-0 overflow-hidden">
+                                    <div class="surv-card-header mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 text-rose-400/80" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                            </svg>
+                                            <span class="surv-card-label">AI EVENTS</span>
+                                        </div>
+                                        <span id="survEventCount" class="text-[10px] text-white/40 font-mono">Loading...</span>
+                                    </div>
+                                    <div id="survEventList" class="flex-1 overflow-y-auto no-scrollbar space-y-1.5 pr-1">
+                                        <!-- Loading state -->
+                                        <div class="surv-event-loading flex flex-col items-center justify-center h-full text-white/30">
+                                            <svg class="w-10 h-10 animate-spin mb-2 text-rose-400/40" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                                            </svg>
+                                            <span class="text-xs">Connecting...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RIGHT: Event Detail + Camera Filter -->
+                            <div class="col-span-3 flex flex-col gap-3 overflow-hidden">
+                                <!-- Camera Filter Chips -->
+                                <div class="surv-card-neo flex-shrink-0">
+                                    <div class="surv-card-header mb-1.5">
+                                        <span class="surv-card-label">FILTER</span>
+                                    </div>
+                                    <div id="survCameraFilter" class="flex flex-wrap gap-1">
+                                        <!-- Filter chips inserted by JS -->
+                                    </div>
+                                </div>
+
+                                <!-- Event Detail Panel -->
+                                <div class="surv-card-neo flex-1 flex flex-col min-h-0 overflow-hidden">
+                                    <div class="surv-card-header mb-2">
+                                        <span class="surv-card-label">DETAIL</span>
+                                        <span id="survDetailTime" class="text-[10px] text-white/40 font-mono"></span>
+                                    </div>
+                                    <div id="survEventDetail" class="flex-1 flex flex-col overflow-hidden">
+                                        <!-- Empty State -->
+                                        <div id="survDetailEmpty" class="flex-1 flex flex-col items-center justify-center text-white/20">
+                                            <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                            </svg>
+                                            <span class="text-xs">Select an event</span>
+                                        </div>
+
+                                        <!-- Detail Content -->
+                                        <div id="survDetailContent" class="hidden flex-1 flex flex-col overflow-hidden">
+                                            <!-- Snapshot -->
+                                            <div class="relative rounded-lg overflow-hidden mb-2 flex-shrink-0 bg-black/50 aspect-video surv-detail-snapshot-wrap">
+                                                <img id="survDetailSnapshot" class="w-full h-full object-cover" src="" alt="">
+                                                <button onclick="window.surveillance.playClip()" class="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40 transition group">
+                                                    <div class="w-10 h-10 rounded-full bg-rose-500/80 flex items-center justify-center group-hover:scale-110 transition">
+                                                        <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                                                        </svg>
+                                                    </div>
+                                                </button>
+                                                <div id="survDetailLabel" class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-rose-500/80 text-white text-[10px] font-medium flex items-center gap-1">
+                                                    <span>Person</span>
+                                                </div>
+                                                <div id="survDetailConfidence" class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono">95%</div>
+                                            </div>
+
+                                            <!-- AI Analysis -->
+                                            <div class="flex-1 overflow-y-auto no-scrollbar">
+                                                <div class="flex items-center gap-1.5 mb-1.5">
+                                                    <div class="w-4 h-4 rounded bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                                                        <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                                        </svg>
+                                                    </div>
+                                                    <span class="text-[10px] text-white/50 uppercase">AI Analysis</span>
+                                                </div>
+                                                <div id="survAiText" class="text-[11px] text-white/70 leading-relaxed p-2 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                                                    No analysis available.
+                                                </div>
+                                            </div>
+
+                                            <!-- Actions -->
+                                            <div class="flex gap-1.5 mt-2 pt-2 border-t border-white/5 flex-shrink-0">
+                                                <button onclick="window.surveillance.openInFrigate()" class="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] text-white/60 hover:text-white transition flex items-center justify-center gap-1">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                    Frigate
+                                                </button>
+                                                <button onclick="window.surveillance.downloadClip()" class="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] text-white/60 hover:text-white transition flex items-center justify-center gap-1">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                                    Save
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom: Timeline Scrubber Graph -->
+                        <div class="surv-card-neo surv-timeline-graph flex-shrink-0">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-3.5 h-3.5 text-rose-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span class="surv-card-label">ACTIVITY TIMELINE</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-[9px]">
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+                                        <span class="text-white/40">Person</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                        <span class="text-white/40">Vehicle</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                                        <span class="text-white/40">Pet</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Timeline Canvas -->
+                            <div id="survTimelineGraph" class="surv-timeline-canvas">
+                                <div class="surv-timeline-bars" id="survTimelineBars">
+                                    <!-- Activity bars inserted by JS -->
+                                </div>
+                                <div class="surv-timeline-labels" id="survTimelineLabels">
+                                    <!-- Time labels inserted by JS -->
+                                </div>
+                                <div class="surv-timeline-scrubber" id="survTimelineScrubber"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Player Modal for Surveillance -->
+            <div id="survVideoModal" class="fixed inset-0 z-50 hidden">
+                <div class="absolute inset-0 bg-black/90 backdrop-blur-md" onclick="window.surveillance.closeVideoModal()"></div>
+                <div class="absolute inset-4 flex items-center justify-center">
+                    <div class="relative w-full max-w-5xl">
+                        <button onclick="window.surveillance.closeVideoModal()" class="absolute -top-12 right-0 text-white/60 hover:text-white transition">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                        <video id="survVideoPlayer" class="w-full rounded-2xl shadow-2xl" controls autoplay>
+                            <source src="" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Room Detail Modal -->
+    <div id="roomModal" class="fixed inset-0 z-50 hidden">
+        <div id="modalBgImage" class="absolute inset-0 bg-cover bg-center transition-all duration-500"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/80 to-dark-900/40"></div>
+        <div class="absolute inset-0 pointer-events-none opacity-[0.03]" style="background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px);"></div>
+
+        <!-- Clickable backdrop - closes modal when clicking outside controls -->
+        <div class="absolute inset-0 z-5 cursor-pointer" onclick="closeRoomModal()"></div>
+
+        <button onclick="closeRoomModal()" class="absolute top-6 right-6 z-20 w-12 h-12 rounded-full glass flex items-center justify-center hover:bg-white/10 transition">
+            <svg class="w-6 h-6 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+
+        <div class="relative z-10 h-full flex flex-col justify-end p-6 pb-8 cursor-pointer" onclick="closeRoomModal()">
+            <div class="mb-8">
+                <div class="flex items-center gap-4 mb-2">
+                    <div id="modalRoomIcon" class="room-icon bg-blue-500 w-16 h-16">
+                        <svg class="w-8 h-8 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+                    </div>
+                    <div>
+                        <h2 id="modalRoomName" class="text-3xl font-bold drop-shadow-lg">Room Name</h2>
+                        <p id="modalRoomStatus" class="text-white/60 text-lg">0 lights on</p>
+                    </div>
+                </div>
+                <div id="modalMasterToggle" class="mt-4 flex gap-3" onclick="event.stopPropagation()"></div>
+            </div>
+            <div id="modalControls" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto no-scrollbar" onclick="event.stopPropagation()"></div>
+        </div>
+    </div>
+
+    <!-- All Lights Modal -->
+    <div id="allLightsModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 modal-backdrop" onclick="closeAllLightsModal()"></div>
+        <div class="absolute bottom-0 left-0 right-0 glass rounded-t-3xl p-6 slide-up max-h-[80vh] overflow-y-auto no-scrollbar">
+            <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4"></div>
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold">All Lights</h2>
+                    <p id="allLightsCount" class="text-white/50">0 lights on</p>
+                </div>
+                <button onclick="allLightsOff()" class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 font-medium hover:bg-red-500/30 transition btn-control">
+                    All Off
+                </button>
+            </div>
+            <div id="allLightsGrid" class="grid grid-cols-4 gap-4"></div>
+        </div>
+    </div>
+
+    <!-- Main Application Script (ES Module) -->
+    <script type="module" src="js/main.js"></script>
+    <script src="js/surveillance.js"></script>
+</body>
+</html>

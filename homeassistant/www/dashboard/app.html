@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+    <!-- iOS PWA Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Home">
+
+    <!-- iOS Icons (multiple sizes) -->
+    <link rel="apple-touch-icon" href="/local/dashboard/images/icon-180.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/local/dashboard/images/icon-152.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/local/dashboard/images/icon-167.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/local/dashboard/images/icon-180.png">
+
+    <!-- Android PWA -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="manifest" href="/local/dashboard/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/local/dashboard/images/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/local/dashboard/images/icon-180.png">
+
+    <title>Home Dashboard</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .container {
+            text-align: center;
+            max-width: 300px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3);
+        }
+
+        .logo svg {
+            width: 44px;
+            height: 44px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .status {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .network-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 16px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .network-badge.show {
+            opacity: 1;
+        }
+
+        .network-badge.local {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .network-badge.external {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .network-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .manual-links {
+            margin-top: 40px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .manual-links.show {
+            opacity: 1;
+        }
+
+        .manual-links p {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 12px;
+        }
+
+        .manual-links a {
+            display: block;
+            padding: 12px 20px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .manual-links a:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .manual-links a span {
+            display: block;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+        </div>
+
+        <h1>Home Dashboard</h1>
+        <p class="status" id="status">Detecting network...</p>
+
+        <div class="spinner" id="spinner"></div>
+
+        <div class="network-badge" id="badge">
+            <span class="dot"></span>
+            <span id="badgeText">Checking...</span>
+        </div>
+
+        <div class="manual-links" id="manualLinks">
+            <p>Auto-redirect failed. Choose manually:</p>
+            <a href="http://192.168.68.77:8123/local/dashboard/mobile.html">
+                Local Network
+                <span>Use when on home WiFi</span>
+            </a>
+            <a href="https://your-instance.ui.nabu.casa/local/dashboard/mobile.html">
+                Remote Access
+                <span>Use when away from home</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const LOCAL_URL = 'http://192.168.68.77:8123/local/dashboard/mobile.html';
+        const EXTERNAL_URL = 'https://your-instance.ui.nabu.casa/local/dashboard/mobile.html';
+        const LOCAL_TEST_URL = 'http://192.168.68.77:8123/local/dashboard/version.json';
+        const TIMEOUT_MS = 2500;
+
+        const statusEl = document.getElementById('status');
+        const spinnerEl = document.getElementById('spinner');
+        const badgeEl = document.getElementById('badge');
+        const badgeTextEl = document.getElementById('badgeText');
+        const manualLinksEl = document.getElementById('manualLinks');
+
+        async function detectAndRedirect() {
+            statusEl.textContent = 'Checking local network...';
+
+            // Always try to reach the local server first - this is the most reliable test
+            // Even if accessed via nabu.casa, user might be on local WiFi
+            const localReachable = await testLocalServer();
+
+            if (localReachable) {
+                redirectTo('local');
+            } else {
+                redirectTo('external');
+            }
+        }
+
+        async function testLocalServer() {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+                // Use an image load test - more reliable than fetch with no-cors
+                // because we can actually detect success vs failure
+                const result = await new Promise((resolve) => {
+                    const img = new Image();
+
+                    img.onload = () => {
+                        clearTimeout(timeoutId);
+                        resolve(true);
+                    };
+
+                    img.onerror = () => {
+                        clearTimeout(timeoutId);
+                        // Error could mean CORS blocked OR actually unreachable
+                        // For same-origin images, error = unreachable
+                        resolve(false);
+                    };
+
+                    // Test with a cache-busted request to the version.json
+                    // This works because JSON files return as images with error (but quickly!)
+                    // OR we can use a tiny test endpoint
+                    img.src = `http://192.168.68.77:8123/local/dashboard/images/icon-152.png?_t=${Date.now()}`;
+                });
+
+                return result;
+
+            } catch (error) {
+                console.log('Local test error:', error.message);
+                return false;
+            }
+        }
+
+        function redirectTo(network) {
+            const isLocal = network === 'local';
+            const url = isLocal ? LOCAL_URL : EXTERNAL_URL;
+
+            // Update UI
+            statusEl.textContent = isLocal ? 'Connected to home network' : 'Using remote access';
+            spinnerEl.style.display = 'none';
+
+            badgeEl.classList.add('show', network);
+            badgeTextEl.textContent = isLocal ? 'Local Network' : 'Remote Access';
+
+            // Redirect after a brief moment to show the status
+            setTimeout(() => {
+                window.location.replace(url);
+            }, 800);
+
+            // Fallback: show manual links if redirect doesn't happen
+            setTimeout(() => {
+                manualLinksEl.classList.add('show');
+            }, 4000);
+        }
+
+        // Start detection when page loads
+        detectAndRedirect();
+
+        // Show manual links after timeout as fallback
+        setTimeout(() => {
+            if (!manualLinksEl.classList.contains('show')) {
+                statusEl.textContent = 'Taking too long?';
+                manualLinksEl.classList.add('show');
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

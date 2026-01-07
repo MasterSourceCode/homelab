@@ -1,0 +1,99 @@
+# ============================================
+# HOMELAB PUBLIC REPO - WHITELIST APPROACH
+# Ignore everything, then explicitly include needed files
+# ============================================
+
+# Ignore everything by default
+*
+
+# ============================================
+# CORE CONFIG FILES TO INCLUDE
+# ============================================
+!.gitignore
+!.env.example
+!docker-compose.yml
+!README.md
+!CLAUDE.md
+!LICENSE
+
+# ============================================
+# FRIGATE CONFIG (not runtime data)
+# ============================================
+!frigate/
+!frigate/config/
+!frigate/config/config.yml
+!frigate/config/go2rtc_homekit.yml
+
+# ============================================
+# HOME ASSISTANT CONFIG (not runtime/state)
+# ============================================
+!homeassistant/
+!homeassistant/configuration.yaml
+!homeassistant/automations.yaml
+!homeassistant/scripts.yaml
+!homeassistant/secrets.yaml.example
+
+# ============================================
+# CUSTOM DASHBOARD
+# ============================================
+!homeassistant/www/
+!homeassistant/www/dashboard/
+!homeassistant/www/dashboard/*.html
+!homeassistant/www/dashboard/*.js
+!homeassistant/www/dashboard/*.json
+!homeassistant/www/dashboard/*.sh
+!homeassistant/www/dashboard/js/
+!homeassistant/www/dashboard/js/**
+!homeassistant/www/dashboard/css/
+!homeassistant/www/dashboard/css/**
+!homeassistant/www/dashboard/views/
+!homeassistant/www/dashboard/views/**
+!homeassistant/www/dashboard/modals/
+!homeassistant/www/dashboard/modals/**
+!homeassistant/www/dashboard/src/
+!homeassistant/www/dashboard/src/**
+!homeassistant/www/dashboard/images/
+!homeassistant/www/dashboard/images/**
+
+# Exclude dashboard runtime/personal data
+homeassistant/www/dashboard/*.png
+homeassistant/www/dashboard/*.jpeg
+homeassistant/www/dashboard/*.jpg
+homeassistant/www/dashboard/node_modules/
+homeassistant/www/dashboard/data/
+homeassistant/www/dashboard/*-data.json
+homeassistant/www/dashboard/*-stats.json
+
+# ============================================
+# NGINX PROXY
+# ============================================
+!nginx-proxy/
+!nginx-proxy/nginx.conf
+
+# ============================================
+# MOSQUITTO CONFIG (not runtime data)
+# ============================================
+!mosquitto/
+!mosquitto/config/
+!mosquitto/config/mosquitto.conf
+
+# ============================================
+# SCRIPTS
+# ============================================
+!scripts/
+!scripts/*.sh
+!scripts/*.py
+
+# ============================================
+# DOUBLETAKE CONFIG (not training data)
+# ============================================
+!doubletake/
+!doubletake/config.yml
+!doubletake/config/
+!doubletake/config/config.yml
+
+# ============================================
+# CLOUDFLARED (script only)
+# ============================================
+!cloudflared/
+!cloudflared/frigate-tunnel.sh

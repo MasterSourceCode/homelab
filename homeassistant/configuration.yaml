@@ -1,0 +1,536 @@
+# Home Assistant Configuration
+# Fresh install optimized for Frigate integration
+
+# Core settings - fixes iOS app discovery showing Docker IP
+homeassistant:
+  internal_url: "http://192.168.x.x:8123"
+  external_url: "https://your-instance.ui.nabu.casa"
+
+# Loads default set of integrations
+default_config:
+
+# Frontend settings
+frontend:
+  themes: !include_dir_merge_named themes
+
+# HTTP settings for reverse proxy compatibility
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+
+# Logging
+logger:
+  default: info
+  logs:
+    homeassistant.components.mqtt: warning
+    homeassistant.components.camera: warning
+    # Reduce noise from Frigate intermittent connectivity (expected with GPU processing)
+    custom_components.frigate: warning
+    custom_components.frigate.api: error
+    # Suppress localhost auth warnings (iOS app via Nabu Casa)
+    homeassistant.components.http.ban: error
+    # Reduce Solarman noise during WiFi dropouts
+    custom_components.solarman: warning
+    # DEBUG: Dog mode investigation - log automation triggers and MQTT
+    homeassistant.components.automation.dog_mode_critical_person_detection: debug
+    homeassistant.components.automation.security_auto_disarm_on_arrival: debug
+    homeassistant.components.automation.critical_alerts_camera_detection: debug
+    homeassistant.components.automation.critical_alerts_sensor_trigger: debug
+    homeassistant.components.mqtt.subscription: debug
+
+# Recorder settings
+recorder:
+  purge_keep_days: 14
+  exclude:
+    domains:
+      - automation
+      - script
+    entity_globs:
+      - sensor.time_*
+      - sensor.date_*
+
+# History (uses recorder exclude settings)
+history:
+
+# Logbook (uses recorder exclude settings)
+logbook:
+
+# Automation, Scripts, Scenes
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Amcrest Cameras (direct integration for PTZ, audio, etc.)
+amcrest:
+  - host: 192.168.x.x
+    username: !secret amcrest_username
+    password: !secret amcrest_password
+    stream_source: rtsp
+    name: Front Door Camera
+    binary_sensors:
+      - motion_detected
+
+  - host: 192.168.x.x
+    username: !secret amcrest_username
+    password: !secret amcrest_password
+    stream_source: rtsp
+    name: Backyard Camera
+    binary_sensors:
+      - motion_detected
+
+# Envisalink Alarm System - REMOVED: Now using envisalink_new (UI-based config)
+# Old config backed up below (commented out)
+# envisalink:
+#   host: 192.168.x.x
+#   panel_type: DSC
+#   user_name: user
+#   password: Smart3
+#   code: "9911"
+#   port: 4025
+#   evl_version: 4
+#   keepalive_interval: 60
+#   zonedump_interval: 30
+#   timeout: 10
+#   panic_type: Police
+#   zones: 07,10,11,12,14,15,16,17,18,19,21,22,23,24,26,27
+#   partitions: 01
+
+# Template sensors for solar monitoring
+template:
+  - sensor:
+      - name: "Combined PV Power"
+        unit_of_measurement: "W"
+        state: >
+          {{ (states('sensor.inverter_pv1_power') | float(0)) + (states('sensor.inverter_pv2_power') | float(0)) }}
+
+  # ============================================
+  # INVERTER SMOOTHED SENSORS
+  # These maintain the last valid reading when WiFi drops
+  # ============================================
+  - trigger:
+      - platform: state
+        entity_id: sensor.inverter_pv_power
+        not_to:
+          - "unavailable"
+          - "unknown"
+    sensor:
+      - name: "Solar Power Smoothed"
+        unique_id: solar_power_smoothed
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        icon: mdi:solar-power
+        state: "{{ trigger.to_state.state }}"
+        attributes:
+          last_updated: "{{ now().isoformat() }}"
+          source: "sensor.inverter_pv_power"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.inverter_battery
+        not_to:
+          - "unavailable"
+          - "unknown"
+    sensor:
+      - name: "Battery Percent Smoothed"
+        unique_id: battery_percent_smoothed
+        unit_of_measurement: "%"
+        device_class: battery
+        state_class: measurement
+        icon: mdi:battery
+        state: "{{ trigger.to_state.state }}"
+        attributes:
+          last_updated: "{{ now().isoformat() }}"
+          source: "sensor.inverter_battery"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.inverter_battery_power
+        not_to:
+          - "unavailable"
+          - "unknown"
+    sensor:
+      - name: "Battery Power Smoothed"
+        unique_id: battery_power_smoothed
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        icon: mdi:battery-charging
+        state: "{{ trigger.to_state.state }}"
+        attributes:
+          last_updated: "{{ now().isoformat() }}"
+          source: "sensor.inverter_battery_power"
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.inverter_grid_power
+        not_to:
+          - "unavailable"
+          - "unknown"
+    sensor:
+      - name: "Grid Power Smoothed"
+        unique_id: grid_power_smoothed
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        icon: mdi:transmission-tower
+        state: "{{ trigger.to_state.state }}"
+        attributes:
+          last_updated: "{{ now().isoformat() }}"
+          direction: >
+            {% set val = trigger.to_state.state | float(0) %}
+            {% if val > 50 %}importing{% elif val < -50 %}exporting{% else %}idle{% endif %}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.inverter_load_power
+        not_to:
+          - "unavailable"
+          - "unknown"
+    sensor:
+      - name: "Load Power Smoothed"
+        unique_id: load_power_smoothed
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        icon: mdi:home-lightning-bolt
+        state: "{{ trigger.to_state.state }}"
+        attributes:
+          last_updated: "{{ now().isoformat() }}"
+          source: "sensor.inverter_load_power"
+
+  # Inverter connection status sensor
+  - sensor:
+      - name: "Inverter Connection Status"
+        unique_id: inverter_connection_status
+        icon: mdi:wifi
+        state: >
+          {% if states('sensor.inverter_device_state') in ['unavailable', 'unknown'] %}
+            Offline
+          {% else %}
+            Online
+          {% endif %}
+        attributes:
+          last_seen: >
+            {% if states('sensor.inverter_device_state') not in ['unavailable', 'unknown'] %}
+              {{ now().isoformat() }}
+            {% else %}
+              {{ state_attr('sensor.inverter_connection_status', 'last_seen') }}
+            {% endif %}
+          ip_address: "192.168.x.x"
+
+  # Data freshness indicator (minutes since last update)
+  - sensor:
+      - name: "Inverter Data Age"
+        unique_id: inverter_data_age
+        unit_of_measurement: "min"
+        icon: mdi:clock-outline
+        state: >
+          {% set last = state_attr('sensor.solar_power_smoothed', 'last_updated') %}
+          {% if last %}
+            {{ ((now() - last | as_datetime).total_seconds() / 60) | round(1) }}
+          {% else %}
+            unknown
+          {% endif %}
+        attributes:
+          status: >
+            {% set age = this.state | float(999) %}
+            {% if age < 1 %}live{% elif age < 5 %}recent{% elif age < 15 %}stale{% else %}offline{% endif %}
+
+  # ============================================
+  # GATE SYSTEM HEALTH SENSORS
+  # ============================================
+  # Combined monitoring of gate control (Tuya) and camera (Amcrest/Frigate)
+
+  - sensor:
+      - name: "Gate Control Status"
+        unique_id: gate_control_status
+        icon: mdi:gate
+        state: >
+          {% set gate = states('cover.gate_switch_door_1') %}
+          {% if gate == 'unavailable' %}
+            Offline
+          {% elif gate == 'unknown' %}
+            Unknown
+          {% elif gate == 'open' %}
+            Open
+          {% elif gate == 'closed' %}
+            Closed
+          {% elif gate == 'opening' %}
+            Opening
+          {% elif gate == 'closing' %}
+            Closing
+          {% else %}
+            {{ gate | title }}
+          {% endif %}
+        attributes:
+          entity_id: cover.gate_switch_door_1
+          raw_state: "{{ states('cover.gate_switch_door_1') }}"
+          is_available: "{{ states('cover.gate_switch_door_1') not in ['unavailable', 'unknown'] }}"
+          power_outlet: switch.sonoff_100258f6fb_1
+
+      - name: "Gate Camera Status"
+        unique_id: gate_camera_status
+        icon: mdi:camera
+        state: >
+          {% set fps = states('sensor.front_door_camera_fps') | float(-1) %}
+          {% if fps < 0 %}
+            Offline
+          {% elif fps < 0.5 %}
+            Stalled
+          {% elif fps < 2 %}
+            Degraded
+          {% else %}
+            Online
+          {% endif %}
+        attributes:
+          camera_fps: "{{ states('sensor.front_door_camera_fps') }}"
+          detection_fps: "{{ states('sensor.front_door_detection_fps') }}"
+          camera_ip: "192.168.x.x"
+          frigate_camera: front_door
+
+      - name: "Gate System Health"
+        unique_id: gate_system_health
+        icon: mdi:shield-check
+        state: >
+          {% set control = states('sensor.gate_control_status') %}
+          {% set camera = states('sensor.gate_camera_status') %}
+          {% if control == 'Offline' and camera == 'Offline' %}
+            Critical
+          {% elif control == 'Offline' or camera == 'Offline' %}
+            Degraded
+          {% elif camera in ['Stalled', 'Degraded'] %}
+            Warning
+          {% else %}
+            Healthy
+          {% endif %}
+        attributes:
+          control_status: "{{ states('sensor.gate_control_status') }}"
+          camera_status: "{{ states('sensor.gate_camera_status') }}"
+          gate_position: "{{ states('cover.gate_switch_door_1') }}"
+          last_checked: "{{ now().isoformat() }}"
+          details: >
+            {% set control = states('sensor.gate_control_status') %}
+            {% set camera = states('sensor.gate_camera_status') %}
+            Control: {{ control }} | Camera: {{ camera }}
+
+  # ============================================
+  # DSC ZONE ACTIVITY TRACKING
+  # ============================================
+  # Tracks last motion/activity across all DSC security zones
+
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.alarm_zone_10   # Kitchen
+          - binary_sensor.alarm_zone_11   # Front Door
+          - binary_sensor.alarm_zone_12   # Garage
+          - binary_sensor.alarm_zone_14   # Main Bedroom
+          - binary_sensor.alarm_zone_15   # Child Room 1
+          - binary_sensor.alarm_zone_16   # Child Room 2
+          - binary_sensor.alarm_zone_7    # Outside Scullery
+          - binary_sensor.alarm_zone_17   # Outside Scullery 2
+          - binary_sensor.alarm_zone_21   # Pool
+          - binary_sensor.alarm_zone_18   # Pool Pump
+          - binary_sensor.alarm_zone_19   # Main Balcony
+          - binary_sensor.alarm_zone_23   # Outside Garage
+          - binary_sensor.alarm_zone_22   # Child Room 2 Balcony
+          - binary_sensor.alarm_zone_27   # Child Room 2 Balcony 2
+          - binary_sensor.alarm_zone_24   # TV Room
+          - binary_sensor.alarm_zone_26   # Main Entrance Outside
+        to: "on"
+    sensor:
+      - name: "DSC Last Zone Activity"
+        unique_id: dsc_last_zone_activity
+        icon: mdi:motion-sensor
+        state: "{{ trigger.to_state.name }}"
+        attributes:
+          entity_id: "{{ trigger.entity_id }}"
+          last_triggered: "{{ now().isoformat() }}"
+          timestamp: "{{ as_timestamp(now()) | int }}"
+          zone_type: >
+            {% set interior = ['alarm_zone_10', 'alarm_zone_12', 'alarm_zone_14', 'alarm_zone_15', 'alarm_zone_16', 'alarm_zone_24'] %}
+            {% set entry = ['alarm_zone_11', 'alarm_zone_26'] %}
+            {% set zone = trigger.entity_id.split('.')[1] %}
+            {% if zone in interior %}interior{% elif zone in entry %}entry{% else %}exterior{% endif %}
+
+  # Zone activity count sensor (counts zones tripped in last hour)
+  - sensor:
+      - name: "DSC Active Zones Count"
+        unique_id: dsc_active_zones_count
+        icon: mdi:shield-alert
+        unit_of_measurement: "zones"
+        state: >
+          {% set zones = [
+            'binary_sensor.alarm_zone_10',
+            'binary_sensor.alarm_zone_11',
+            'binary_sensor.alarm_zone_12',
+            'binary_sensor.alarm_zone_14',
+            'binary_sensor.alarm_zone_15',
+            'binary_sensor.alarm_zone_16',
+            'binary_sensor.alarm_zone_7',
+            'binary_sensor.alarm_zone_17',
+            'binary_sensor.alarm_zone_21',
+            'binary_sensor.alarm_zone_18',
+            'binary_sensor.alarm_zone_19',
+            'binary_sensor.alarm_zone_23',
+            'binary_sensor.alarm_zone_22',
+            'binary_sensor.alarm_zone_27',
+            'binary_sensor.alarm_zone_24',
+            'binary_sensor.alarm_zone_26'
+          ] %}
+          {% set ns = namespace(count=0) %}
+          {% for zone in zones %}
+            {% if states(zone) == 'on' %}
+              {% set ns.count = ns.count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.count }}
+
+  # DSC Panel Status summary
+  - sensor:
+      - name: "DSC Panel Summary"
+        unique_id: dsc_panel_summary
+        icon: mdi:shield-home
+        state: "{{ states('alarm_control_panel.alarm_partition_1') | replace('_', ' ') | title }}"
+        attributes:
+          alarm_state: "{{ states('alarm_control_panel.alarm_partition_1') }}"
+          active_zones: "{{ states('sensor.dsc_active_zones_count') | int(0) }}"
+          last_activity: "{{ states('sensor.dsc_last_zone_activity') }}"
+          last_activity_time: "{{ state_attr('sensor.dsc_last_zone_activity', 'last_triggered') }}"
+
+# Utility meters
+utility_meter:
+  monthly_energy_import:
+    source: sensor.inverter_today_energy_import
+    cycle: monthly
+
+# Dashboard Cameras are configured via the Generic Camera integration
+# Streams available at:
+#   - rtsp://172.20.0.5:8554/front_door_dash (480p @ 1fps)
+#   - rtsp://172.20.0.5:8554/backyard_dash (480p @ 1fps)
+
+# ============================================
+# GARAGE DOOR AUTOMATION HELPERS
+# ============================================
+
+# Input booleans for automation state tracking
+input_boolean:
+  garage_manual_override:
+    name: "Garage Manual Override"
+    icon: mdi:garage-alert
+  cameras_armed:
+    name: "Cameras Armed"
+    icon: mdi:cctv
+  dog_mode:
+    name: "Dog Mode - Person Detection Only"
+    icon: mdi:dog
+  guest_mode:
+    name: "Guest Mode - Reduced Alerts"
+    icon: mdi:account-group
+  security_night_mode:
+    name: "Security Night Mode"
+    icon: mdi:weather-night
+  auto_arm_enabled:
+    name: "Auto-Arm When Nobody Home"
+    icon: mdi:shield-lock-outline
+    initial: true
+  # Critical Alerts Only Mode - notification toggles
+  critical_alerts_notify_nico:
+    name: "Critical Alerts: Notify Nico"
+    icon: mdi:account-alert
+    initial: true
+  critical_alerts_notify_tatiana:
+    name: "Critical Alerts: Notify Tatiana"
+    icon: mdi:account-alert
+    initial: true
+  frigate_detection_paused:
+    name: "Pause Frigate Detection (Save CPU)"
+    icon: mdi:pause-circle
+    initial: false
+
+# Input datetime to track when garage was last auto-closed
+input_datetime:
+  garage_last_auto_close:
+    name: "Garage Last Auto Close"
+    has_date: true
+    has_time: true
+    icon: mdi:clock-outline
+  last_downstairs_activity:
+    name: "Last Downstairs Activity"
+    has_date: true
+    has_time: true
+    icon: mdi:home-clock-outline
+
+# ============================================
+# DELAYED EXIT ARM SYSTEM
+# Server-side timer ensures arming even if mobile app is backgrounded
+# ============================================
+
+timer:
+  exit_delay:
+    name: "Exit Delay Timer"
+    duration: "00:03:00"
+    icon: mdi:timer-outline
+    restore: true
+
+input_select:
+  exit_delay_mode:
+    name: "Exit Delay Target Mode"
+    options:
+      - "none"
+      - "arm_away"
+      - "arm_home"
+      - "dog_mode"
+    initial: "none"
+    icon: mdi:shield-lock
+  critical_alerts_mode:
+    name: "Critical Alerts Mode"
+    options:
+      - "off"
+      - "outside"
+      - "stay"
+      - "away"
+    initial: "off"
+    icon: mdi:bell-alert
+
+# ============================================
+# GUEST ACCESS PASS SYSTEM
+# ============================================
+
+input_text:
+  guest_pass_secret:
+    name: "Guest Pass Secret Key"
+    max: 64
+    icon: mdi:key
+    mode: password
+    # Note: initial value is set but can be changed via UI
+    # Secret stored in secrets.yaml as guest_pass_secret
+
+# ============================================
+# TELEGRAM BOT FOR SECURITY NOTIFICATIONS
+# ============================================
+telegram_bot:
+  - platform: polling
+    api_key: !secret telegram_bot_token
+    allowed_chat_ids:
+      - !secret telegram_family_chat_id
+
+notify:
+  - platform: telegram
+    name: telegram_family
+    chat_id: !secret telegram_family_chat_id
+
+# ============================================
+# PYTHON SCRIPTS FOR CUSTOM FUNCTIONALITY
+# ============================================
+python_script:
+
+# SHELL COMMANDS
+# ============================================
+shell_command:
+  cleanup_blink_clips: 'find /config/www/blink_clips -name "*.mp4" -mtime +7 -delete 2>/dev/null || true'
+  restart_frigate: 'curl -s --unix-socket /var/run/docker.sock -X POST "http://localhost/v1.40/containers/frigate/restart" || true'
+  restart_mosquitto: 'curl -s --unix-socket /var/run/docker.sock -X POST "http://localhost/v1.40/containers/mosquitto/restart" || true'

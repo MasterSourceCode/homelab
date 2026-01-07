@@ -1,0 +1,25 @@
+# Double Take Configuration
+# Face recognition processing for Frigate events
+
+mqtt:
+  host: mosquitto
+  port: 1883
+  username: homeassistant
+  password: mqtt_secure_password_2025
+
+frigate:
+  url: http://frigate:5000
+
+detectors:
+  compreface:
+    url: http://compreface:8080
+    key: 00000000-0000-0000-0000-000000000002
+    timeout: 15
+    det_prob_threshold: 0.8
+    opencv_face_required: false
+
+time:
+  timezone: Africa/Johannesburg
+
+logs:
+  level: info

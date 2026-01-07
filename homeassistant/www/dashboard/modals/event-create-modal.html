@@ -1,0 +1,104 @@
+<!-- Event Create/Edit Modal Template -->
+<div id="eventCreateModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 modal-backdrop" data-action="closeCreateEventModal"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 glass rounded-2xl p-6 max-w-lg w-full mx-4 slide-up">
+        <div class="flex items-center justify-between mb-6">
+            <h3 id="eventModalTitle" class="text-xl font-bold">New Event</h3>
+            <button data-action="closeCreateEventModal" class="p-2 hover:bg-white/10 rounded-lg transition">
+                <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <!-- Title -->
+            <div>
+                <label class="block text-sm text-white/50 mb-1">Event Title</label>
+                <input id="eventFormTitle" type="text" placeholder="What's happening?"
+                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white placeholder-white/30">
+            </div>
+
+            <!-- Assignee -->
+            <div>
+                <label class="block text-sm text-white/50 mb-1">Assign To</label>
+                <div class="flex items-center gap-3">
+                    <div id="assigneePreview" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-amber-500">E</div>
+                    <select id="eventFormAssignee" data-change-action="updateAssigneePreview"
+                        class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white">
+                        <option value="everyone">Everyone</option>
+                        <option value="tatiana">Tatiana</option>
+                        <option value="nico">Nico</option>
+                        <option value="alexandra">Alexandra</option>
+                        <option value="mila">Mila</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- All Day Toggle -->
+            <div class="flex items-center justify-between">
+                <label class="text-sm text-white/70">All-day event</label>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input id="eventFormAllDay" type="checkbox" checked data-change-action="onAllDayChange" class="sr-only peer">
+                    <div class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:bg-violet-500 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                </label>
+            </div>
+
+            <!-- Date/Time -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm text-white/50 mb-1">Start Date</label>
+                    <input id="eventFormStartDate" type="date"
+                        class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white">
+                </div>
+                <div>
+                    <label class="block text-sm text-white/50 mb-1">End Date</label>
+                    <input id="eventFormEndDate" type="date"
+                        class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white">
+                </div>
+            </div>
+
+            <div id="eventTimeInputs" class="grid grid-cols-2 gap-3 hidden">
+                <div>
+                    <label class="block text-sm text-white/50 mb-1">Start Time</label>
+                    <input id="eventFormStartTime" type="time"
+                        class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white">
+                </div>
+                <div>
+                    <label class="block text-sm text-white/50 mb-1">End Time</label>
+                    <input id="eventFormEndTime" type="time"
+                        class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white">
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div>
+                <label class="block text-sm text-white/50 mb-1">Location (optional)</label>
+                <input id="eventFormLocation" type="text" placeholder="Add location"
+                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white placeholder-white/30">
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="block text-sm text-white/50 mb-1">Description (optional)</label>
+                <textarea id="eventFormDescription" rows="2" placeholder="Add details"
+                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-violet-500 focus:outline-none transition text-white placeholder-white/30 resize-none"></textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex items-center justify-between pt-4">
+                <button id="eventDeleteBtn" data-action="deleteCurrentEvent" class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 font-medium hover:bg-red-500/30 transition hidden">
+                    Delete
+                </button>
+                <div class="flex items-center gap-3 ml-auto">
+                    <button data-action="closeCreateEventModal" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 font-medium hover:bg-white/10 transition">
+                        Cancel
+                    </button>
+                    <button id="eventSaveBtn" data-action="saveEvent" class="px-6 py-2 rounded-xl bg-violet-500 text-white font-medium hover:bg-violet-600 transition">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
