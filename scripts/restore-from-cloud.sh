@@ -20,7 +20,7 @@ RCLONE_CONFIG="${HOMELAB_DIR}/backups/rclone.conf"
 LOG_FILE="/var/log/homelab-restore.log"
 
 # Backblaze B2 settings
-B2_BUCKET="hahomelab"
+B2_BUCKET="your-bucket-name"
 B2_REMOTE="backblaze:${B2_BUCKET}"
 
 # ============================================

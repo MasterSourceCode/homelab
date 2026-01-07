@@ -21,7 +21,7 @@ CHECKSUM_FILE="${HOMELAB_DIR}/backups/.last-backup-checksum"
 LOG_FILE="/var/log/homelab-backup.log"
 
 # Backblaze B2 settings
-B2_BUCKET="hahomelab"
+B2_BUCKET="your-bucket-name"
 B2_REMOTE="backblaze:${B2_BUCKET}"
 
 # Retention settings

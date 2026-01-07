@@ -377,7 +377,7 @@ sudo journalctl -u homelab-monitor -f
 1. Calculates MD5 checksum of all config files
 2. Compares with last backup checksum - **skips if no changes**
 3. Creates compressed tar.gz archive
-4. Uploads to Backblaze B2 bucket `hahomelab`
+4. Uploads to Backblaze B2 bucket `your-bucket-name`
 5. Cleans up local backups older than 7 days
 
 ### Commands
@@ -393,7 +393,7 @@ sudo tail -50 /var/log/homelab-backup.log
 sudo /opt/homelab/scripts/backup-to-cloud.sh --force
 
 # List cloud backups
-rclone --config=/opt/homelab/backups/rclone.conf ls backblaze:hahomelab/
+rclone --config=/opt/homelab/backups/rclone.conf ls backblaze:your-bucket-name/
 ```
 
 ### Restore from Cloud
