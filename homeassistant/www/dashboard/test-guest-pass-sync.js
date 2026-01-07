@@ -217,7 +217,7 @@ async function syncFromServer(page, label) {
             // Manually trigger by loading from server
             const resp = await fetch('/local/dashboard/data/passes.json?t=' + Date.now());
             const data = await resp.json();
-            localStorage.setItem('townsend_guest_passes', JSON.stringify(data.passes || []));
+            localStorage.setItem('residence_guest_passes', JSON.stringify(data.passes || []));
             if (window.dashboard?.renderActivePasses) {
                 window.dashboard.renderActivePasses();
             }
@@ -276,7 +276,7 @@ async function main() {
 
             // Check localStorage immediately after creation
             const localPasses = await session.page.evaluate(() => {
-                const data = localStorage.getItem('townsend_guest_passes');
+                const data = localStorage.getItem('residence_guest_passes');
                 return data ? JSON.parse(data) : [];
             });
             console.log(`[${session.label}] localStorage passes after creation: ${localPasses.length}`);

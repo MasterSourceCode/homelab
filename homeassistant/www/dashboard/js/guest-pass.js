@@ -13,10 +13,10 @@ import { callService } from './api.js';
 // CONFIGURATION
 // ============================================
 
-const STORAGE_KEY = 'townsend_guest_passes';
-const ACTIVITY_STORAGE_KEY = 'townsend_pass_activity';
+const STORAGE_KEY = 'residence_guest_passes';
+const ACTIVITY_STORAGE_KEY = 'residence_pass_activity';
 const SECRET_KEY_ENTITY = 'input_text.guest_pass_secret';
-const DEFAULT_SECRET = 'townsend-golden-ticket-2024';
+const DEFAULT_SECRET = 'your-secret-key-here';
 
 // Server-side storage path (relative to HA www folder)
 const PASSES_FILE_URL = '/local/dashboard/data/passes.json';
@@ -565,7 +565,7 @@ export function shareWhatsApp() {
     if (!url) return;
 
     const message = encodeURIComponent(
-        `Hi ${name}! Here's your guest access pass for Townsend Residence.\n\n` +
+        `Hi ${name}! Here's your guest access pass for Your Residence.\n\n` +
         `Tap the link to access the gate and garage:\n${url}`
     );
     window.open(`https://wa.me/?text=${message}`, '_blank');
@@ -580,7 +580,7 @@ export async function shareGeneric() {
         try {
             await navigator.share({
                 title: `Guest Pass for ${name}`,
-                text: `Access pass for Townsend Residence`,
+                text: `Access pass for Your Residence`,
                 url: url
             });
         } catch (e) {

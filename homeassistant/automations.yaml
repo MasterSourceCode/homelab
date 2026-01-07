@@ -1396,12 +1396,12 @@
           sequence:
             - service: alarm_control_panel.alarm_arm_away
               target:
-                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+                entity_id: alarm_control_panel.blink_your_home
             - service: logbook.log
               data:
                 name: "Blink Security"
                 message: "All Blink cameras armed (away mode)"
-                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+                entity_id: alarm_control_panel.blink_your_home
 
         # ARMED STAY - Arm all Blink cameras (same as away)
         # Full security coverage when armed_home
@@ -1411,12 +1411,12 @@
           sequence:
             - service: alarm_control_panel.alarm_arm_away
               target:
-                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+                entity_id: alarm_control_panel.blink_your_home
             - service: logbook.log
               data:
                 name: "Blink Security"
                 message: "All Blink cameras armed (stay mode)"
-                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+                entity_id: alarm_control_panel.blink_your_home
 
         # DISARMED - Disarm all Blink cameras (save battery)
         - conditions:
@@ -1425,12 +1425,12 @@
           sequence:
             - service: alarm_control_panel.alarm_disarm
               target:
-                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+                entity_id: alarm_control_panel.blink_your_home
             - service: logbook.log
               data:
                 name: "Blink Security"
                 message: "All Blink cameras disarmed (saving battery)"
-                entity_id: alarm_control_panel.blink_13_townsend_unit_1
+                entity_id: alarm_control_panel.blink_your_home
 
 # ----------------------------------------------
 # BLINK PERIMETER MOTION - POOL CAMERA

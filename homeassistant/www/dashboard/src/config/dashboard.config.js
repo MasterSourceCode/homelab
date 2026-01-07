@@ -237,7 +237,7 @@ export const dashboardConfig = {
         gate: 'cover.gate_switch_door_1',
         garage: 'cover.smart_garage_door_2311083729366461070548e1e9e12926_garage',
         weather: 'weather.home',
-        blink: 'alarm_control_panel.blink_13_townsend_unit_1',
+        blink: 'alarm_control_panel.blink_your_home',
         dogMode: 'input_boolean.dog_mode',
         camerasArmed: 'input_boolean.cameras_armed',
         guestMode: 'input_boolean.guest_mode'

@@ -3217,7 +3217,7 @@ async function generateMobileGuestPass() {
     const validUntil = new Date(now.getTime() + duration);
 
     const secretEntity = state.entities['input_text.guest_pass_secret'];
-    const secretKey = secretEntity?.state || 'townsend-golden-ticket-2024';
+    const secretKey = secretEntity?.state || 'your-secret-key-here';
 
     const passData = {
         v: 1,
@@ -3264,14 +3264,14 @@ async function generateMobileGuestPass() {
 
 async function saveGuestPass(passData) {
     try {
-        const stored = localStorage.getItem('townsend_guest_passes');
+        const stored = localStorage.getItem('residence_guest_passes');
         const passes = stored ? JSON.parse(stored) : [];
         passes.push({
             ...passData,
             active: true,
             durationType: guestState.preset
         });
-        localStorage.setItem('townsend_guest_passes', JSON.stringify(passes));
+        localStorage.setItem('residence_guest_passes', JSON.stringify(passes));
 
         // Save to server for cross-browser sync (only on HTTP to avoid mixed content)
         if (window.location.protocol === 'http:') {
@@ -3305,7 +3305,7 @@ async function loadGuestPasses() {
                 const data = await response.json();
                 if (data.passes && data.passes.length > 0) {
                     guestState.passes = data.passes;
-                    localStorage.setItem('townsend_guest_passes', JSON.stringify(data.passes));
+                    localStorage.setItem('residence_guest_passes', JSON.stringify(data.passes));
                     console.log('[GuestPass] Loaded from server:', data.passes.length, 'passes');
                     renderGuestPasses();
                     return;
@@ -3316,7 +3316,7 @@ async function loadGuestPasses() {
         }
 
         // Fallback to localStorage
-        const stored = localStorage.getItem('townsend_guest_passes');
+        const stored = localStorage.getItem('residence_guest_passes');
         guestState.passes = stored ? JSON.parse(stored) : [];
         renderGuestPasses();
     } catch (e) {
@@ -3385,7 +3385,7 @@ function revokeGuestPass(passId) {
         if (p.id === passId) p.active = false;
         return p;
     });
-    localStorage.setItem('townsend_guest_passes', JSON.stringify(passes));
+    localStorage.setItem('residence_guest_passes', JSON.stringify(passes));
     guestState.passes = passes;
     renderGuestPasses();
 }
@@ -3395,7 +3395,7 @@ function reshareGuestPass(passId) {
     if (!pass) return;
 
     const secretEntity = state.entities['input_text.guest_pass_secret'];
-    const secretKey = secretEntity?.state || 'townsend-golden-ticket-2024';
+    const secretKey = secretEntity?.state || 'your-secret-key-here';
 
     const passData = {
         v: 1,
@@ -3456,7 +3456,7 @@ async function copyGuestPassUrl() {
 function shareGuestPassWhatsApp() {
     if (!guestState.generatedPass) return;
     const { passData, url } = guestState.generatedPass;
-    const message = encodeURIComponent(`Here's your access pass for Townsend House: ${url}`);
+    const message = encodeURIComponent(`Here's your access pass for Your Home: ${url}`);
     window.open(`https://wa.me/?text=${message}`, '_blank');
     haptic.light();
 }
@@ -3467,7 +3467,7 @@ function shareGuestPassNative() {
 
     navigator.share({
         title: 'Guest Access Pass',
-        text: `Here's your access pass for Townsend House`,
+        text: `Here's your access pass for Your Home`,
         url: url
     }).catch(() => {});
     haptic.light();
