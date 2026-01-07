@@ -1,0 +1,439 @@
+/**
+ * Family Dashboard - Premium Animated Styles
+ * Extends main dashboard styles.css
+ */
+
+/* ============================================
+   KEYFRAME ANIMATIONS
+   ============================================ */
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes spin-slow {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes bounce-subtle {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes criticalPulse {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    }
+    50% {
+        opacity: 0.85;
+        box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
+    }
+}
+
+@keyframes activityPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+    }
+    50% {
+        box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+    }
+}
+
+@keyframes floatUp {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes borderGlow {
+    0%, 100% {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    50% {
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+}
+
+/* ============================================
+   ANIMATION UTILITY CLASSES
+   ============================================ */
+
+.animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
+}
+
+.animate-bounce-subtle {
+    animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+    animation: shimmer 2s ease-in-out infinite;
+}
+
+.animate-float {
+    animation: floatUp 3s ease-in-out infinite;
+}
+
+.animate-glow {
+    animation: glow 2s ease-in-out infinite;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+}
+
+/* ============================================
+   FAMILY CARD STYLES
+   ============================================ */
+
+.family-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, box-shadow;
+}
+
+.family-card:hover {
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(255, 255, 255, 0.05);
+}
+
+.family-card .stat-box {
+    transition: all 0.2s ease;
+}
+
+.family-card .stat-box:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Avatar ring animation */
+.family-card .animate-spin-slow {
+    animation: spin-slow 12s linear infinite;
+}
+
+/* ============================================
+   LEADERBOARD STYLES
+   ============================================ */
+
+#stepsLeaderboard > div,
+#floorsLeaderboard > div,
+#distanceLeaderboard > div {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#stepsLeaderboard > div:hover,
+#floorsLeaderboard > div:hover,
+#distanceLeaderboard > div:hover {
+    transform: translateX(6px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* First place special effects */
+#stepsLeaderboard > div:first-child {
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+    animation: borderGlow 3s ease-in-out infinite;
+}
+
+#floorsLeaderboard > div:first-child {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+    animation: borderGlow 3s ease-in-out infinite;
+}
+
+#distanceLeaderboard > div:first-child {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+    animation: borderGlow 3s ease-in-out infinite;
+}
+
+/* Medal badges with gradient */
+#stepsLeaderboard > div:first-child .bg-gradient-to-br,
+#floorsLeaderboard > div:first-child .bg-gradient-to-br,
+#distanceLeaderboard > div:first-child .bg-gradient-to-br {
+    animation: floatUp 2s ease-in-out infinite;
+}
+
+/* Progress bar animations */
+#stepsLeaderboard .h-1\.5 > div,
+#floorsLeaderboard .h-1\.5 > div,
+#distanceLeaderboard .h-1\.5 > div {
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+#stepsLeaderboard .h-1\.5 > div::after,
+#floorsLeaderboard .h-1\.5 > div::after,
+#distanceLeaderboard .h-1\.5 > div::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 2s ease-in-out infinite;
+}
+
+/* ============================================
+   BATTERY ALERT ANIMATIONS
+   ============================================ */
+
+#batteryAlerts > div {
+    animation: slideDown 0.4s ease-out;
+}
+
+#batteryAlerts .animate-pulse {
+    animation: criticalPulse 1.2s ease-in-out infinite;
+}
+
+/* ============================================
+   HOME STATUS SECTION
+   ============================================ */
+
+#homeAvatars > div {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#homeAvatars > div:hover {
+    transform: scale(1.15) translateY(-3px);
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+#homeCount {
+    transition: all 0.3s ease;
+}
+
+#homeCount.updating {
+    animation: scaleIn 0.3s ease-out;
+}
+
+/* ============================================
+   FOCUS MODE INDICATOR
+   ============================================ */
+
+.family-card [class*="bg-purple-500"] {
+    backdrop-filter: blur(8px);
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   CONNECTION STATUS ICONS
+   ============================================ */
+
+.family-card .text-emerald-400 {
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.family-card .text-blue-400 {
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+/* ============================================
+   ACTIVITY STATUS ANIMATIONS
+   ============================================ */
+
+.family-card .text-emerald-400.animate-pulse {
+    animation: activityPulse 1.5s ease-in-out infinite;
+}
+
+.family-card .text-orange-400.animate-bounce {
+    animation: bounce-subtle 0.8s ease-in-out infinite;
+}
+
+/* ============================================
+   GLASS MORPHISM ENHANCEMENTS
+   ============================================ */
+
+.glass {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.glass:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.glass-light {
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.04) 100%
+    );
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   MOBILE OPTIMIZATIONS
+   ============================================ */
+
+@media (max-width: 768px) {
+    #familyCards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    #familyCards > div {
+        padding: 0.75rem;
+    }
+
+    .family-card:hover {
+        transform: none;
+    }
+
+    #stepsLeaderboard > div,
+    #floorsLeaderboard > div,
+    #distanceLeaderboard > div {
+        padding: 0.5rem;
+    }
+
+    /* Disable hover animations on mobile for better performance */
+    #stepsLeaderboard > div:hover,
+    #floorsLeaderboard > div:hover,
+    #distanceLeaderboard > div:hover {
+        transform: none;
+    }
+
+    /* Reduce animation intensity on mobile */
+    .animate-spin-slow {
+        animation-duration: 20s;
+    }
+}
+
+/* ============================================
+   TABLET OPTIMIZATIONS
+   ============================================ */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    #familyCards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+main::-webkit-scrollbar {
+    width: 6px;
+}
+
+main::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+main::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+main::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+.family-card,
+#stepsLeaderboard > div,
+#floorsLeaderboard > div,
+#distanceLeaderboard > div {
+    will-change: transform;
+    contain: layout style paint;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   DARK MODE ENHANCEMENTS
+   ============================================ */
+
+body {
+    background: radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0f 50%, #050508 100%);
+}
+
+/* Subtle noise texture overlay */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.015;
+    pointer-events: none;
+    z-index: 0;
+}

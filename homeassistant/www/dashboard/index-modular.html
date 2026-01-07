@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Home Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#0a0a0f',
+                            800: '#12121a',
+                            700: '#1a1a24',
+                            600: '#22222e',
+                            500: '#2a2a38',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/media.css">
+
+    <!-- FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.10/index.global.min.js"></script>
+</head>
+<body class="bg-dark-900 text-white font-sans min-h-screen overflow-hidden">
+    <!-- Ambient Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-emerald-600/10 rounded-full blur-[80px]"></div>
+    </div>
+
+    <!-- Connection Modal -->
+    <div id="connectModal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+        <div class="glass rounded-3xl p-8 max-w-md w-full mx-4 slide-up">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold">Welcome Home</h2>
+                <p class="text-white/50 mt-2">Enter your access token to connect</p>
+            </div>
+            <div class="space-y-4">
+                <input type="password" id="haToken" placeholder="Long-lived access token"
+                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500 focus:outline-none transition">
+                <button data-action="connectHA"
+                    class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 font-semibold hover:opacity-90 transition">
+                    Connect
+                </button>
+                <p id="errorMsg" class="text-red-400 text-sm text-center hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="relative z-10 h-screen flex flex-col hidden">
+        <!-- Header -->
+        <header class="glass border-b border-white/5 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Left: Time & Date -->
+                <div class="flex items-center gap-6">
+                    <div>
+                        <div class="text-3xl font-bold" id="timeDisplay">--:--</div>
+                        <div class="text-white/40 text-sm" id="dateDisplay">Loading...</div>
+                    </div>
+                    <!-- Weather -->
+                    <div class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3">
+                        <svg class="w-8 h-8 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="5"/>
+                            <path stroke="currentColor" stroke-width="2" d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                        <div>
+                            <div class="text-xl font-semibold" id="weatherTemp">--°</div>
+                            <div class="text-xs text-white/50" id="weatherCondition">Loading</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center: Quick Stats -->
+                <div class="stat-badges flex items-center gap-3">
+                    <!-- Lights Badge -->
+                    <button id="lightsBadge" data-action="openAllLightsModal" data-context-action="allLightsOff"
+                        class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3 hover:bg-white/10 transition cursor-pointer btn-control">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-lg font-semibold" id="lightsOnCount">0</div>
+                            <div class="text-xs text-white/50">Lights On</div>
+                        </div>
+                    </button>
+
+                    <!-- Power Badge -->
+                    <div class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3">
+                        <div class="relative w-12 h-12">
+                            <svg class="w-12 h-12 progress-ring" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                                <circle id="powerRing" cx="24" cy="24" r="20" fill="none" stroke="url(#powerGradient)" stroke-width="4"
+                                    stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="125.6" class="progress-ring-circle"/>
+                                <defs>
+                                    <linearGradient id="powerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#22c55e"/>
+                                        <stop offset="50%" stop-color="#eab308"/>
+                                        <stop offset="100%" stop-color="#ef4444"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-lg font-semibold" id="totalPower">0W</div>
+                            <div class="text-xs text-white/50">Power</div>
+                        </div>
+                    </div>
+
+                    <!-- Security Badge -->
+                    <button data-action="showView" data-param-view="security" class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3 hover:bg-white/10 transition btn-control">
+                        <div id="securityIcon" class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-sm font-semibold" id="securityStatus">Disarmed</div>
+                            <div class="text-xs text-white/50">Security</div>
+                        </div>
+                    </button>
+
+                    <!-- People Home -->
+                    <a href="family-status.html" class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3 hover:bg-white/10 transition cursor-pointer btn-control group">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <div class="text-left min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold" id="peopleHomeCount">0</span>
+                                <span class="text-xs text-white/50">Home</span>
+                            </div>
+                            <div class="text-[10px] text-white/40 truncate" id="peopleHomeNames">Loading...</div>
+                        </div>
+                        <div id="batteryWarningDot" class="hidden w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                    </a>
+
+                    <!-- PC Health Badge -->
+                    <button id="pcHealthBadge" data-action="showView" data-param-view="system" class="glass-light rounded-2xl px-4 py-2 flex items-center gap-3 hover:bg-white/10 transition cursor-pointer btn-control group">
+                        <div class="pc-icon-container w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center group-hover:bg-cyan-500/30 transition">
+                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                            </svg>
+                        </div>
+                        <div class="text-left min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold" id="pcHealthBadgeScore">--</span>
+                                <div id="pcHealthDot" class="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></div>
+                            </div>
+                            <div class="text-[10px] text-white/40">System</div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Right: Connection Status -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div id="connDot" class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></div>
+                        <span id="connStatus" class="text-sm text-white/50">Connected</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content - Views Container -->
+        <main id="main-content" class="flex-1 overflow-hidden relative">
+            <div id="views-container" class="h-full">
+                <!-- Views loaded dynamically via template-loader.js -->
+                <div id="views-loading" class="h-full flex items-center justify-center">
+                    <div class="flex items-center gap-3 glass-light rounded-xl px-6 py-3">
+                        <div class="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-white/70">Loading dashboard...</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals Container -->
+    <div id="modals-container">
+        <!-- Modals loaded dynamically via template-loader.js -->
+    </div>
+
+    <!-- Main Application Script (ES Module) -->
+    <script type="module">
+        import { initEventDelegation, registerBuiltInActions } from './js/event-handler.js';
+        import { loadView, loadModal, preloadModals } from './js/template-loader.js';
+
+        // Initialize event delegation first
+        initEventDelegation();
+
+        // Wait for main.js to load, then register built-in actions
+        import('./js/main.js').then(() => {
+            // Dashboard object should be available on window
+            if (window.dashboard) {
+                registerBuiltInActions(window.dashboard);
+            }
+
+            // Remove loading indicator
+            const loadingEl = document.getElementById('views-loading');
+            if (loadingEl) {
+                loadingEl.remove();
+            }
+        });
+
+        // Preload all modals
+        preloadModals();
+
+        // Load home view immediately (others loaded on demand by showView)
+        loadView('home');
+    </script>
+</body>
+</html>

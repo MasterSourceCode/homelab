@@ -1,0 +1,206 @@
+<!-- Energy Display View - Large Wall Display Dashboard -->
+<div id="view-energy-display" class="h-full hidden overflow-hidden energy-display-view">
+    <!-- Dark Background -->
+    <div class="absolute inset-0 bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950"></div>
+
+    <div class="h-full flex flex-col p-3 relative z-10">
+        <!-- Minimal Header -->
+        <div class="flex items-center justify-between mb-2 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div id="energyDisplayTime" class="text-xl font-mono text-white/40">--:--</div>
+                <div id="gridConnectionStatus" class="flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/20 border border-emerald-500/30">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span class="text-emerald-400 font-medium text-sm">GRID OK</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button data-action="showView" data-param-view="energy" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-cyan-500/20 border border-white/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </button>
+                <button data-action="showHome" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-500/20 border border-white/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- ROW 1: FOUR MASSIVE GAUGES - 50% of screen -->
+        <div class="grid grid-cols-4 gap-3 flex-shrink-0" style="height: 45%;">
+            <!-- Grid Load Gauge -->
+            <div class="gauge-card-large grid-gauge">
+                <div class="gauge-label-lg">GRID</div>
+                <div class="gauge-container-lg">
+                    <svg class="gauge-svg-lg" viewBox="0 0 200 110">
+                        <path d="M 15 95 A 85 85 0 0 1 185 95" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="20" stroke-linecap="round"/>
+                        <path id="gridLoadArc" class="gauge-arc" d="M 15 95 A 85 85 0 0 1 185 95" fill="none" stroke="url(#gridGradient)" stroke-width="20" stroke-linecap="round" stroke-dasharray="267" stroke-dashoffset="267"/>
+                        <defs>
+                            <linearGradient id="gridGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#22c55e"/>
+                                <stop offset="50%" stop-color="#eab308"/>
+                                <stop offset="100%" stop-color="#ef4444"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="gauge-value-lg-container">
+                        <span id="gridLoadValue" class="gauge-value-lg">0</span>
+                        <span class="gauge-unit-lg">W</span>
+                    </div>
+                </div>
+                <div id="gridLoadDirection" class="gauge-status-lg">IMPORTING</div>
+            </div>
+
+            <!-- Solar Production Gauge -->
+            <div class="gauge-card-large solar-gauge">
+                <div class="gauge-label-lg text-amber-400">SOLAR</div>
+                <div class="gauge-container-lg">
+                    <svg class="gauge-svg-lg" viewBox="0 0 200 110">
+                        <path d="M 15 95 A 85 85 0 0 1 185 95" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="20" stroke-linecap="round"/>
+                        <path id="solarProdArc" class="gauge-arc" d="M 15 95 A 85 85 0 0 1 185 95" fill="none" stroke="#f59e0b" stroke-width="20" stroke-linecap="round" stroke-dasharray="267" stroke-dashoffset="267"/>
+                    </svg>
+                    <div class="gauge-value-lg-container">
+                        <span id="solarProdValue" class="gauge-value-lg text-amber-400">0</span>
+                        <span class="gauge-unit-lg text-amber-400/60">W</span>
+                    </div>
+                </div>
+                <div id="solarProdStatus" class="gauge-status-lg text-amber-400/70">GENERATING</div>
+            </div>
+
+            <!-- Battery Output Gauge -->
+            <div class="gauge-card-large battery-gauge">
+                <div class="gauge-label-lg text-emerald-400">BATTERY</div>
+                <div class="gauge-container-lg">
+                    <svg class="gauge-svg-lg" viewBox="0 0 200 110">
+                        <path d="M 15 95 A 85 85 0 0 1 185 95" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="20" stroke-linecap="round"/>
+                        <path id="batteryOutputArc" class="gauge-arc" d="M 15 95 A 85 85 0 0 1 185 95" fill="none" stroke="#10b981" stroke-width="20" stroke-linecap="round" stroke-dasharray="267" stroke-dashoffset="267"/>
+                    </svg>
+                    <div class="gauge-value-lg-container">
+                        <span id="batteryOutputValue" class="gauge-value-lg text-emerald-400">0</span>
+                        <span class="gauge-unit-lg text-emerald-400/60">W</span>
+                    </div>
+                </div>
+                <div id="batteryOutputStatus" class="gauge-status-lg text-emerald-400/70">IDLE</div>
+            </div>
+
+            <!-- Load/Consumption Gauge -->
+            <div class="gauge-card-large load-gauge">
+                <div class="gauge-label-lg text-purple-400">LOAD</div>
+                <div class="gauge-container-lg">
+                    <svg class="gauge-svg-lg" viewBox="0 0 200 110">
+                        <path d="M 15 95 A 85 85 0 0 1 185 95" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="20" stroke-linecap="round"/>
+                        <path id="loadConsArc" class="gauge-arc" d="M 15 95 A 85 85 0 0 1 185 95" fill="none" stroke="#a855f7" stroke-width="20" stroke-linecap="round" stroke-dasharray="267" stroke-dashoffset="267"/>
+                    </svg>
+                    <div class="gauge-value-lg-container">
+                        <span id="loadConsValue" class="gauge-value-lg text-purple-400">0</span>
+                        <span class="gauge-unit-lg text-purple-400/60">W</span>
+                    </div>
+                </div>
+                <div class="gauge-status-lg text-purple-400/70">CONSUMING</div>
+            </div>
+        </div>
+
+        <!-- ROW 2: BATTERY (1/3) + POWER TREND (2/3) -->
+        <div class="grid grid-cols-3 gap-3 flex-shrink-0 mt-3" style="height: 22%;">
+            <!-- Battery Card -->
+            <div class="battery-card rounded-2xl bg-white/[0.02] border border-white/5 p-4 flex flex-col justify-center">
+                <div class="flex items-center gap-3 mb-3">
+                    <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="2" y="7" width="18" height="10" rx="2" stroke-width="2"/>
+                        <path d="M22 10v4" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span id="batteryDisplayPercent" class="text-5xl font-bold text-emerald-400">0%</span>
+                </div>
+                <div class="h-6 bg-white/5 rounded-full overflow-hidden relative mb-2">
+                    <div id="batteryDisplayBar" class="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-emerald-500 rounded-full transition-all duration-700" style="width: 0%"></div>
+                    <div class="absolute w-0.5 h-full bg-red-500/60" style="left: 30%"></div>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span id="batteryDisplayState" class="text-white/50 uppercase font-medium">IDLE</span>
+                    <span id="batteryDisplayPower" class="font-mono text-emerald-400">0W</span>
+                </div>
+            </div>
+
+            <!-- Power Trend Chart -->
+            <div class="col-span-2 trend-card rounded-2xl bg-white/[0.02] border border-white/5 p-3 flex flex-col">
+                <div class="flex items-center justify-between mb-1 flex-shrink-0">
+                    <span class="text-xs text-white/30 uppercase tracking-widest">Power Trend</span>
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span><span class="text-[10px] text-white/40">Solar</span></span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span><span class="text-[10px] text-white/40">Load</span></span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span><span class="text-[10px] text-white/40">Grid</span></span>
+                    </div>
+                </div>
+                <div id="displayTrendChart" class="flex-1 min-h-0" style="min-height: 100px; height: 100%;"></div>
+            </div>
+        </div>
+
+        <!-- ROW 4: ACTIVE LOADS - Pulsating, overflow visible -->
+        <div class="active-loads-row flex-1 mt-2 overflow-visible relative">
+            <div id="activeAppliancesContainer" class="flex items-center justify-center gap-12 h-full overflow-visible">
+                <!-- Geyser -->
+                <div id="applianceGeyser" class="appliance-mega hidden" data-power="0">
+                    <div class="appliance-mega-pulse geyser-pulse"></div>
+                    <div class="appliance-mega-pulse geyser-pulse delay-1"></div>
+                    <div class="appliance-mega-icon geyser-mega-icon">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/>
+                        </svg>
+                    </div>
+                    <div class="appliance-mega-label">GEYSER</div>
+                    <div class="appliance-mega-power">0W</div>
+                </div>
+
+                <!-- Pool Pump -->
+                <button id="appliancePool" class="appliance-mega hidden cursor-pointer" data-power="0"
+                    data-action="toggleEntity" data-param-entity="switch.sonoff_10017f2d90_1">
+                    <div class="appliance-mega-pulse pool-pulse"></div>
+                    <div class="appliance-mega-pulse pool-pulse delay-1"></div>
+                    <div class="appliance-mega-icon pool-mega-icon">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        </svg>
+                    </div>
+                    <div class="appliance-mega-label">POOL</div>
+                    <div class="appliance-mega-power">0W</div>
+                </button>
+
+                <!-- Washing Machine -->
+                <div id="applianceWasher" class="appliance-mega hidden" data-power="0">
+                    <div class="appliance-mega-pulse washer-pulse"></div>
+                    <div class="appliance-mega-pulse washer-pulse delay-1"></div>
+                    <div class="appliance-mega-icon washer-mega-icon">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke-width="1.5"/>
+                            <circle cx="12" cy="12" r="6" stroke-width="1.5"/>
+                            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="appliance-mega-label">WASHER</div>
+                    <div class="appliance-mega-power">0W</div>
+                </div>
+
+                <!-- Dishwasher -->
+                <div id="applianceDishwasher" class="appliance-mega hidden" data-power="0">
+                    <div class="appliance-mega-pulse dishwasher-pulse"></div>
+                    <div class="appliance-mega-pulse dishwasher-pulse delay-1"></div>
+                    <div class="appliance-mega-icon dishwasher-mega-icon">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="4" y="2" width="16" height="20" rx="2" stroke-width="1.5"/>
+                            <line x1="4" y1="8" x2="20" y2="8" stroke-width="1.5"/>
+                            <circle cx="12" cy="14" r="3" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="appliance-mega-label">DISHWASHER</div>
+                    <div class="appliance-mega-power">0W</div>
+                </div>
+
+                <!-- No Active Loads -->
+                <div id="noActiveLoads" class="text-2xl text-white/10 font-light tracking-widest">NO MAJOR LOADS</div>
+            </div>
+        </div>
+    </div>
+</div>

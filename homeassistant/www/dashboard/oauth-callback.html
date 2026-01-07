@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authenticating...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0f 0%, #12121a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .spinner {
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #8b5cf6;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="text-white">
+    <div class="glass rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+        <div id="loading" class="space-y-4">
+            <div class="spinner mx-auto"></div>
+            <h2 class="text-xl font-semibold">Authenticating...</h2>
+            <p class="text-white/50 text-sm">Please wait while we complete the sign-in process.</p>
+        </div>
+
+        <div id="success" class="space-y-4 hidden">
+            <div class="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-emerald-400">Successfully Connected!</h2>
+            <p class="text-white/50 text-sm">Google Calendar is now linked. Redirecting...</p>
+        </div>
+
+        <div id="error" class="space-y-4 hidden">
+            <div class="w-16 h-16 mx-auto rounded-full bg-red-500/20 flex items-center justify-center">
+                <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-red-400">Authentication Failed</h2>
+            <p id="errorMessage" class="text-white/50 text-sm">An error occurred during sign-in.</p>
+            <button onclick="window.close()" class="mt-4 px-6 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition">
+                Close Window
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { GOOGLE_OAUTH_CONFIG } from './js/google-oauth-config.js';
+
+        const loadingEl = document.getElementById('loading');
+        const successEl = document.getElementById('success');
+        const errorEl = document.getElementById('error');
+        const errorMsgEl = document.getElementById('errorMessage');
+
+        function showSuccess() {
+            loadingEl.classList.add('hidden');
+            successEl.classList.remove('hidden');
+        }
+
+        function showError(message) {
+            loadingEl.classList.add('hidden');
+            errorEl.classList.remove('hidden');
+            errorMsgEl.textContent = message;
+        }
+
+        async function handleCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const error = urlParams.get('error');
+
+            if (error) {
+                showError(`Google returned an error: ${error}`);
+                return;
+            }
+
+            if (!code) {
+                showError('No authorization code received.');
+                return;
+            }
+
+            try {
+                // Exchange code for tokens
+                const response = await fetch(GOOGLE_OAUTH_CONFIG.tokenEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        code: code,
+                        client_id: GOOGLE_OAUTH_CONFIG.clientId,
+                        client_secret: GOOGLE_OAUTH_CONFIG.clientSecret,
+                        redirect_uri: GOOGLE_OAUTH_CONFIG.redirectUri,
+                        grant_type: 'authorization_code'
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error_description || 'Token exchange failed');
+                }
+
+                const tokens = await response.json();
+
+                // Store tokens
+                const tokenData = {
+                    access_token: tokens.access_token,
+                    refresh_token: tokens.refresh_token,
+                    expires_at: Date.now() + (tokens.expires_in * 1000),
+                    token_type: tokens.token_type
+                };
+
+                localStorage.setItem('google_calendar_tokens', JSON.stringify(tokenData));
+
+                showSuccess();
+
+                // Redirect back to dashboard after 1.5 seconds
+                setTimeout(() => {
+                    // Try to redirect to the original location, or default to dashboard
+                    const returnUrl = localStorage.getItem('oauth_return_url');
+                    localStorage.removeItem('oauth_return_url');
+
+                    if (returnUrl) {
+                        // Use stored return URL (could be mobile.html or index.html)
+                        // Keep on same host (Nabu Casa) for security
+                        if (returnUrl.includes('mobile.html')) {
+                            window.location.href = '/local/dashboard/mobile.html';
+                        } else {
+                            window.location.href = '/local/dashboard/index.html';
+                        }
+                    } else {
+                        window.location.href = '/local/dashboard/index.html';
+                    }
+                }, 1500);
+
+            } catch (err) {
+                console.error('OAuth error:', err);
+                showError(err.message || 'Failed to complete authentication.');
+            }
+        }
+
+        // Run on page load
+        handleCallback();
+    </script>
+</body>
+</html>

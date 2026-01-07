@@ -1,0 +1,153 @@
+<!-- Media Portal View Template -->
+<div id="view-media" class="h-full hidden media-view">
+    <!-- Cinematic Backdrop -->
+    <div id="mediaBackdrop" class="media-backdrop"></div>
+    <div class="media-backdrop-overlay"></div>
+
+    <div class="h-full flex flex-col relative z-10">
+        <!-- Header -->
+        <div class="media-header flex items-center justify-between px-6 py-4">
+            <!-- Left: Title & Device Selector -->
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center border border-red-500/30">
+                        <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Media Portal</h2>
+                        <div id="mediaDeviceStatus" class="text-white/50 text-sm">Stream to Living Room</div>
+                    </div>
+                </div>
+
+                <!-- Device Display (Living Room Fire TV) -->
+                <div class="glass-light rounded-xl px-4 py-2 flex items-center gap-3">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span id="selectedDeviceName" class="text-white font-medium">Living Room Fire TV</span>
+                    <div id="device-dot-living_room" class="w-2 h-2 rounded-full bg-white/30"></div>
+                </div>
+            </div>
+
+            <!-- Right: Cinema Mode + Close -->
+            <div class="flex items-center gap-3">
+                <button id="mediaCinemaBtn" data-action="toggleCinemaMode"
+                    class="media-cinema-btn glass-light rounded-xl px-4 py-2 flex items-center gap-3 hover:bg-white/10 transition">
+                    <svg class="w-5 h-5 cinema-icon text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                    <span class="text-white/80 text-sm">Cinema Mode</span>
+                    <div id="mediaCinemaIndicator" class="w-2 h-2 rounded-full bg-white/30"></div>
+                </button>
+
+                <button data-action="showHome" class="glass-light rounded-xl p-3 hover:bg-white/10 transition">
+                    <svg class="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-y-auto px-6 pb-6 no-scrollbar">
+            <!-- Continue Watching -->
+            <div id="continueWatchingSection" class="media-continue-section hidden">
+                <h3 class="media-section-title">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    Continue Watching
+                </h3>
+                <div id="continueWatchingRow" class="media-continue-row"></div>
+            </div>
+
+            <!-- Library Section -->
+            <div class="mt-6 media-library-section">
+                <h3 class="media-section-title mb-4">
+                    <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                    New Releases
+                </h3>
+                <!-- Library Tabs -->
+                <div id="libraryTabs" class="library-tabs"></div>
+                <!-- Poster Grid -->
+                <div id="mediaPosterGrid" class="media-poster-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Show Detail Modal -->
+    <div id="mediaDetailModal" class="media-detail-modal hidden">
+        <div class="media-detail-backdrop" data-action="closeShowDetail"></div>
+        <div class="media-detail-container">
+            <!-- Hero Backdrop -->
+            <div id="mediaDetailHero" class="media-detail-hero"></div>
+
+            <!-- Close Button -->
+            <button data-action="closeShowDetail" class="media-detail-close">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+
+            <!-- Content -->
+            <div class="media-detail-content">
+                <!-- Service Badge -->
+                <span id="mediaDetailService" class="inline-block px-3 py-1 rounded-full text-white text-xs font-bold mb-3">Netflix</span>
+
+                <h2 id="mediaDetailTitle" class="media-detail-title">Show Title</h2>
+
+                <!-- Tagline -->
+                <p id="mediaDetailTagline" class="media-detail-tagline"></p>
+
+                <div class="media-detail-meta">
+                    <span id="mediaDetailYear">2024</span>
+                    <span class="dot"></span>
+                    <span id="mediaDetailRating">TV-14</span>
+                    <span class="dot"></span>
+                    <span id="mediaDetailDuration">1h 30m</span>
+                    <span id="mediaDetailImdb" class="media-imdb-badge">
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        <span id="mediaDetailImdbScore">8.5</span>
+                    </span>
+                </div>
+
+                <div id="mediaDetailGenres" class="media-detail-genres"></div>
+
+                <!-- Overview -->
+                <p id="mediaDetailOverview" class="media-detail-overview"></p>
+
+                <!-- Cast & Crew -->
+                <div id="mediaDetailCredits" class="media-detail-credits">
+                    <div id="mediaDetailDirector" class="media-credit-row"></div>
+                    <div id="mediaDetailCast" class="media-credit-row"></div>
+                </div>
+
+                <!-- Actions -->
+                <div class="media-detail-actions">
+                    <button data-action="playMedia" class="media-play-btn">
+                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <span id="mediaPlayBtnText">Play</span>
+                    </button>
+                    <button id="mediaTrailerBtn" data-action="playTrailer" class="media-trailer-btn hidden">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        <span>Trailer</span>
+                    </button>
+                </div>
+
+                <!-- Episodes (Series only) -->
+                <div id="mediaEpisodeSection" class="media-episode-section hidden">
+                    <div class="media-season-selector">
+                        <select id="mediaSeasonSelect" data-change-action="selectSeason" class="media-season-select"></select>
+                    </div>
+                    <div id="mediaEpisodeGrid" class="media-episode-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

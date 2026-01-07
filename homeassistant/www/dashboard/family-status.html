@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Family</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#0a0a0f',
+                            800: '#12121a',
+                            700: '#1a1a24',
+                            600: '#22222e',
+                            500: '#2a2a38',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/family-status.css">
+</head>
+<body class="bg-dark-900 text-white font-sans min-h-screen overflow-x-hidden">
+    <!-- Ambient Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px]"></div>
+    </div>
+
+    <!-- Connection Modal -->
+    <div id="connectModal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop">
+        <div class="glass rounded-3xl p-8 max-w-md w-full mx-4 slide-up">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold">Family Dashboard</h2>
+                <p class="text-white/50 mt-2">Enter your access token to connect</p>
+            </div>
+            <div class="space-y-4">
+                <input type="password" id="haToken" placeholder="Long-lived access token"
+                    class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-500 focus:outline-none transition">
+                <button onclick="connectHA()"
+                    class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 font-semibold hover:opacity-90 transition">
+                    Connect
+                </button>
+                <p id="errorMsg" class="text-red-400 text-sm text-center hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="relative z-10 min-h-screen flex flex-col hidden">
+        <!-- Header -->
+        <header class="glass border-b border-white/5 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="index.html" class="flex items-center gap-4 hover:opacity-80 transition">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">Family</h1>
+                        <p class="text-white/40 text-sm">Who's home & daily activity</p>
+                    </div>
+                </a>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <div class="text-2xl font-bold" id="timeDisplay">--:--</div>
+                        <div class="text-white/40 text-sm" id="dateDisplay">Loading...</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div id="connDot" class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></div>
+                        <span id="connStatus" class="text-sm text-white/50">Connected</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <!-- Battery Alerts (shown when someone has low battery) -->
+            <div id="batteryAlerts" class="mb-6 space-y-3"></div>
+
+            <!-- Who's Home Summary -->
+            <div class="glass-light rounded-2xl p-4 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl font-bold" id="homeCount">0</span>
+                                <span class="text-white/50">home</span>
+                            </div>
+                            <div class="text-sm text-white/40" id="homeNames">Loading...</div>
+                        </div>
+                    </div>
+                    <div id="homeAvatars" class="flex -space-x-3"></div>
+                </div>
+            </div>
+
+            <!-- Family Cards Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="familyCards"></div>
+
+            <!-- Steps Competition -->
+            <div class="glass rounded-2xl p-5 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="font-semibold">Today's Steps</h2>
+                            <p class="text-sm text-white/40">Daily competition</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-amber-400" id="totalSteps">0</div>
+                        <div class="text-xs text-white/40">family total</div>
+                    </div>
+                </div>
+                <div id="stepsLeaderboard" class="space-y-2"></div>
+            </div>
+
+            <!-- Leaderboards Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Floors/Stairs Competition -->
+                <div class="glass rounded-2xl p-5 hover:shadow-xl transition-shadow duration-300">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center relative overflow-hidden">
+                                <svg class="w-5 h-5 text-blue-400 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                                </svg>
+                                <div class="absolute inset-0 bg-blue-400/20 animate-pulse"></div>
+                            </div>
+                            <div>
+                                <h2 class="font-semibold">Floors Climbed</h2>
+                                <p class="text-sm text-white/40">Stair master challenge</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-blue-400" id="totalFloors">0</div>
+                            <div class="text-xs text-white/40">family total</div>
+                        </div>
+                    </div>
+                    <div id="floorsLeaderboard" class="space-y-2"></div>
+                </div>
+
+                <!-- Distance Competition -->
+                <div class="glass rounded-2xl p-5 hover:shadow-xl transition-shadow duration-300">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center relative overflow-hidden">
+                                <svg class="w-5 h-5 text-emerald-400 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                                </svg>
+                                <div class="absolute inset-0 bg-emerald-400/20 animate-pulse"></div>
+                            </div>
+                            <div>
+                                <h2 class="font-semibold">Distance Traveled</h2>
+                                <p class="text-sm text-white/40">Walking & running</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-emerald-400" id="totalDistance">0 km</div>
+                            <div class="text-xs text-white/40">family total</div>
+                        </div>
+                    </div>
+                    <div id="distanceLeaderboard" class="space-y-2"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="glass border-t border-white/5 px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4 text-sm text-white/40">
+                    <span>Last updated: <span id="lastUpdate">--:--</span></span>
+                </div>
+                <a href="index.html" class="glass-light rounded-xl px-4 py-2 text-sm hover:bg-white/10 transition">
+                    Back to Dashboard
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/family-status.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!-- All Lights Modal Template -->
+<div id="allLightsModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 modal-backdrop" data-action="closeAllLightsModal"></div>
+    <div class="absolute bottom-0 left-0 right-0 glass rounded-t-3xl p-6 slide-up max-h-[80vh] overflow-y-auto no-scrollbar">
+        <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4"></div>
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold">All Lights</h2>
+                <p id="allLightsCount" class="text-white/50">0 lights on</p>
+            </div>
+            <button data-action="allLightsOff" class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 font-medium hover:bg-red-500/30 transition btn-control">
+                All Off
+            </button>
+        </div>
+        <div id="allLightsGrid" class="grid grid-cols-4 gap-4"></div>
+    </div>
+</div>

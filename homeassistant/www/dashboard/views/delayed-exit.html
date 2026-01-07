@@ -1,0 +1,152 @@
+<!-- Delayed Exit Overlay - Futuristic countdown timer for alarm arming -->
+<div id="delayedExitOverlay" class="delayed-exit-overlay hidden">
+    <!-- Backdrop with blur -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-xl"></div>
+
+    <!-- Animated background particles -->
+    <div class="delayed-exit-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Content Container -->
+    <div class="relative z-10 h-full flex flex-col items-center justify-center p-8">
+
+        <!-- MODE SELECTION VIEW -->
+        <div id="exitModeSelection" class="w-full max-w-4xl">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-extralight tracking-[0.3em] text-white/90 mb-3">DELAYED EXIT</h1>
+                <p class="text-lg text-white/40 tracking-wider">Select arming mode - 3 minute countdown will begin</p>
+            </div>
+
+            <!-- Mode Buttons -->
+            <div class="grid grid-cols-3 gap-6">
+                <!-- Arm Away -->
+                <button data-action="selectExitMode" data-param-mode="arm_away"
+                    class="exit-mode-btn group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8 transition-all duration-500 hover:border-red-500/50 hover:bg-red-500/10">
+                    <div class="exit-mode-glow bg-gradient-to-br from-red-500/20 to-orange-500/20"></div>
+                    <div class="relative z-10 flex flex-col items-center gap-4">
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform duration-300">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xl font-bold text-white tracking-wider mb-1">ARM AWAY</div>
+                            <div class="text-sm text-white/40">Full protection</div>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Arm Stay -->
+                <button data-action="selectExitMode" data-param-mode="arm_home"
+                    class="exit-mode-btn group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8 transition-all duration-500 hover:border-amber-500/50 hover:bg-amber-500/10">
+                    <div class="exit-mode-glow bg-gradient-to-br from-amber-500/20 to-yellow-500/20"></div>
+                    <div class="relative z-10 flex flex-col items-center gap-4">
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform duration-300">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xl font-bold text-white tracking-wider mb-1">ARM STAY</div>
+                            <div class="text-sm text-white/40">Perimeter only</div>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- Dog Mode -->
+                <button data-action="selectExitMode" data-param-mode="dog_mode"
+                    class="exit-mode-btn group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8 transition-all duration-500 hover:border-cyan-500/50 hover:bg-cyan-500/10">
+                    <div class="exit-mode-glow bg-gradient-to-br from-cyan-500/20 to-blue-500/20"></div>
+                    <div class="relative z-10 flex flex-col items-center gap-4">
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30 group-hover:scale-110 transition-transform duration-300">
+                            <svg class="w-10 h-10" viewBox="0 0 256 256" fill="currentColor">
+                                <path d="M240,108a28,28,0,1,1-28-28A28.1,28.1,0,0,1,240,108ZM72,108a28,28,0,1,0-28,28A28.1,28.1,0,0,0,72,108ZM92,88A28,28,0,1,0,64,60,28.1,28.1,0,0,0,92,88Zm72,0a28,28,0,1,0-28-28A28.1,28.1,0,0,0,164,88Zm23.1,60.8a35.3,35.3,0,0,1-16.9-21.1,43.9,43.9,0,0,0-84.4,0A35.5,35.5,0,0,1,69,148.8,40,40,0,0,0,88,224a40.5,40.5,0,0,0,15.5-3.1,64.2,64.2,0,0,1,48.9-.1A39.6,39.6,0,0,0,168,224a40,40,0,0,0,19.1-75.2Z"/>
+                            </svg>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xl font-bold text-white tracking-wider mb-1">DOG MODE</div>
+                            <div class="text-sm text-white/40">AI person detection</div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Cancel Button -->
+            <div class="mt-12 text-center">
+                <button data-action="cancelDelayedExit"
+                    class="px-8 py-3 rounded-xl border border-white/20 text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 tracking-wider">
+                    CANCEL
+                </button>
+            </div>
+        </div>
+
+        <!-- COUNTDOWN VIEW -->
+        <div id="exitCountdownView" class="hidden w-full max-w-2xl">
+            <!-- Target State Header -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10">
+                    <div id="exitTargetIcon" class="text-white/80">
+                        <!-- Icon inserted by JS -->
+                    </div>
+                    <div class="text-left">
+                        <div id="exitTargetLabel" class="text-xl font-bold text-white tracking-wider">ARM AWAY</div>
+                        <div id="exitTargetDesc" class="text-sm text-white/40">Full perimeter + motion sensors</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Countdown Ring -->
+            <div id="countdownContainer" class="relative flex items-center justify-center">
+                <div id="countdownRing" class="countdown-ring relative">
+                    <!-- Outer glow ring -->
+                    <div class="countdown-glow"></div>
+
+                    <!-- SVG Ring -->
+                    <svg class="countdown-svg" viewBox="0 0 300 300">
+                        <!-- Background ring -->
+                        <circle cx="150" cy="150" r="140" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="4"/>
+                        <!-- Progress ring -->
+                        <circle id="countdownProgress" cx="150" cy="150" r="140" fill="none"
+                            stroke="url(#countdownGradient)" stroke-width="6" stroke-linecap="round"
+                            transform="rotate(-90 150 150)"
+                            style="stroke-dasharray: 879.6; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear;"/>
+                        <!-- Gradient definition -->
+                        <defs>
+                            <linearGradient id="countdownGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#06b6d4"/>
+                                <stop offset="50%" stop-color="#8b5cf6"/>
+                                <stop offset="100%" stop-color="#ec4899"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+
+                    <!-- Time Display -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <div id="exitCountdownTime" class="countdown-time text-8xl font-extralight tracking-wider text-white">
+                            3:00
+                        </div>
+                        <div class="text-white/30 text-lg tracking-[0.5em] mt-2">UNTIL ARMED</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-12 flex items-center justify-center gap-4">
+                <button data-action="cancelDelayedExit"
+                    class="px-10 py-4 rounded-2xl bg-white/5 border border-white/20 text-white/70 hover:bg-red-500/20 hover:border-red-500/50 hover:text-white transition-all duration-300 tracking-wider text-lg">
+                    CANCEL
+                </button>
+                <button data-action="executeExitNow"
+                    class="px-10 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium hover:from-emerald-400 hover:to-teal-400 transition-all duration-300 tracking-wider text-lg shadow-lg shadow-emerald-500/30">
+                    ARM NOW
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather Test - Real Template</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="css/weather.css">
+    <style>
+        body { background: #0a0a12; min-height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="view-container"></div>
+
+    <script type="module">
+        import { initWeather } from './js/weather.js';
+
+        // Load the actual view template
+        async function loadView() {
+            const response = await fetch('./views/weather.html?v=' + Date.now());
+            const html = await response.text();
+            document.getElementById('view-container').innerHTML = html;
+
+            // Remove hidden class from the view
+            const view = document.getElementById('view-weather');
+            if (view) {
+                view.classList.remove('hidden');
+                view.style.height = '100vh';
+            }
+
+            console.log('View template loaded, initializing weather...');
+            initWeather();
+        }
+
+        loadView();
+    </script>
+</body>
+</html>
