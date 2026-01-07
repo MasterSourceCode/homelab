@@ -10,7 +10,7 @@ HA_URL = "http://192.168.x.x:8123"
 HA_USER = "Person1"
 HA_PASSWORD = "YOUR_HA_PASSWORD"
 TUYA_EMAIL = "your-email@example.com"
-TUYA_PASSWORD = "wTNkWGZNd-_37Ua"
+TUYA_PASSWORD = "YOUR_TUYA_PASSWORD"
 
 async def reauth_tuya():
     async with async_playwright() as p:
