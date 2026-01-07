@@ -288,7 +288,7 @@ services:
       - RTSP_FW=true
       - ON_DEMAND=false
       - WB_AUTH=false
-      - WB_IP=192.168.68.77
+      - WB_IP=192.168.x.x
       # Disable web UI to avoid port 5000 conflict with Frigate API
       - WEBUI=false
     volumes:

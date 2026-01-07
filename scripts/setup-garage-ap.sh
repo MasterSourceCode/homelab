@@ -10,7 +10,7 @@ set -e
 AP_SSID="GarageNet"
 AP_PASSWORD="YOUR_AP_PASSWORD"
 AP_CHANNEL=6
-DEYE_IP="192.168.68.122"
+DEYE_IP="192.168.x.x"
 
 echo "============================================"
 echo "Garage WiFi AP Setup for Deye Inverter"
@@ -204,7 +204,7 @@ if systemctl is-active --quiet hostapd; then
     echo "  Next steps:"
     echo "  1. On Deye inverter WiFi settings, connect to '$AP_SSID'"
     echo "  2. Update Home Assistant solarman config:"
-    echo "     - Change host from 192.168.68.122 to 192.168.100.122"
+    echo "     - Change host from 192.168.x.x to 192.168.100.122"
     echo ""
 else
     echo ""

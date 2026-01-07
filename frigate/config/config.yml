@@ -132,7 +132,7 @@ go2rtc:
 
   webrtc:
     candidates:
-      - 192.168.68.77:8555      # Server LAN IP for WebRTC
+      - 192.168.x.x:8555      # Server LAN IP for WebRTC
       - stun:8555               # STUN for NAT traversal
 
   streams:

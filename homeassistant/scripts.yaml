@@ -373,11 +373,11 @@ test_critical_alerts:
       example: "stay"
       default: "stay"
     notify_nico:
-      description: "Send to Nico's phone"
+      description: "Send to Person1's phone"
       example: true
       default: true
     notify_tatiana:
-      description: "Send to Tatiana's phone"
+      description: "Send to Person2's phone"
       example: false
       default: false
   sequence:
@@ -401,9 +401,9 @@ test_critical_alerts:
     - service: logbook.log
       data:
         name: "Critical Alerts Test"
-        message: "Testing critical alerts - Mode: {{ mode | default('stay') }}, Nico: {{ notify_nico | default(true) }}, Tatiana: {{ notify_tatiana | default(false) }}"
+        message: "Testing critical alerts - Mode: {{ mode | default('stay') }}, Person1: {{ notify_nico | default(true) }}, Person2: {{ notify_tatiana | default(false) }}"
 
-    # Send test notification to Nico
+    # Send test notification to Person1
     - if:
         - condition: template
           value_template: "{{ notify_nico | default(true) }}"
@@ -423,7 +423,7 @@ test_critical_alerts:
                 - action: "DISABLE_CRITICAL_ALERTS"
                   title: "Disable Alerts"
 
-    # Send test notification to Tatiana
+    # Send test notification to Person2
     - if:
         - condition: template
           value_template: "{{ notify_tatiana | default(false) }}"
@@ -458,7 +458,7 @@ test_critical_alerts:
 # Send critical notification to both phones
 notify_critical_dual:
   alias: "Notify Critical - Both Phones"
-  description: "Send a critical push notification to both Nico and Tatiana"
+  description: "Send a critical push notification to both Person1 and Person2"
   icon: mdi:bell-alert
   fields:
     title:
@@ -556,7 +556,7 @@ notify_security_event:
       default: "person"
   variables:
     camera_name: "{{ camera | replace('_', ' ') | title }}"
-    snapshot_url: "http://192.168.68.77:5003/api/events/{{ event_id }}/snapshot.jpg"
+    snapshot_url: "http://192.168.x.x:5003/api/events/{{ event_id }}/snapshot.jpg"
   sequence:
     - parallel:
         - service: notify.mobile_app_nico

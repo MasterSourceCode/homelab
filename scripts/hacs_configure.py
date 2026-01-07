@@ -5,9 +5,9 @@ import asyncio
 import sys
 from playwright.async_api import async_playwright
 
-HA_URL = "http://192.168.68.77:8123"
-USERNAME = "nico"
-PASSWORD = "Smart33Pant$@123"
+HA_URL = "http://192.168.x.x:8123"
+USERNAME = "person1"
+PASSWORD = "YOUR_HA_PASSWORD"
 
 async def main():
     print("Starting HACS configuration...")

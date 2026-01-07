@@ -197,7 +197,7 @@
 
         <div class="manual-links" id="manualLinks">
             <p>Auto-redirect failed. Choose manually:</p>
-            <a href="http://192.168.68.77:8123/local/dashboard/mobile.html">
+            <a href="http://192.168.x.x:8123/local/dashboard/mobile.html">
                 Local Network
                 <span>Use when on home WiFi</span>
             </a>
@@ -209,9 +209,9 @@
     </div>
 
     <script>
-        const LOCAL_URL = 'http://192.168.68.77:8123/local/dashboard/mobile.html';
+        const LOCAL_URL = 'http://192.168.x.x:8123/local/dashboard/mobile.html';
         const EXTERNAL_URL = 'https://your-instance.ui.nabu.casa/local/dashboard/mobile.html';
-        const LOCAL_TEST_URL = 'http://192.168.68.77:8123/local/dashboard/version.json';
+        const LOCAL_TEST_URL = 'http://192.168.x.x:8123/local/dashboard/version.json';
         const TIMEOUT_MS = 2500;
 
         const statusEl = document.getElementById('status');
@@ -259,7 +259,7 @@
                     // Test with a cache-busted request to the version.json
                     // This works because JSON files return as images with error (but quickly!)
                     // OR we can use a tiny test endpoint
-                    img.src = `http://192.168.68.77:8123/local/dashboard/images/icon-152.png?_t=${Date.now()}`;
+                    img.src = `http://192.168.x.x:8123/local/dashboard/images/icon-152.png?_t=${Date.now()}`;
                 });
 
                 return result;

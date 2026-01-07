@@ -132,33 +132,33 @@ function getWeatherIconConfig(condition) {
 
 // Family members configuration for tracking
 const FAMILY_TRACKERS = {
-    tatiana: {
-        name: 'Tatiana',
+    person2: {
+        name: 'Person2',
         color: '#ec4899',
         tracker: 'device_tracker.tatiana_iphone',
         battery: 'sensor.tatiana_iphone_battery_level',
-        avatar: '/local/dashboard/Tatiana.png'
+        avatar: '/local/dashboard/Person2.png'
     },
-    nico: {
-        name: 'Nico',
+    person1: {
+        name: 'Person1',
         color: '#3b82f6',
-        tracker: 'device_tracker.nico',
+        tracker: 'device_tracker.person1',
         battery: 'sensor.nico_battery_level',
-        avatar: '/local/dashboard/Nico.jpeg'
+        avatar: '/local/dashboard/Person1.jpeg'
     },
-    alexandra: {
-        name: 'Alexandra',
+    child1: {
+        name: 'Child1',
         color: '#a855f7',
         tracker: 'device_tracker.alexandra_iphone',
         battery: 'sensor.alexandra_iphone_battery_level',
-        avatar: '/local/dashboard/Alexandra.png'
+        avatar: '/local/dashboard/Child1.png'
     },
-    mila: {
-        name: 'Mila',
+    child2: {
+        name: 'Child2',
         color: '#14b8a6',
         tracker: 'device_tracker.milas_iphone',
         battery: 'sensor.milas_iphone_battery_level',
-        avatar: '/local/dashboard/Mila.png'
+        avatar: '/local/dashboard/Child2.png'
     }
 };
 
@@ -508,10 +508,10 @@ function updateFamilyGeofence() {
 
     // Family member person entities
     const familyMembers = [
-        { name: 'Nico', entity: 'person.nico' },
-        { name: 'Tatiana', entity: 'person.tatiana' },
-        { name: 'Alexandra', entity: 'person.alexandra' },
-        { name: 'Mila', entity: 'person.mila' }
+        { name: 'Person1', entity: 'person.person1' },
+        { name: 'Person2', entity: 'person.person2' },
+        { name: 'Child1', entity: 'person.child1' },
+        { name: 'Child2', entity: 'person.child2' }
     ];
 
     import('./components.js').then(({ renderFamilyGeofenceItem }) => {

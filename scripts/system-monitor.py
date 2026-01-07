@@ -22,7 +22,7 @@ from datetime import datetime
 MQTT_HOST = "127.0.0.1"
 MQTT_PORT = "1883"
 MQTT_USER = "homeassistant"
-MQTT_PASS = "mqtt_secure_password_2025"
+MQTT_PASS = "YOUR_MQTT_PASSWORD"
 
 # CPU Monitor Settings
 CPU_HIGH_THRESHOLD = 80      # Pause detection when CPU above this

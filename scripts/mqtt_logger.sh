@@ -5,7 +5,7 @@
 LOG_DIR="/opt/homelab/logs"
 LOG_FILE="$LOG_DIR/mqtt_frigate_events.log"
 MQTT_USER="homeassistant"
-MQTT_PASS="mqtt_secure_password_2025"
+MQTT_PASS="YOUR_MQTT_PASSWORD"
 
 mkdir -p "$LOG_DIR"
 

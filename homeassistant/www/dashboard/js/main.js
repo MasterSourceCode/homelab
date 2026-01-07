@@ -111,7 +111,7 @@ if (document.readyState === 'loading') {
 // ============================================
 
 // Hardcoded Home Assistant URL
-const HA_URL = 'http://192.168.68.77:8123';
+const HA_URL = 'http://192.168.x.x:8123';
 
 async function init() {
     // Start clock
@@ -155,7 +155,7 @@ async function init() {
 
 // PC Health Badge (runs independently of the full system view)
 async function startPCHealthBadge() {
-    const PC_HEALTH_API = 'http://192.168.68.77:8765/api/metrics/health';
+    const PC_HEALTH_API = 'http://192.168.x.x:8765/api/metrics/health';
 
     async function updateHealthBadge() {
         try {

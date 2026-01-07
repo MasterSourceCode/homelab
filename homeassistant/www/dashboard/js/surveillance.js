@@ -19,8 +19,8 @@ const SurveillanceDashboard = (function() {
     }
 
     // Configuration with network-aware URLs
-    const LOCAL_API = 'http://192.168.68.77:5003/api';
-    const LOCAL_UI = 'http://192.168.68.77:8971';
+    const LOCAL_API = 'http://192.168.x.x:5003/api';
+    const LOCAL_UI = 'http://192.168.x.x:8971';
     const EXTERNAL_UI = 'https://your-frigate-domain.com';
 
     // Home Assistant proxy configuration for Nabu Casa access
@@ -36,7 +36,7 @@ const SurveillanceDashboard = (function() {
         if (window.location.port === '8123') {
             return window.location.origin;
         }
-        return 'http://192.168.68.77:8123';
+        return 'http://192.168.x.x:8123';
     }
 
     /**

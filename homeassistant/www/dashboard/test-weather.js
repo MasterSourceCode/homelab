@@ -18,7 +18,7 @@ const { chromium } = require('playwright');
     });
 
     // Navigate to test page that loads the REAL view template
-    const url = 'http://192.168.68.77:8123/local/dashboard/test-weather-real.html?v=' + Date.now();
+    const url = 'http://192.168.x.x:8123/local/dashboard/test-weather-real.html?v=' + Date.now();
     console.log('Navigating to:', url);
     await page.goto(url);
     await page.waitForTimeout(6000); // Wait for template load + data fetch

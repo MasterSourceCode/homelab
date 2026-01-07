@@ -15,8 +15,8 @@ import { FRIGATE_LOCAL_URL, FRIGATE_EXTERNAL_URL } from './config.js';
 
 const CONFIG = {
     // Local Frigate access (via CORS proxy)
-    localApiBase: 'http://192.168.68.77:5003/api',
-    localUiBase: 'http://192.168.68.77:8971',
+    localApiBase: 'http://192.168.x.x:5003/api',
+    localUiBase: 'http://192.168.x.x:8971',
 
     // Frigate integration client ID (usually 'frigate' unless custom)
     frigateClientId: 'frigate',
@@ -58,7 +58,7 @@ export function getHaBaseUrl() {
         return window.location.origin;
     }
     // Otherwise use stored HA URL
-    return state.haUrl || 'http://192.168.68.77:8123';
+    return state.haUrl || 'http://192.168.x.x:8123';
 }
 
 /**

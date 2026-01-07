@@ -1775,7 +1775,7 @@
 # NOTE: Old "security_auto_arm_nobody_home" removed - was using unreliable device_tracker
 # Replaced by "auto_arm_downstairs_inactivity" at end of file which uses:
 # - 65 min inactivity check (zones, camera, lights)
-# - Before 20:00: requires both person.nico and person.tatiana away
+# - Before 20:00: requires both person.person1 and person.person2 away
 # - After 20:00: ignores away check (could be in bed)
 
 # Auto-disarm when family arrives (also disables dog mode)
@@ -1785,13 +1785,13 @@
   mode: single
   trigger:
     - platform: state
-      entity_id: device_tracker.nico
+      entity_id: device_tracker.person1
       to: "home"
-      id: nico
+      id: person1
     - platform: state
       entity_id: device_tracker.tatiana_iphone
       to: "home"
-      id: tatiana
+      id: person2
   condition:
     # Must be armed OR dog mode active
     - condition: or
@@ -1806,7 +1806,7 @@
           entity_id: input_boolean.dog_mode
           state: "on"
   variables:
-    person_name: "{{ 'Nico' if trigger.id == 'person1' else 'Tatiana' }}"
+    person_name: "{{ 'Person1' if trigger.id == 'person1' else 'Person2' }}"
     was_armed: "{{ states('alarm_control_panel.alarm_partition_1') in ['armed_away', 'armed_home'] }}"
     was_dog_mode: "{{ is_state('input_boolean.dog_mode', 'on') }}"
   action:
@@ -2500,7 +2500,7 @@
 # AUTO-RECOVERY: Gate Camera (Amcrest) Monitoring
 # ============================================
 # Monitors Frigate camera fps for front_door and alerts if camera offline
-# Camera: Amcrest @ 192.168.68.201
+# Camera: Amcrest @ 192.168.x.x
 
 - id: gate_camera_monitor
   alias: "Auto-Recovery: Gate Camera Monitor"
@@ -2531,7 +2531,7 @@
       data:
         title: "⚠️ Gate Camera Issue"
         message: >
-          Front door camera (Amcrest @ 192.168.68.201) may be offline.
+          Front door camera (Amcrest @ 192.168.x.x) may be offline.
           Current FPS: {{ states('sensor.front_door_camera_fps') }}
           Last detection: {{ states('sensor.front_door_detection_fps') }}
         notification_id: gate_camera_issue
@@ -2551,7 +2551,7 @@
         - service: notify.mobile_app_person1
           data:
             title: "GATE CAMERA OFFLINE"
-            message: "Front door camera has been offline for 5+ minutes. Check Amcrest @ 192.168.68.201"
+            message: "Front door camera has been offline for 5+ minutes. Check Amcrest @ 192.168.x.x"
             data:
               push:
                 sound:
@@ -3144,14 +3144,14 @@
       target:
         entity_id: switch.sonoff_1001eb24e5_1
 
-# Mila Room Motion → Mila Bathroom Light
+# Child2 Room Motion → Child2 Bathroom Light
 - id: dsc_mila_room_motion_bathroom
-  alias: "DSC: Mila Room Motion - Bathroom Light"
-  description: "Turn on Mila bathroom light on bedroom motion at night"
+  alias: "DSC: Child2 Room Motion - Bathroom Light"
+  description: "Turn on Child2 bathroom light on bedroom motion at night"
   mode: restart
   trigger:
     - platform: state
-      entity_id: binary_sensor.alarm_zone_15  # Mila Room
+      entity_id: binary_sensor.alarm_zone_15  # Child2 Room
       to: "on"
   condition:
     - condition: sun
@@ -3167,14 +3167,14 @@
       target:
         entity_id: switch.sonoff_1001eb2228_1
 
-# Alexandra Room Motion → Alexandra Bathroom Light
+# Child1 Room Motion → Child1 Bathroom Light
 - id: dsc_alexandra_room_motion_bathroom
-  alias: "DSC: Alexandra Room Motion - Bathroom Light"
-  description: "Turn on Alexandra bathroom light on bedroom motion at night"
+  alias: "DSC: Child1 Room Motion - Bathroom Light"
+  description: "Turn on Child1 bathroom light on bedroom motion at night"
   mode: restart
   trigger:
     - platform: state
-      entity_id: binary_sensor.alarm_zone_16  # Alexandra
+      entity_id: binary_sensor.alarm_zone_16  # Child1
       to: "on"
   condition:
     - condition: sun
@@ -3271,8 +3271,8 @@
           true
         {% else %}
           {# Daytime: both must be away #}
-          {{ states('person.nico') == 'not_home' and
-             states('person.tatiana') == 'not_home' }}
+          {{ states('person.person1') == 'not_home' and
+             states('person.person2') == 'not_home' }}
         {% endif %}
     # Check if 65 minutes have passed since last activity
     - condition: template
@@ -3301,8 +3301,8 @@
           {% else %}
             unknown
           {% endif %}
-        nico_state: "{{ states('person.nico') }}"
-        tatiana_state: "{{ states('person.tatiana') }}"
+        nico_state: "{{ states('person.person1') }}"
+        tatiana_state: "{{ states('person.person2') }}"
         current_hour: "{{ now().hour }}"
         is_bedtime: "{{ now().hour >= 20 or now().hour < 6 }}"
         kitchen_light1: "{{ states('switch.sonoff_100176c107_1') }}"
@@ -3319,8 +3319,8 @@
           | Last activity: {{ last_activity_time }}
           | Mins since activity: {{ mins_since_activity }}
           | Hour: {{ current_hour }} (bedtime={{ is_bedtime }})
-          | Nico: {{ nico_state }}
-          | Tatiana: {{ tatiana_state }}
+          | Person1: {{ nico_state }}
+          | Person2: {{ tatiana_state }}
           | Lights - Kitchen: {{ kitchen_light1 }}/{{ kitchen_light2 }}/{{ kitchen_light3 }}
           | Lights - Living: {{ living_light1 }}/{{ living_light2 }}
           | Lights - Garage: {{ garage_light }}
@@ -3338,8 +3338,8 @@
           - Bedtime mode: {{ is_bedtime }}
 
           **People:**
-          - Nico: {{ nico_state }}
-          - Tatiana: {{ tatiana_state }}
+          - Person1: {{ nico_state }}
+          - Person2: {{ tatiana_state }}
 
           **Lights state:**
           - Kitchen: {{ kitchen_light1 }}, {{ kitchen_light2 }}, {{ kitchen_light3 }}
@@ -3371,7 +3371,7 @@
         title: "🏠 Auto-Armed: No Activity"
         message: >
           Last activity: {{ last_activity_time }} ({{ mins_since_activity }} mins ago)
-          {% if is_bedtime %}Bedtime mode ({{ current_hour }}:xx){% else %}Nico: {{ nico_state }}, Tatiana: {{ tatiana_state }}{% endif %}
+          {% if is_bedtime %}Bedtime mode ({{ current_hour }}:xx){% else %}Person1: {{ nico_state }}, Person2: {{ tatiana_state }}{% endif %}
           Lights off, alarm armed (Stay).
         data:
           push:
@@ -3452,7 +3452,7 @@
         filename: "/config/www/snapshots/critical_alert_{{ camera }}.jpg"
     - delay:
         seconds: 2
-    # Send notification to Nico if enabled
+    # Send notification to Person1 if enabled
     - if:
         - condition: state
           entity_id: input_boolean.critical_alerts_notify_nico
@@ -3478,7 +3478,7 @@
                   title: "View Cameras"
                 - action: "DISABLE_CRITICAL_ALERTS"
                   title: "Disable Alerts"
-    # Send notification to Tatiana if enabled
+    # Send notification to Person2 if enabled
     - if:
         - condition: state
           entity_id: input_boolean.critical_alerts_notify_tatiana
@@ -3538,11 +3538,11 @@
       to: "on"
       id: outside
     - platform: state
-      entity_id: binary_sensor.alarm_zone_22  # Alexandra Balcony
+      entity_id: binary_sensor.alarm_zone_22  # Child1 Balcony
       to: "on"
       id: outside
     - platform: state
-      entity_id: binary_sensor.alarm_zone_27  # Alexandra Balcony 2
+      entity_id: binary_sensor.alarm_zone_27  # Child1 Balcony 2
       to: "on"
       id: outside
     - platform: state
@@ -3572,11 +3572,11 @@
       to: "on"
       id: upstairs
     - platform: state
-      entity_id: binary_sensor.alarm_zone_15  # Mila Room
+      entity_id: binary_sensor.alarm_zone_15  # Child2 Room
       to: "on"
       id: upstairs
     - platform: state
-      entity_id: binary_sensor.alarm_zone_16  # Alexandra
+      entity_id: binary_sensor.alarm_zone_16  # Child1
       to: "on"
       id: upstairs
   condition:
@@ -3603,7 +3603,7 @@
         zone_entity: "{{ trigger.entity_id }}"
         zone_type: "{{ trigger.id }}"
         alert_mode: "{{ states('input_select.critical_alerts_mode') }}"
-    # Send notification to Nico if enabled
+    # Send notification to Person1 if enabled
     - if:
         - condition: state
           entity_id: input_boolean.critical_alerts_notify_nico
@@ -3628,7 +3628,7 @@
                   title: "View Cameras"
                 - action: "DISABLE_CRITICAL_ALERTS"
                   title: "Disable Alerts"
-    # Send notification to Tatiana if enabled
+    # Send notification to Person2 if enabled
     - if:
         - condition: state
           entity_id: input_boolean.critical_alerts_notify_tatiana
@@ -3705,7 +3705,7 @@
       continue_on_error: true
     - delay:
         seconds: 1
-    # Send notification to Nico if enabled
+    # Send notification to Person1 if enabled
     - if:
         - condition: state
           entity_id: input_boolean.critical_alerts_notify_nico
@@ -3728,7 +3728,7 @@
                   title: "View Cameras"
                 - action: "DISABLE_CRITICAL_ALERTS"
                   title: "Disable Alerts"
-    # Send notification to Tatiana if enabled
+    # Send notification to Person2 if enabled
     - if:
         - condition: state
           entity_id: input_boolean.critical_alerts_notify_tatiana
@@ -3846,11 +3846,11 @@
           - switch.sonoff_1001eb21e6_1  # Hallway
           - switch.garage_switch        # Garage
           # Upper Floor (excluding main bedroom)
-          - switch.sonoff_1001508fc5_1  # Alexandra Bedroom 1
-          - switch.sonoff_1001508fc5_2  # Alexandra Bedroom 2
-          - switch.sonoff_1001eb1d06_1  # Alexandra Bathroom
-          - switch.mila_bedroom_light   # Mila Bedroom
-          - switch.sonoff_1001eb2228_1  # Mila Bathroom
+          - switch.sonoff_1001508fc5_1  # Child1 Bedroom 1
+          - switch.sonoff_1001508fc5_2  # Child1 Bedroom 2
+          - switch.sonoff_1001eb1d06_1  # Child1 Bathroom
+          - switch.mila_bedroom_light   # Child2 Bedroom
+          - switch.sonoff_1001eb2228_1  # Child2 Bathroom
           - switch.sonoff_1001eb24e5_1  # Upstairs Hall
 
     # Turn off geyser
@@ -3871,12 +3871,12 @@
 
 # ============================================
 # PERSON DETECTION - CRITICAL ALERTS (ARMED)
-# Enhanced alerts to both Tatiana and Nico with images
+# Enhanced alerts to both Person2 and Person1 with images
 # ============================================
 
 - id: person_detection_armed_critical_dual_notify
   alias: "CRITICAL: Person Detected While Armed - Dual Notify"
-  description: "Send critical alerts with images to both Tatiana and Nico when person detected while alarm armed (Frigate confidence >60%)"
+  description: "Send critical alerts with images to both Person2 and Person1 when person detected while alarm armed (Frigate confidence >60%)"
   mode: queued
   max: 5
   trigger:
@@ -3943,7 +3943,7 @@
         {% set last_trigger = state_attr('automation.critical_person_detected_while_armed_dual_notify', last_trigger_key) %}
         {{ last_trigger is none or (now().timestamp() - last_trigger) > 60 }}
   action:
-    # Send to BOTH Tatiana and Nico immediately (NO AI ANALYSIS)
+    # Send to BOTH Person2 and Person1 immediately (NO AI ANALYSIS)
     - service: notify.mobile_app_person2
       data:
         title: "🚨 PERSON DETECTED: {{ camera_name }}"
@@ -3955,7 +3955,7 @@
               critical: 1
               volume: 1.0
             interruption-level: critical
-          image: "http://192.168.68.77:5003/api/events/{{ event_id }}/snapshot.jpg"
+          image: "http://192.168.x.x:5003/api/events/{{ event_id }}/snapshot.jpg"
           actions:
             - action: "PANIC_MODE"
               title: "🚨 PANIC"
@@ -3977,7 +3977,7 @@
               critical: 1
               volume: 1.0
             interruption-level: critical
-          image: "http://192.168.68.77:5003/api/events/{{ event_id }}/snapshot.jpg"
+          image: "http://192.168.x.x:5003/api/events/{{ event_id }}/snapshot.jpg"
           actions:
             - action: "PANIC_MODE"
               title: "🚨 PANIC"
@@ -4003,7 +4003,7 @@
       event_data:
         action: "PANIC_MODE"
   variables:
-    snapshot_url: "http://192.168.68.77:5003/api/events/{{ trigger.event.data.event_id | default('latest') }}/snapshot.jpg"
+    snapshot_url: "http://192.168.x.x:5003/api/events/{{ trigger.event.data.event_id | default('latest') }}/snapshot.jpg"
     emergency_message: "🚨 ACTIVE INTRUDER ALERT!\n\nPlease help - active intruder detected at:\n📍 13 Townsend Road, Townsend Estate Unit 1\n\nPolice: 10111\nSecurity: Armed Response needed NOW"
     whatsapp_text: "Please help active intruder, 13 Townsend Road, Townsend Estate Unit 1"
   action:
@@ -4027,11 +4027,11 @@
           - switch.sonoff_1001eb21e6_1  # Hallway
           - switch.garage_switch        # Garage
           # Upper Floor
-          - switch.sonoff_1001508fc5_1  # Alexandra Bedroom 1
-          - switch.sonoff_1001508fc5_2  # Alexandra Bedroom 2
-          - switch.sonoff_1001eb1d06_1  # Alexandra Bathroom
-          - switch.mila_bedroom_light   # Mila Bedroom
-          - switch.sonoff_1001eb2228_1  # Mila Bathroom
+          - switch.sonoff_1001508fc5_1  # Child1 Bedroom 1
+          - switch.sonoff_1001508fc5_2  # Child1 Bedroom 2
+          - switch.sonoff_1001eb1d06_1  # Child1 Bathroom
+          - switch.mila_bedroom_light   # Child2 Bedroom
+          - switch.sonoff_1001eb2228_1  # Child2 Bathroom
           - switch.sonoff_1001eb24e5_1  # Upstairs Hall
           # Main Bedroom (NOW INCLUDED FOR PANIC)
           - switch.sonoff_1001e80ff3_1  # Main Bedroom 1
@@ -4061,7 +4061,7 @@
               title: "Share to WhatsApp"
               uri: "whatsapp://send?text={{ whatsapp_text | urlencode }}"
 
-    # 5. NOTIFY OTHER PHONE (if Tatiana pressed, notify Nico and vice versa)
+    # 5. NOTIFY OTHER PHONE (if Person2 pressed, notify Person1 and vice versa)
     - service: notify.mobile_app_person2
       data:
         title: "🚨 PANIC MODE ACTIVATED"

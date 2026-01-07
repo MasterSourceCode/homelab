@@ -2016,10 +2016,10 @@
 .event-color-bar.default { background: linear-gradient(180deg, #8b5cf6, #7c3aed); }
 
 /* Assignee Colors */
-.assignee-tatiana { background: linear-gradient(135deg, #ec4899, #db2777); }
-.assignee-nico { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-.assignee-alexandra { background: linear-gradient(135deg, #a855f7, #9333ea); }
-.assignee-mila { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+.assignee-person2 { background: linear-gradient(135deg, #ec4899, #db2777); }
+.assignee-person1 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.assignee-child1 { background: linear-gradient(135deg, #a855f7, #9333ea); }
+.assignee-child2 { background: linear-gradient(135deg, #14b8a6, #0d9488); }
 .assignee-everyone { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
 /* ============================================
@@ -4090,35 +4090,35 @@ button.appliance-mega:active {
     background: rgba(34, 211, 238, 0.25);
 }
 
-/* Alexandra Buttons - Pink */
-.alexa-btn-alexandra {
+/* Child1 Buttons - Pink */
+.alexa-btn-child1 {
     border-color: rgba(236, 72, 153, 0.4);
     color: #ec4899;
 }
 
-.alexa-btn-alexandra:hover {
+.alexa-btn-child1:hover {
     background: rgba(236, 72, 153, 0.15);
     border-color: rgba(236, 72, 153, 0.6);
     box-shadow: 0 0 20px rgba(236, 72, 153, 0.2);
 }
 
-.alexa-btn-alexandra:active {
+.alexa-btn-child1:active {
     background: rgba(236, 72, 153, 0.25);
 }
 
-/* Mila Buttons - Purple */
-.alexa-btn-mila {
+/* Child2 Buttons - Purple */
+.alexa-btn-child2 {
     border-color: rgba(168, 85, 247, 0.4);
     color: #a855f7;
 }
 
-.alexa-btn-mila:hover {
+.alexa-btn-child2:hover {
     background: rgba(168, 85, 247, 0.15);
     border-color: rgba(168, 85, 247, 0.6);
     box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
 }
 
-.alexa-btn-mila:active {
+.alexa-btn-child2:active {
     background: rgba(168, 85, 247, 0.25);
 }
 

@@ -6,10 +6,10 @@ import asyncio
 import sys
 from playwright.async_api import async_playwright
 
-HA_URL = "http://192.168.68.77:8123"
-HA_USER = "Nico"
-HA_PASSWORD = "Smart33Pant$@123"
-TUYA_EMAIL = "nico@igovernance.co.za"
+HA_URL = "http://192.168.x.x:8123"
+HA_USER = "Person1"
+HA_PASSWORD = "YOUR_HA_PASSWORD"
+TUYA_EMAIL = "person1@igovernance.co.za"
 TUYA_PASSWORD = "wTNkWGZNd-_37Ua"
 
 async def reauth_tuya():

@@ -7,16 +7,16 @@
 // NETWORK CONFIGURATION
 // ============================================
 
-export const FRIGATE_LOCAL_URL = 'http://192.168.68.77:5003';
+export const FRIGATE_LOCAL_URL = 'http://192.168.x.x:5003';
 export const FRIGATE_EXTERNAL_URL = 'https://your-frigate-domain.com';
-export const DEFAULT_LOCAL_HA_URL = 'http://192.168.68.77:8123';
+export const DEFAULT_LOCAL_HA_URL = 'http://192.168.x.x:8123';
 
 // ============================================
 // GOOGLE CALENDAR CONFIGURATION
 // ============================================
 
 export const GOOGLE_CALENDAR_API_KEY = 'YOUR_GOOGLE_API_KEY';
-export const GOOGLE_CALENDAR_ID = 'YOUR_CALENDAR_ID';
+export const GOOGLE_CALENDAR_ID = 'familyfamilynames@gmail.com';
 export const CALENDAR_TIMEZONE = 'Africa/Johannesburg';
 
 // ============================================
@@ -163,18 +163,18 @@ export const ROOMS = {
             name: 'Main Bedroom',
             icon: 'bed',
             color: 'bg-indigo-500',
-            image: '/local/dashboard/Tatiana.png',
+            image: '/local/dashboard/Person2.png',
             lights: ['switch.sonoff_1001e80ff3_1', 'switch.sonoff_1001e80ff3_2', 'switch.sonoff_1001e80ff3_3'],
             zones: [
                 { name: 'Bedroom', lights: ['switch.sonoff_1001e80ff3_1', 'switch.sonoff_1001e80ff3_2', 'switch.sonoff_1001e80ff3_3'] },
             ]
         },
         {
-            id: 'alexandra',
-            name: "Alexandra's Room",
+            id: 'child1',
+            name: "Child1's Room",
             icon: 'star',
             color: 'bg-pink-500',
-            image: '/local/dashboard/Alexandra.png',
+            image: '/local/dashboard/Child1.png',
             lights: ['switch.sonoff_1001508fc5_1', 'switch.sonoff_1001508fc5_2', 'switch.sonoff_1001eb1d06_1'],
             zones: [
                 { name: 'Bedroom', lights: ['switch.sonoff_1001508fc5_1', 'switch.sonoff_1001508fc5_2'] },
@@ -182,11 +182,11 @@ export const ROOMS = {
             ]
         },
         {
-            id: 'mila',
-            name: "Mila's Room",
+            id: 'child2',
+            name: "Child2's Room",
             icon: 'heart',
             color: 'bg-rose-500',
-            image: '/local/dashboard/Mila.png',
+            image: '/local/dashboard/Child2.png',
             lights: ['switch.mila_bedroom_light', 'switch.sonoff_1001eb2228_1'],
             zones: [
                 { name: 'Bedroom', lights: ['switch.mila_bedroom_light'] },
@@ -216,8 +216,8 @@ export const ZONES = [
     { id: 'binary_sensor.alarm_zone_12', faultId: 'binary_sensor.alarm_zone_12_fault', name: 'Garage', icon: 'garage', camera: 'wyze_garage', location: 'interior', zoneNum: 12 },
     { id: 'binary_sensor.alarm_zone_24', faultId: 'binary_sensor.alarm_zone_24_fault', name: 'TV Room', icon: 'tv', location: 'interior', zoneNum: 24 },
     { id: 'binary_sensor.alarm_zone_14', faultId: 'binary_sensor.alarm_zone_14_fault', name: 'Main Bedroom', icon: 'bed', location: 'interior', zoneNum: 14 },
-    { id: 'binary_sensor.alarm_zone_15', faultId: 'binary_sensor.alarm_zone_15_fault', name: 'Mila Room', icon: 'child', location: 'interior', zoneNum: 15 },
-    { id: 'binary_sensor.alarm_zone_16', faultId: 'binary_sensor.alarm_zone_16_fault', name: 'Alexandra', icon: 'child', location: 'interior', zoneNum: 16 },
+    { id: 'binary_sensor.alarm_zone_15', faultId: 'binary_sensor.alarm_zone_15_fault', name: 'Child2 Room', icon: 'child', location: 'interior', zoneNum: 15 },
+    { id: 'binary_sensor.alarm_zone_16', faultId: 'binary_sensor.alarm_zone_16_fault', name: 'Child1', icon: 'child', location: 'interior', zoneNum: 16 },
     // Exterior zones
     { id: 'binary_sensor.alarm_zone_7', faultId: 'binary_sensor.alarm_zone_7_fault', name: 'Outside Scullery', icon: 'exterior', location: 'exterior', zoneNum: 7 },
     { id: 'binary_sensor.alarm_zone_17', faultId: 'binary_sensor.alarm_zone_17_fault', name: 'Outside Scullery 2', icon: 'exterior', location: 'exterior', zoneNum: 17 },
@@ -225,8 +225,8 @@ export const ZONES = [
     { id: 'binary_sensor.alarm_zone_18', faultId: 'binary_sensor.alarm_zone_18_fault', name: 'Pool Pump', icon: 'pump', camera: 'backyard', location: 'exterior', zoneNum: 18 },
     { id: 'binary_sensor.alarm_zone_19', faultId: 'binary_sensor.alarm_zone_19_fault', name: 'Main Balcony', icon: 'balcony', camera: 'backyard', location: 'exterior', zoneNum: 19 },
     { id: 'binary_sensor.alarm_zone_23', faultId: 'binary_sensor.alarm_zone_23_fault', name: 'Outside Garage', icon: 'exterior', camera: 'front_door', location: 'exterior', zoneNum: 23 },
-    { id: 'binary_sensor.alarm_zone_22', faultId: 'binary_sensor.alarm_zone_22_fault', name: 'Alexandra Balcony', icon: 'balcony', location: 'exterior', zoneNum: 22 },
-    { id: 'binary_sensor.alarm_zone_27', faultId: 'binary_sensor.alarm_zone_27_fault', name: 'Alexandra Balcony 2', icon: 'balcony', location: 'exterior', zoneNum: 27 },
+    { id: 'binary_sensor.alarm_zone_22', faultId: 'binary_sensor.alarm_zone_22_fault', name: 'Child1 Balcony', icon: 'balcony', location: 'exterior', zoneNum: 22 },
+    { id: 'binary_sensor.alarm_zone_27', faultId: 'binary_sensor.alarm_zone_27_fault', name: 'Child1 Balcony 2', icon: 'balcony', location: 'exterior', zoneNum: 27 },
 ];
 
 // ============================================
@@ -379,12 +379,12 @@ export const MEDIA_CONFIG = {
 // ============================================
 
 export const FAMILY_MEMBERS = {
-    tatiana: {
-        name: 'Tatiana',
+    person2: {
+        name: 'Person2',
         color: '#ec4899',
-        avatar: '/local/dashboard/Tatiana.png',
+        avatar: '/local/dashboard/Person2.png',
         sensors: {
-            tracker: 'person.tatiana',
+            tracker: 'person.person2',
             battery: 'sensor.tatiana_iphone_battery_level',
             batteryState: 'sensor.tatiana_iphone_battery_state',
             steps: 'sensor.tatiana_iphone_steps',
@@ -396,12 +396,12 @@ export const FAMILY_MEMBERS = {
             location: 'sensor.tatiana_iphone_geocoded_location'
         }
     },
-    nico: {
-        name: 'Nico',
+    person1: {
+        name: 'Person1',
         color: '#3b82f6',
-        avatar: '/local/dashboard/Nico.jpeg',
+        avatar: '/local/dashboard/Person1.jpeg',
         sensors: {
-            tracker: 'person.nico',
+            tracker: 'person.person1',
             battery: 'sensor.nico_battery_level',
             batteryState: 'sensor.nico_battery_state',
             steps: 'sensor.nico_steps',
@@ -413,12 +413,12 @@ export const FAMILY_MEMBERS = {
             location: 'sensor.nico_geocoded_location'
         }
     },
-    alexandra: {
-        name: 'Alexandra',
+    child1: {
+        name: 'Child1',
         color: '#a855f7',
-        avatar: '/local/dashboard/Alexandra.png',
+        avatar: '/local/dashboard/Child1.png',
         sensors: {
-            tracker: 'person.alexandra',
+            tracker: 'person.child1',
             battery: 'sensor.alexandra_iphone_battery_level',
             batteryState: 'sensor.alexandra_iphone_battery_state',
             steps: 'sensor.alexandra_iphone_steps',
@@ -430,12 +430,12 @@ export const FAMILY_MEMBERS = {
             location: 'sensor.alexandra_iphone_geocoded_location'
         }
     },
-    mila: {
-        name: 'Mila',
+    child2: {
+        name: 'Child2',
         color: '#14b8a6',
-        avatar: '/local/dashboard/Mila.png',
+        avatar: '/local/dashboard/Child2.png',
         sensors: {
-            tracker: 'person.mila',
+            tracker: 'person.child2',
             battery: 'sensor.milas_iphone_battery_level',
             batteryState: 'sensor.milas_iphone_battery_state',
             steps: 'sensor.milas_iphone_steps',

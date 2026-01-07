@@ -439,11 +439,11 @@ input_boolean:
     initial: true
   # Critical Alerts Only Mode - notification toggles
   critical_alerts_notify_nico:
-    name: "Critical Alerts: Notify Nico"
+    name: "Critical Alerts: Notify Person1"
     icon: mdi:account-alert
     initial: true
   critical_alerts_notify_tatiana:
-    name: "Critical Alerts: Notify Tatiana"
+    name: "Critical Alerts: Notify Person2"
     icon: mdi:account-alert
     initial: true
   frigate_detection_paused:

@@ -29,8 +29,8 @@ const ANNOUNCE_TARGETS = {
     understairs: 'notify.understairsecho_announce',
     bedroom: 'notify.bedroom_show_announce',
     cinema: 'notify.cinemashow_announce',
-    nico: 'notify.nico_s_echo_dot_announce',
-    alexandra: 'notify.alexandra_s_echo_announce',
+    person1: 'notify.nico_s_echo_dot_announce',
+    child1: 'notify.alexandra_s_echo_announce',
     kids_echo: 'notify.kids_echo_announce'
 };
 

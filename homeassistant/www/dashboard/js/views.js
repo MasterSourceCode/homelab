@@ -715,9 +715,9 @@ export function selectCriticalAlertMode(mode) {
 }
 
 export function toggleCriticalNotifyPerson(person) {
-    if (person === 'nico') {
+    if (person === 'person1') {
         criticalAlertsConfig.notifyNico = !criticalAlertsConfig.notifyNico;
-    } else if (person === 'tatiana') {
+    } else if (person === 'person2') {
         criticalAlertsConfig.notifyTatiana = !criticalAlertsConfig.notifyTatiana;
     }
     updateCriticalAlertsModalUI();

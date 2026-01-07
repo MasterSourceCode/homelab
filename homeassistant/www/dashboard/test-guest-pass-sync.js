@@ -7,7 +7,7 @@
 
 const { chromium } = require('playwright');
 
-const BASE_URL = 'http://192.168.68.77:8123/local/dashboard';
+const BASE_URL = 'http://192.168.x.x:8123/local/dashboard';
 const HA_TOKEN = process.env.HA_TOKEN;
 
 if (!HA_TOKEN) {

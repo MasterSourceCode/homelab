@@ -5,7 +5,7 @@ mqtt:
   host: mosquitto
   port: 1883
   username: homeassistant
-  password: mqtt_secure_password_2025
+  password: YOUR_MQTT_PASSWORD
 
 frigate:
   url: http://frigate:5000

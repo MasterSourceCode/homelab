@@ -251,7 +251,7 @@ function getHaBaseUrl() {
     if (window.location.port === '8123') {
         return window.location.origin;
     }
-    return state.haUrl || 'http://192.168.68.77:8123';
+    return state.haUrl || 'http://192.168.x.x:8123';
 }
 
 /**
@@ -292,7 +292,7 @@ export function getCameraUrl(cameraName, timestamp) {
 export function getFrigatePlaybackUrl(cameraName, isoTimestamp) {
     // Frigate UI requires direct access (doesn't work through HA proxy)
     const frigateBaseUrl = state.isLocalNetwork()
-        ? 'http://192.168.68.77:8971'
+        ? 'http://192.168.x.x:8971'
         : FRIGATE_EXTERNAL_URL || 'https://your-frigate-domain.com';
 
     if (!isoTimestamp || isoTimestamp === 'undefined') {

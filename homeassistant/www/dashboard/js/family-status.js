@@ -8,7 +8,7 @@
 // ============================================
 
 const CONFIG = {
-    haUrl: localStorage.getItem('ha_url') || 'http://192.168.68.77:8123',
+    haUrl: localStorage.getItem('ha_url') || 'http://192.168.x.x:8123',
     wsUrl: null,
     token: localStorage.getItem('ha_token') || '',
     refreshRate: 5000,
@@ -18,10 +18,10 @@ const CONFIG = {
 
 // Family members with all available iPhone sensors
 const FAMILY_MEMBERS = {
-    tatiana: {
-        name: 'Tatiana',
+    person2: {
+        name: 'Person2',
         color: '#ec4899',
-        avatar: '/local/dashboard/Tatiana.png',
+        avatar: '/local/dashboard/Person2.png',
         sensors: {
             tracker: 'device_tracker.tatiana_iphone',
             battery: 'sensor.tatiana_iphone_battery_level',
@@ -38,12 +38,12 @@ const FAMILY_MEMBERS = {
             storage: 'sensor.tatiana_iphone_storage'
         }
     },
-    nico: {
-        name: 'Nico',
+    person1: {
+        name: 'Person1',
         color: '#3b82f6',
-        avatar: '/local/dashboard/Nico.jpeg',
+        avatar: '/local/dashboard/Person1.jpeg',
         sensors: {
-            tracker: 'device_tracker.nico',
+            tracker: 'device_tracker.person1',
             battery: 'sensor.nico_battery_level',
             batteryState: 'sensor.nico_battery_state',
             steps: 'sensor.nico_steps',
@@ -58,10 +58,10 @@ const FAMILY_MEMBERS = {
             storage: 'sensor.nico_storage'
         }
     },
-    alexandra: {
-        name: 'Alexandra',
+    child1: {
+        name: 'Child1',
         color: '#a855f7',
-        avatar: '/local/dashboard/Alexandra.png',
+        avatar: '/local/dashboard/Child1.png',
         sensors: {
             tracker: 'device_tracker.alexandra_iphone',
             battery: 'sensor.alexandra_iphone_battery_level',
@@ -78,10 +78,10 @@ const FAMILY_MEMBERS = {
             storage: 'sensor.alexandra_iphone_storage'
         }
     },
-    mila: {
-        name: 'Mila',
+    child2: {
+        name: 'Child2',
         color: '#14b8a6',
-        avatar: '/local/dashboard/Mila.png',
+        avatar: '/local/dashboard/Child2.png',
         sensors: {
             tracker: 'device_tracker.milas_iphone',
             battery: 'sensor.milas_iphone_battery_level',

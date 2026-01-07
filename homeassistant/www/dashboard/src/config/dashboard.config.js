@@ -273,11 +273,11 @@ export const dashboardConfig = {
     // API endpoints
     api: {
         frigate: {
-            local: 'http://192.168.68.77:5003',
+            local: 'http://192.168.x.x:5003',
             external: 'https://your-frigate-domain.com'
         },
         homeAssistant: {
-            local: 'http://192.168.68.77:8123',
+            local: 'http://192.168.x.x:8123',
             nabuCasa: 'https://your-instance.ui.nabu.casa'
         }
     }

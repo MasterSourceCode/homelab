@@ -10,10 +10,10 @@ import time
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeout
 
 # Configuration
-HA_URL = "http://192.168.68.77:8123"
-USERNAME = "nico"
-PASSWORD = "Smart33Pant$@123"
-DISPLAY_NAME = "Nico"
+HA_URL = "http://192.168.x.x:8123"
+USERNAME = "person1"
+PASSWORD = "YOUR_HA_PASSWORD"
+DISPLAY_NAME = "Person1"
 
 async def wait_for_ha_ready(page, timeout=120):
     """Wait for Home Assistant to be fully loaded"""

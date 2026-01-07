@@ -7,7 +7,7 @@
 // CONFIGURATION
 // ============================================
 
-const PC_METRICS_API = 'http://192.168.68.77:8765/api/metrics';
+const PC_METRICS_API = 'http://192.168.x.x:8765/api/metrics';
 const REFRESH_INTERVAL = 2000; // 2 seconds
 const HISTORY_LENGTH = 180; // 6 minutes of history at 2s intervals
 
@@ -25,7 +25,7 @@ let tempGaugeChart = null;
 let frigateTreemapChart = null;
 
 // Frigate API (via CORS proxy)
-const FRIGATE_API = 'http://192.168.68.77:5003';
+const FRIGATE_API = 'http://192.168.x.x:5003';
 
 // Camera display config - muted colors matching dark dashboard aesthetic (60% transparent)
 const CAMERA_COLORS = {

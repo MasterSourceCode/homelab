@@ -470,9 +470,9 @@ function selectCriticalAlertMode(mode) {
 
 function toggleCriticalNotifyPerson(person) {
     vibrate(15);
-    if (person === 'nico') {
+    if (person === 'person1') {
         criticalAlertsConfig.notifyNico = !criticalAlertsConfig.notifyNico;
-    } else if (person === 'tatiana') {
+    } else if (person === 'person2') {
         criticalAlertsConfig.notifyTatiana = !criticalAlertsConfig.notifyTatiana;
     }
     updateCriticalAlertsConfigUI();
@@ -1502,26 +1502,26 @@ let calendarWeekOffset = 0; // For week navigation (0 = current week)
 
 // Family member colors for calendar events
 const CALENDAR_COLORS = {
-    tatiana: { color: '#ec4899', name: 'Tatiana' },
-    nico: { color: '#3b82f6', name: 'Nico' },
-    alexandra: { color: '#a855f7', name: 'Alexandra' },
-    mila: { color: '#14b8a6', name: 'Mila' },
+    person2: { color: '#ec4899', name: 'Person2' },
+    person1: { color: '#3b82f6', name: 'Person1' },
+    child1: { color: '#a855f7', name: 'Child1' },
+    child2: { color: '#14b8a6', name: 'Child2' },
     everyone: { color: '#f59e0b', name: 'Everyone' }
 };
 
 // Google Calendar color ID mapping
 const GCAL_COLOR_MAP = {
-    '1': 'nico',      // Blue
-    '2': 'mila',      // Green/Teal
-    '3': 'alexandra', // Purple
-    '4': 'tatiana',   // Pink
+    '1': 'person1',      // Blue
+    '2': 'child2',      // Green/Teal
+    '3': 'child1', // Purple
+    '4': 'person2',   // Pink
     '5': 'everyone',  // Yellow/Amber
     '6': 'everyone',  // Orange
-    '7': 'mila',      // Teal
+    '7': 'child2',      // Teal
     '8': 'everyone',  // Gray
-    '9': 'nico',      // Bold Blue
+    '9': 'person1',      // Bold Blue
     '10': 'everyone', // Bold Green
-    '11': 'tatiana'   // Bold Red
+    '11': 'person2'   // Bold Red
 };
 
 function initCalendarView() {
@@ -2823,7 +2823,7 @@ function showError(msg) {
 // ============================================
 
 // Hardcoded Home Assistant URL for mobile app
-const HA_URL = 'http://192.168.68.77:8123';
+const HA_URL = 'http://192.168.x.x:8123';
 
 async function init() {
     // Initialize event delegation (data-action handlers)
@@ -2891,7 +2891,7 @@ function connectHA() {
 // ============================================
 
 const FRIGATE_CLIENT_ID = 'frigate';
-const LOCAL_FRIGATE_API = 'http://192.168.68.77:5003/api';
+const LOCAL_FRIGATE_API = 'http://192.168.x.x:5003/api';
 
 // Surveillance state
 let survState = {
@@ -2910,7 +2910,7 @@ function isLocalNetwork() {
 function getHaBaseUrl() {
     if (window.location.hostname.includes('nabu.casa')) return window.location.origin;
     if (window.location.port === '8123') return window.location.origin;
-    return 'http://192.168.68.77:8123';
+    return 'http://192.168.x.x:8123';
 }
 
 function getEventThumbnailUrl(eventId) {
@@ -3275,7 +3275,7 @@ async function saveGuestPass(passData) {
 
         // Save to server for cross-browser sync (only on HTTP to avoid mixed content)
         if (window.location.protocol === 'http:') {
-            const saveUrl = 'http://192.168.68.77:8124/save';
+            const saveUrl = 'http://192.168.x.x:8124/save';
             const data = {
                 version: 1,
                 passes: passes,
