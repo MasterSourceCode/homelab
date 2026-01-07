@@ -4004,8 +4004,8 @@
         action: "PANIC_MODE"
   variables:
     snapshot_url: "http://192.168.x.x:5003/api/events/{{ trigger.event.data.event_id | default('latest') }}/snapshot.jpg"
-    emergency_message: "🚨 ACTIVE INTRUDER ALERT!\n\nPlease help - active intruder detected at:\n📍 13 Townsend Road, Townsend Estate Unit 1\n\nPolice: 10111\nSecurity: Armed Response needed NOW"
-    whatsapp_text: "Please help active intruder, 13 Townsend Road, Townsend Estate Unit 1"
+    emergency_message: "🚨 ACTIVE INTRUDER ALERT!\n\nPlease help - active intruder detected at:\n📍 YOUR_ADDRESS\n\nPolice: 10111\nSecurity: Armed Response needed NOW"
+    whatsapp_text: "Please help active intruder, YOUR_ADDRESS"
   action:
     # 1. TRIGGER ALARM PANIC
     - service: alarm_control_panel.alarm_trigger
