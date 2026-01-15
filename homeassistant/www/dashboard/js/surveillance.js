@@ -18,10 +18,11 @@ const SurveillanceDashboard = (function() {
                host === '127.0.0.1';
     }
 
-    // Configuration with network-aware URLs
-    const LOCAL_API = 'http://192.168.x.x:5003/api';
-    const LOCAL_UI = 'http://192.168.x.x:8971';
-    const EXTERNAL_UI = 'https://your-frigate-domain.com';
+    // Configuration with network-aware URLs (loaded from env.local.js)
+    const ENV = window.DASHBOARD_ENV || {};
+    const LOCAL_API = (ENV.FRIGATE_URL || 'http://192.168.x.x:5003') + '/api';
+    const LOCAL_UI = ENV.FRIGATE_UI_URL || 'http://192.168.x.x:8971';
+    const EXTERNAL_UI = ENV.EXTERNAL_FRIGATE_URL || 'https://your-frigate-domain.com';
 
     // Home Assistant proxy configuration for Nabu Casa access
     const FRIGATE_CLIENT_ID = 'frigate';
@@ -36,7 +37,7 @@ const SurveillanceDashboard = (function() {
         if (window.location.port === '8123') {
             return window.location.origin;
         }
-        return 'http://192.168.x.x:8123';
+        return ENV.HA_URL || 'http://192.168.x.x:8123';
     }
 
     /**

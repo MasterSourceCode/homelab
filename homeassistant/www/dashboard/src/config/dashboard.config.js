@@ -10,6 +10,9 @@
  * - Theming
  */
 
+// Load URLs from env.local.js (gitignored)
+const ENV = window.DASHBOARD_ENV || {};
+
 export const dashboardConfig = {
     // Metadata
     version: '2.0.0',
@@ -270,15 +273,15 @@ export const dashboardConfig = {
         blinkIntegration: true
     },
 
-    // API endpoints
+    // API endpoints (loaded from env.local.js)
     api: {
         frigate: {
-            local: 'http://192.168.x.x:5003',
-            external: 'https://your-frigate-domain.com'
+            local: ENV.FRIGATE_URL || 'http://192.168.x.x:5003',
+            external: ENV.EXTERNAL_FRIGATE_URL || 'https://your-frigate-domain.com'
         },
         homeAssistant: {
-            local: 'http://192.168.x.x:8123',
-            nabuCasa: 'https://your-instance.ui.nabu.casa'
+            local: ENV.HA_URL || 'http://192.168.x.x:8123',
+            nabuCasa: ENV.EXTERNAL_HA_URL || 'https://your-instance.ui.nabu.casa'
         }
     }
 };

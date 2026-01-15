@@ -1,0 +1,242 @@
+<!-- Geyser & Solar Settings Modal -->
+<div id="geyserSettingsModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-md" data-action="closeGeyserSettings"></div>
+
+    <!-- Modal Content -->
+    <div class="absolute inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[700px] md:max-h-[85vh] bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-2xl">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-5 border-b border-white/10 bg-gradient-to-r from-orange-500/10 to-red-500/10">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/30 to-red-500/30 flex items-center justify-center border border-orange-500/30">
+                    <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-white">Geyser & Energy Settings</h3>
+                    <p class="text-xs text-white/50">Solar optimization and inverter controls</p>
+                </div>
+            </div>
+            <button data-action="closeGeyserSettings" class="p-2 rounded-xl hover:bg-white/10 transition text-white/60 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-5 space-y-5">
+            <!-- Status Overview Cards -->
+            <div class="grid grid-cols-3 gap-3">
+                <!-- Temperature Card -->
+                <div class="bg-gradient-to-br from-red-500/10 to-orange-500/10 rounded-xl p-4 border border-red-500/20">
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span class="text-xs text-white/50 uppercase tracking-wider">Temperature</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="geyserModalTemp" class="text-3xl font-light text-red-400">45</span>
+                        <span class="text-lg text-white/30">°C</span>
+                    </div>
+                    <div id="geyserTempStatus" class="text-xs text-white/40 mt-1">Ready for use</div>
+                </div>
+
+                <!-- Runtime Card -->
+                <div class="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-xl p-4 border border-cyan-500/20">
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="text-xs text-white/50 uppercase tracking-wider">Runtime Today</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="geyserModalRuntime" class="text-3xl font-light text-cyan-400">0.0</span>
+                        <span class="text-lg text-white/30">hrs</span>
+                    </div>
+                    <div class="text-xs text-white/40 mt-1">Target: 1.5 hrs max</div>
+                </div>
+
+                <!-- Battery Card -->
+                <div class="bg-gradient-to-br from-emerald-500/10 to-green-500/10 rounded-xl p-4 border border-emerald-500/20">
+                    <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span class="text-xs text-white/50 uppercase tracking-wider">Battery</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="geyserModalBattery" class="text-3xl font-light text-emerald-400">0</span>
+                        <span class="text-lg text-white/30">%</span>
+                    </div>
+                    <div id="geyserBatteryStatus" class="text-xs text-white/40 mt-1">Checking...</div>
+                </div>
+            </div>
+
+            <!-- Inverter Controls Section -->
+            <div class="bg-slate-800/50 rounded-xl border border-white/10 overflow-hidden">
+                <div class="flex items-center gap-3 p-4 border-b border-white/10 bg-gradient-to-r from-purple-500/10 to-cyan-500/10">
+                    <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <div>
+                        <h4 class="text-sm font-semibold text-white">Inverter Settings</h4>
+                        <p class="text-xs text-white/40">Battery and grid charging controls</p>
+                    </div>
+                    <div id="inverterConnectionStatus" class="ml-auto flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                        <span class="text-xs text-white/50">Checking...</span>
+                    </div>
+                </div>
+
+                <div class="p-4 space-y-4">
+                    <!-- Battery Floor Setting -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-medium text-white">Battery Minimum (Floor)</div>
+                            <div class="text-xs text-white/40">Lowest SOC before stopping discharge</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="batteryFloorSlider" min="20" max="50" value="30"
+                                class="w-32 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                            <div class="w-16 text-right">
+                                <span id="batteryFloorValue" class="text-lg font-mono text-emerald-400">30</span>
+                                <span class="text-sm text-white/40">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grid Charging Toggle -->
+                    <div class="flex items-center justify-between pt-3 border-t border-white/10">
+                        <div>
+                            <div class="text-sm font-medium text-white">Grid Charging</div>
+                            <div class="text-xs text-white/40">Allow charging from grid power</div>
+                        </div>
+                        <button id="gridChargingToggle" class="relative w-14 h-7 rounded-full bg-slate-700 transition-colors duration-300" data-state="off">
+                            <div class="absolute top-1 left-1 w-5 h-5 rounded-full bg-white/80 shadow transition-transform duration-300"></div>
+                        </button>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="flex gap-2 pt-3 border-t border-white/10">
+                        <button id="solarOnlyBtn" class="flex-1 px-3 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-400 text-xs font-medium transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            Solar Only Mode
+                        </button>
+                        <button id="applyFloorBtn" class="flex-1 px-3 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-400 text-xs font-medium transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            Apply 30% Floor
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Geyser Automation Settings -->
+            <div class="bg-slate-800/50 rounded-xl border border-white/10 overflow-hidden">
+                <div class="flex items-center gap-3 p-4 border-b border-white/10 bg-gradient-to-r from-red-500/10 to-orange-500/10">
+                    <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                    </svg>
+                    <div>
+                        <h4 class="text-sm font-semibold text-white">Geyser Automation</h4>
+                        <p class="text-xs text-white/40">Solar heating schedule and targets</p>
+                    </div>
+                </div>
+
+                <div class="p-4 space-y-4">
+                    <!-- Target Temperature -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-medium text-white">Target Temperature</div>
+                            <div class="text-xs text-white/40">Auto-off when reached</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="geyserTargetTempSlider" min="45" max="65" value="58"
+                                class="w-32 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-red-500">
+                            <div class="w-16 text-right">
+                                <span id="geyserTargetTempValue" class="text-lg font-mono text-red-400">58</span>
+                                <span class="text-sm text-white/40">°C</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Heating Window -->
+                    <div class="flex items-center justify-between pt-3 border-t border-white/10">
+                        <div>
+                            <div class="text-sm font-medium text-white">Peak Solar Window</div>
+                            <div class="text-xs text-white/40">Auto-heat during this period</div>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm">
+                            <span class="px-3 py-1 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400 font-mono">10:30</span>
+                            <span class="text-white/30">to</span>
+                            <span class="px-3 py-1 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400 font-mono">14:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Solar Thresholds -->
+                    <div class="grid grid-cols-2 gap-3 pt-3 border-t border-white/10">
+                        <div class="bg-slate-900/50 rounded-lg p-3">
+                            <div class="text-xs text-white/40 mb-1">Min Solar to Start</div>
+                            <div class="text-lg font-mono text-amber-400">1200<span class="text-sm text-white/30">W</span></div>
+                        </div>
+                        <div class="bg-slate-900/50 rounded-lg p-3">
+                            <div class="text-xs text-white/40 mb-1">Min Battery to Start</div>
+                            <div class="text-lg font-mono text-emerald-400">55<span class="text-sm text-white/30">%</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weather Forecast Preview -->
+            <div class="bg-slate-800/50 rounded-xl border border-white/10 overflow-hidden">
+                <div class="flex items-center gap-3 p-4 border-b border-white/10 bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
+                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                    </svg>
+                    <div>
+                        <h4 class="text-sm font-semibold text-white">7-Day Solar Forecast</h4>
+                        <p class="text-xs text-white/40">Weather-based solar prediction</p>
+                    </div>
+                    <button id="refreshForecastBtn" class="ml-auto p-2 rounded-lg hover:bg-white/10 transition text-white/40 hover:text-white">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="forecastContainer" class="p-4">
+                    <div class="grid grid-cols-7 gap-2 text-center">
+                        <!-- Forecast days will be populated by JavaScript -->
+                        <div class="forecast-loading text-xs text-white/40">Loading forecast...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between p-4 border-t border-white/10 bg-slate-900/50">
+            <div class="text-xs text-white/40">
+                <span id="geyserLastUpdate">Last updated: --</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button data-action="closeGeyserSettings" class="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition">
+                    Close
+                </button>
+                <button id="saveGeyserSettingsBtn" class="px-5 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 transition flex items-center gap-2 text-white shadow-lg shadow-orange-500/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Apply Settings
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

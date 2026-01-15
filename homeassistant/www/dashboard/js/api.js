@@ -4,7 +4,7 @@
  */
 
 import { state } from './state.js';
-import { FRIGATE_LOCAL_URL, FRIGATE_EXTERNAL_URL, REFRESH_RATES } from './config.js';
+import { FRIGATE_LOCAL_URL, FRIGATE_EXTERNAL_URL, FRIGATE_UI_URL, REFRESH_RATES } from './config.js';
 
 // ============================================
 // CONNECTION STATUS CALLBACKS
@@ -292,8 +292,8 @@ export function getCameraUrl(cameraName, timestamp) {
 export function getFrigatePlaybackUrl(cameraName, isoTimestamp) {
     // Frigate UI requires direct access (doesn't work through HA proxy)
     const frigateBaseUrl = state.isLocalNetwork()
-        ? 'http://192.168.x.x:8971'
-        : FRIGATE_EXTERNAL_URL || 'https://your-frigate-domain.com';
+        ? FRIGATE_UI_URL
+        : FRIGATE_EXTERNAL_URL;
 
     if (!isoTimestamp || isoTimestamp === 'undefined') {
         return `${frigateBaseUrl}/#/recording/${cameraName}`;

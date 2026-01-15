@@ -1,0 +1,65 @@
+<!-- Calendar Color Settings Modal -->
+<div id="calendarColorSettingsModal" class="fixed inset-0 z-50 hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" data-action="closeCalendarColorSettings"></div>
+
+    <!-- Modal Content -->
+    <div class="absolute inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[600px] md:max-h-[80vh] glass rounded-2xl overflow-hidden flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-4 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold">Calendar Color Settings</h3>
+                    <p class="text-xs text-white/50">Customize colors for each family member</p>
+                </div>
+            </div>
+            <button data-action="closeCalendarColorSettings" class="p-2 rounded-lg hover:bg-white/10 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-3">
+            <!-- Preview Section -->
+            <div class="glass-light rounded-xl p-4 mb-4">
+                <h4 class="text-sm font-medium text-white/70 mb-3">Live Preview</h4>
+                <div id="colorPreviewContainer" class="flex flex-wrap gap-2">
+                    <!-- Preview chips will be generated dynamically -->
+                </div>
+            </div>
+
+            <!-- Color Pickers -->
+            <div id="colorPickersContainer" class="space-y-3">
+                <!-- Color picker rows will be generated dynamically -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between p-4 border-t border-white/10 bg-white/5">
+            <button id="resetColorsBtn" data-action="resetCalendarColors" class="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Reset to Defaults
+            </button>
+            <div class="flex items-center gap-2">
+                <button data-action="closeCalendarColorSettings" class="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition">
+                    Cancel
+                </button>
+                <button id="saveColorsBtn" data-action="saveCalendarColors" class="px-6 py-2 rounded-xl text-sm font-medium bg-violet-500 hover:bg-violet-600 transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

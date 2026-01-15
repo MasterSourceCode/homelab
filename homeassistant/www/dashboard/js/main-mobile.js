@@ -3152,7 +3152,8 @@ function downloadSurvClip() {
 // GUEST PASS MODULE - Mobile Optimized
 // ============================================
 
-const GUEST_PASS_URL = 'https://your-instance.ui.nabu.casa/local/dashboard/guest-access.html';
+const GUEST_PASS_ENV = window.DASHBOARD_ENV || {};
+const GUEST_PASS_URL = (GUEST_PASS_ENV.EXTERNAL_HA_URL || 'https://your-instance.ui.nabu.casa') + '/local/dashboard/guest-access.html';
 const PASSES_FILE_URL = '/local/dashboard/data/passes.json';
 const PRESETS = { day: 86400000, week: 604800000, month: 2592000000, lifetime: 3153600000000 };
 

@@ -4,7 +4,7 @@
 # Core settings - fixes iOS app discovery showing Docker IP
 homeassistant:
   internal_url: "http://192.168.x.x:8123"
-  external_url: "https://your-instance.ui.nabu.casa"
+  external_url: !secret nabu_casa_url
 
 # Loads default set of integrations
 default_config:

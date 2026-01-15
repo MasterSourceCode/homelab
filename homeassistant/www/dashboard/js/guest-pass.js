@@ -27,8 +27,9 @@ let serverActivityCache = null;
 let lastServerSync = 0;
 const SYNC_INTERVAL = 30000; // 30 seconds
 
-// External URL for guest access (Nabu Casa cloud URL)
-const EXTERNAL_BASE_URL = 'https://your-instance.ui.nabu.casa';
+// External URL for guest access (loaded from env.local.js)
+const ENV = window.DASHBOARD_ENV || {};
+const EXTERNAL_BASE_URL = ENV.EXTERNAL_HA_URL || 'https://your-instance.ui.nabu.casa';
 const PASS_URL_PATH = '/local/dashboard/guest-access.html';
 
 // Duration presets in milliseconds

@@ -6,11 +6,12 @@
 
 set -e
 
-# Configuration
+# Configuration - UPDATE THESE VALUES
 AP_SSID="GarageNet"
 AP_PASSWORD="YOUR_AP_PASSWORD"
 AP_CHANNEL=6
 DEYE_IP="192.168.x.x"
+DEYE_MAC="xx:xx:xx:xx:xx:xx"  # Your Deye inverter MAC address
 
 echo "============================================"
 echo "Garage WiFi AP Setup for Deye Inverter"
@@ -133,7 +134,7 @@ wpa_pairwise=TKIP
 rsn_pairwise=CCMP
 
 # Allow the Deye to connect
-# MAC: xx:xx:xx:xx:xx:xx
+# MAC: $DEYE_MAC
 HOSTAPD_EOF
 
 # Point hostapd to config
@@ -154,7 +155,7 @@ cat > /etc/dnsmasq.d/garage-ap.conf << DNSMASQ_EOF
 interface=$ALFA_IF
 dhcp-range=192.168.100.10,192.168.100.50,255.255.255.0,24h
 # Reserve IP for Deye inverter
-dhcp-host=xx:xx:xx:xx:xx:xx,192.168.100.122
+dhcp-host=$DEYE_MAC,192.168.100.122
 DNSMASQ_EOF
 
 # Enable IP forwarding

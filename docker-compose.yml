@@ -211,7 +211,7 @@ services:
     environment:
       - POSTGRES_URL=jdbc:postgresql://compreface-postgres:5432/compreface
       - POSTGRES_USER=compreface
-      - POSTGRES_PASSWORD=YOUR_COMPREFACE_DB_PASS
+      - POSTGRES_PASSWORD=${COMPREFACE_DB_PASS}
       - SPRING_PROFILES_ACTIVE=dev
       - ADMIN_JAVA_OPTS=-Xmx256m
       - EXTERNAL_API_HOST=http://compreface:8000

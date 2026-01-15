@@ -63,6 +63,7 @@ homeassistant/www/dashboard/node_modules/
 homeassistant/www/dashboard/data/
 homeassistant/www/dashboard/*-data.json
 homeassistant/www/dashboard/*-stats.json
+homeassistant/www/dashboard/env.local.js
 
 # ============================================
 # NGINX PROXY

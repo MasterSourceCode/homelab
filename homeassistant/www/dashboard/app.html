@@ -26,6 +26,9 @@
 
     <title>Home Dashboard</title>
 
+    <!-- Load environment config (gitignored, contains real URLs) -->
+    <script src="/local/dashboard/env.local.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -201,7 +204,7 @@
                 Local Network
                 <span>Use when on home WiFi</span>
             </a>
-            <a href="https://your-instance.ui.nabu.casa/local/dashboard/mobile.html">
+            <a id="remoteLink" href="#">
                 Remote Access
                 <span>Use when away from home</span>
             </a>
@@ -209,10 +212,15 @@
     </div>
 
     <script>
-        const LOCAL_URL = 'http://192.168.x.x:8123/local/dashboard/mobile.html';
-        const EXTERNAL_URL = 'https://your-instance.ui.nabu.casa/local/dashboard/mobile.html';
-        const LOCAL_TEST_URL = 'http://192.168.x.x:8123/local/dashboard/version.json';
+        // Load URLs from env.local.js (gitignored)
+        const ENV = window.DASHBOARD_ENV || {};
+        const LOCAL_URL = (ENV.HA_URL || 'http://192.168.x.x:8123') + '/local/dashboard/mobile.html';
+        const EXTERNAL_URL = (ENV.EXTERNAL_HA_URL || 'https://your-instance.ui.nabu.casa') + '/local/dashboard/mobile.html';
+        const LOCAL_TEST_URL = (ENV.HA_URL || 'http://192.168.x.x:8123') + '/local/dashboard/version.json';
         const TIMEOUT_MS = 2500;
+
+        // Set remote link href dynamically
+        document.getElementById('remoteLink').href = EXTERNAL_URL;
 
         const statusEl = document.getElementById('status');
         const spinnerEl = document.getElementById('spinner');
