@@ -6,17 +6,28 @@
 // ============================================
 // NETWORK CONFIGURATION
 // ============================================
+// These values are loaded from env.local.js (gitignored)
+// Fallbacks provided for safety
 
-export const FRIGATE_LOCAL_URL = 'http://192.168.x.x:5003';
-export const FRIGATE_EXTERNAL_URL = 'https://your-frigate-domain.com';
-export const DEFAULT_LOCAL_HA_URL = 'http://192.168.x.x:8123';
+const ENV = window.DASHBOARD_ENV || {};
+
+export const SERVER_IP = ENV.SERVER_IP || '192.168.x.x';
+export const HA_URL = ENV.HA_URL || `http://${SERVER_IP}:8123`;
+export const FRIGATE_LOCAL_URL = ENV.FRIGATE_URL || `http://${SERVER_IP}:5003`;
+export const FRIGATE_API_URL = ENV.FRIGATE_API_URL || `http://${SERVER_IP}:5003/api`;
+export const FRIGATE_UI_URL = ENV.FRIGATE_UI_URL || `http://${SERVER_IP}:8971`;
+export const FRIGATE_EXTERNAL_URL = ENV.EXTERNAL_FRIGATE_URL || 'https://your-frigate-domain.com';
+export const DEFAULT_LOCAL_HA_URL = ENV.HA_URL || `http://${SERVER_IP}:8123`;
+export const PC_METRICS_URL = ENV.PC_METRICS_URL || `http://${SERVER_IP}:8765/api/metrics`;
+export const PC_METRICS_ENABLED = ENV.PC_METRICS_ENABLED !== false;
 
 // ============================================
 // GOOGLE CALENDAR CONFIGURATION
 // ============================================
+// API key MUST be set in env.local.js - never commit real keys!
 
-export const GOOGLE_CALENDAR_API_KEY = 'YOUR_GOOGLE_API_KEY';
-export const GOOGLE_CALENDAR_ID = 'your-calendar@gmail.com';
+export const GOOGLE_CALENDAR_API_KEY = ENV.GOOGLE_CALENDAR_API_KEY || 'YOUR_GOOGLE_API_KEY';
+export const GOOGLE_CALENDAR_ID = ENV.GOOGLE_CALENDAR_ID || 'YOUR_CALENDAR_ID';
 export const CALENDAR_TIMEZONE = 'Africa/Johannesburg';
 
 // ============================================

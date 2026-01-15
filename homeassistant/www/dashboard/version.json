@@ -1,5 +1,5 @@
 {
-  "version": "2026.01.05.3",
-  "timestamp": 1767617977000,
-  "build": "Fix close button on surveillance view"
+  "version": "2026.01.15.1",
+  "timestamp": 1768470659000,
+  "build": "Restore ENV config pattern after git sanitization"
 }
